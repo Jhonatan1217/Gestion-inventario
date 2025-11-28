@@ -6,7 +6,7 @@ $page = $_GET['page'] ?? 'landing'; // en este caso landing.php proyecto anterio
 $page = basename($page);
 
 // Ruta de la vista
-$file = __DIR__ . "/../views/$page.php";
+$file = __DIR__ . "/../view/$page.php";
 
 // Cargar vista o mostrar mensaje de error
 if (file_exists($file)) {

@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'gestion_proyectos';
+$dbname = 'gestion_inventario';
 $user = 'root';
 $pass = ''; 
 
