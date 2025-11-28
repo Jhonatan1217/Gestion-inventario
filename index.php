@@ -1,35 +1,92 @@
 <?php
 // Si viene 'accion' ignoramos el router de páginas y usamos API  (SOLO PARA PRUEBAS Y modificar dependiendo del controlador)
-if (isset($_GET['accion'])) {
+// if (isset($_GET['accion'])) {
+//     include_once __DIR__ . "/Config/database.php";
+//     include_once __DIR__ . "/src/controllers/usuario_controller.php";
+//     $controller = new usuario($conn);
+
+//     switch ($_GET['accion']) {
+//         case 'listar':
+//             $controller->listar();
+//             break;
+//         case 'obtener':
+//             $controller->obtener($_GET['id_usuario'] ?? null);
+//             break;
+//         case 'crear':
+//             $controller->crear();
+//             break;
+//         case 'actualizar':
+//             $controller->actualizar($_GET['id_usuario'] ?? null);
+//             break;
+//         case 'eliminar':
+//             $controller->eliminar($_GET['id_usuario'] ?? null);
+//             break;
+//         case 'cambiar_estado':
+//             $controller->cambiarEstado();
+//             break;
+//         default:
+//             echo json_encode(['error'=>'Acción inválida']);
+//     }
+//     exit; 
+// }
+
+if (isset($_GET['accion']) && isset($_GET['modulo'])) {
+
     include_once __DIR__ . "/Config/database.php";
-    include_once __DIR__ . "/src/controllers/usuario_controller.php";
-    $controller = new usuario($conn);
+    $modulo = $_GET['modulo'];
+    $accion = $_GET['accion'];
 
-    switch ($_GET['accion']) {
-        case 'listar':
-            $controller->listar();
+    switch ($modulo) {
+
+        /* ==========================
+           MÓDULO BODEGAS
+        ========================== */
+        case 'bodegas':
+            include_once __DIR__ . "/src/controllers/bodega_controller.php";
+
+            // CORRECTO:
+            $controller = new BodegaController($conn);
+
+            switch ($accion) {
+
+                case 'listar':
+                    $controller->listar();
+                    break;
+
+                case 'obtener':
+                    $controller->obtener($_GET['id_bodega'] ?? null);
+                    break;
+
+                case 'crear':
+                    $controller->crear();
+                    break;
+
+                case 'actualizar':
+                    $controller->actualizar();
+                    break;
+
+                case 'activar':
+                    $controller->activar();
+                    break;
+
+                case 'inactivar':
+                    $controller->inactivar();
+                    break;
+
+                default:
+                    echo json_encode(['error' => 'Acción inválida en el módulo bodegas']);
+            }
             break;
-        case 'obtener':
-            $controller->obtener($_GET['id_usuario'] ?? null);
-            break;
-        case 'crear':
-            $controller->crear();
-            break;
-        case 'actualizar':
-            $controller->actualizar($_GET['id_usuario'] ?? null);
-            break;
-        case 'eliminar':
-            $controller->eliminar($_GET['id_usuario'] ?? null);
-            break;
-        case 'cambiar_estado':
-            $controller->cambiarEstado();
-            break;
+
+        /* ==========================
+           MÓDULO NO EXISTE
+        ========================== */
         default:
-            echo json_encode(['error'=>'Acción inválida']);
+            echo json_encode(['error' => 'Módulo inválido']);
     }
-    exit; 
-}
 
+    exit;
+}
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
