@@ -36,12 +36,20 @@ switch ($accion) {
         break;
 
     case 'obtener':
-        if (!isset($_GET['id_usuario'])) {
+    $id_usuario = $_GET['id_usuario'] ?? null;
+
+        if (!$id_usuario) {
             echo json_encode(['error' => 'Debe enviar el parámetro id_usuario']);
             exit;
         }
-        echo json_encode($usuario->obtenerPorId($_GET['id_usuario']));
-        break;
+
+        $res = $usuario->obtenerPorId($id_usuario);
+
+        echo json_encode(
+            $res ? $res : ['error' => 'Usuario no encontrado']
+        );
+    break;
+
 
     case 'crear':
     $data = json_decode(file_get_contents("php://input"), true);

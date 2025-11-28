@@ -16,14 +16,15 @@ class Usuario {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para obtener un usuario por su ID
-    public function obtenerPorId($id) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    // Función para obtener un usuario por su ID
+public function obtenerPorId($id) {
+    $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindParam(':id_usuario', $id);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 
     // Funcion para obtener un usuario por correo (para validar unicidad o login después)
     public function obtenerPorCorreo($correo) {
