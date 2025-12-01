@@ -30,6 +30,61 @@
 //     exit; 
 // }
 
+// if (isset($_GET['accion']) && isset($_GET['modulo'])) {
+
+//     include_once __DIR__ . "/Config/database.php";
+//     $modulo = $_GET['modulo'];
+//     $accion = $_GET['accion'];
+
+//     switch ($modulo) {
+
+//        
+//         case 'bodegas':
+//             include_once __DIR__ . "/src/controllers/bodega_controller.php";
+
+//          
+//             $controller = new BodegaController($conn);
+
+//             switch ($accion) {
+
+//                 case 'listar':
+//                     $controller->listar();
+//                     break;
+
+//                 case 'obtener':
+//                     $controller->obtener($_GET['id_bodega'] ?? null);
+//                     break;
+
+//                 case 'crear':
+//                     $controller->crear();
+//                     break;
+
+//                 case 'actualizar':
+//                     $controller->actualizar();
+//                     break;
+
+//                 case 'activar':
+//                     $controller->activar();
+//                     break;
+
+//                 case 'inactivar':
+//                     $controller->inactivar();
+//                     break;
+
+//                 default:
+//                     echo json_encode(['error' => 'Acción inválida en el módulo bodegas']);
+//             }
+//             break;
+
+//        
+//         default:
+//             echo json_encode(['error' => 'Módulo inválido']);
+//     }
+
+//     exit;
+// }
+
+
 if (isset($_GET['accion']) && isset($_GET['modulo'])) {
 
     include_once __DIR__ . "/Config/database.php";
@@ -38,14 +93,11 @@ if (isset($_GET['accion']) && isset($_GET['modulo'])) {
 
     switch ($modulo) {
 
-        /* ==========================
-           MÓDULO BODEGAS
-        ========================== */
-        case 'bodegas':
-            include_once __DIR__ . "/src/controllers/bodega_controller.php";
 
-            // CORRECTO:
-            $controller = new BodegaController($conn);
+        case 'raes':
+            include_once __DIR__ . "/src/controllers/rae_controller.php";
+
+            $controller = new rae_controller($conn);
 
             switch ($accion) {
 
@@ -54,7 +106,7 @@ if (isset($_GET['accion']) && isset($_GET['modulo'])) {
                     break;
 
                 case 'obtener':
-                    $controller->obtener($_GET['id_bodega'] ?? null);
+                    $controller->obtener($_GET['id_rae'] ?? null);
                     break;
 
                 case 'crear':
@@ -74,19 +126,17 @@ if (isset($_GET['accion']) && isset($_GET['modulo'])) {
                     break;
 
                 default:
-                    echo json_encode(['error' => 'Acción inválida en el módulo bodegas']);
+                    echo json_encode(['error' => 'Acción inválida en el módulo RAEs']);
             }
             break;
 
-        /* ==========================
-           MÓDULO NO EXISTE
-        ========================== */
         default:
             echo json_encode(['error' => 'Módulo inválido']);
-    }
+            break;
 
-    exit;
-}
+    } 
+} 
+
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
