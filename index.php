@@ -85,57 +85,147 @@
 // }
 
 
-if (isset($_GET['accion']) && isset($_GET['modulo'])) {
+// if (isset($_GET['accion']) && isset($_GET['modulo'])) {
 
+//     include_once __DIR__ . "/Config/database.php";
+//     $modulo = $_GET['modulo'];
+//     $accion = $_GET['accion'];
+
+//     switch ($modulo) {
+
+
+//         case 'raes':
+//             include_once __DIR__ . "/src/controllers/rae_controller.php";
+
+//             $controller = new rae_controller($conn);
+
+//             switch ($accion) {
+
+//                 case 'listar':
+//                     $controller->listar();
+//                     break;
+
+//                 case 'obtener':
+//                     $controller->obtener($_GET['id_rae'] ?? null);
+//                     break;
+
+//                 case 'crear':
+//                     $controller->crear();
+//                     break;
+
+//                 case 'actualizar':
+//                     $controller->actualizar();
+//                     break;
+
+//                 case 'activar':
+//                     $controller->activar();
+//                     break;
+
+//                 case 'inactivar':
+//                     $controller->inactivar();
+//                     break;
+
+//                 default:
+//                     echo json_encode(['error' => 'Acción inválida en el módulo RAEs']);
+//             }
+//             break;
+
+//         default:
+//             echo json_encode(['error' => 'Módulo inválido']);
+//             break;
+
+//     } 
+// } 
+
+if (isset($_GET['accion']) && isset($_GET['modulo']) && $_GET['modulo'] === 'programa') {
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    include_once __DIR__ . "/src/controllers/programa_controller.php";
     include_once __DIR__ . "/Config/database.php";
-    $modulo = $_GET['modulo'];
-    $accion = $_GET['accion'];
 
-    switch ($modulo) {
+    $model = new Programa($conn);
+    $accion = $_GET['accion'] ?? '';
 
+    switch ($accion) {
+        case 'listar':
+            echo json_encode($model->listar());
+            break;
 
-        case 'raes':
-            include_once __DIR__ . "/src/controllers/rae_controller.php";
+        case 'obtener':
+            $id = $_GET['id_programa'] ?? null;
+            echo json_encode($model->obtenerPorId($id) ?: ['error'=>'Programa no encontrado']);
+            break;
 
-            $controller = new rae_controller($conn);
-
-            switch ($accion) {
-
-                case 'listar':
-                    $controller->listar();
-                    break;
-
-                case 'obtener':
-                    $controller->obtener($_GET['id_rae'] ?? null);
-                    break;
-
-                case 'crear':
-                    $controller->crear();
-                    break;
-
-                case 'actualizar':
-                    $controller->actualizar();
-                    break;
-
-                case 'activar':
-                    $controller->activar();
-                    break;
-
-                case 'inactivar':
-                    $controller->inactivar();
-                    break;
-
-                default:
-                    echo json_encode(['error' => 'Acción inválida en el módulo RAEs']);
+        case 'crear':
+            $data = json_decode(file_get_contents("php://input"), true);
+            if (!$data) {
+                echo json_encode(['error'=>'No se recibió JSON válido']);
+                exit;
             }
+
+            echo json_encode(
+                $model->crear(
+                    $data['codigo_programa'],
+                    $data['nombre_programa'],
+                    $data['nivel_programa'],
+                    $data['descripcion_programa'],
+                    (int)$data['duracion_horas'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Programa creado correctamente']
+                : ['error'=>'No se pudo crear el programa']
+            );
+            break;
+
+        case 'actualizar':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $_GET['id_programa'] ?? $data['id_programa'] ?? null;
+
+            echo json_encode(
+                $model->actualizar(
+                    $id,
+                    $data['codigo_programa'],
+                    $data['nombre_programa'],
+                    $data['nivel_programa'],
+                    $data['descripcion_programa'],
+                    (int)$data['duracion_horas'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Programa actualizado correctamente']
+                : ['error'=>'No se pudo actualizar']
+            );
+            break;
+
+        case 'eliminar':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $_GET['id_programa'] ?? $data['id_programa'] ?? null;
+
+            echo json_encode(
+                $model->eliminar($id)
+                ? ['mensaje'=>'Programa eliminado correctamente']
+                : ['error'=>'No se pudo eliminar']
+            );
+            break;
+
+        case 'cambiar_estado':
+            $data = json_decode(file_get_contents("php://input"), true);
+            echo json_encode(
+                $model->cambiarEstado(
+                    $data['id_programa'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Estado actualizado correctamente']
+                : ['error'=>'No se pudo actualizar estado']
+            );
             break;
 
         default:
-            echo json_encode(['error' => 'Módulo inválido']);
+            echo json_encode(['error'=>'Acción inválida']);
             break;
-
-    } 
-} 
+    }
+    exit;
+}
 
 
 error_reporting(E_ALL);
