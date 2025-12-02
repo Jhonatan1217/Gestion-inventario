@@ -77,7 +77,7 @@ switch ($accion) {
     }
 
     // Validar cargo permitido por ENUM
-    $cargosValidos = ['Coordinador','Instructor','Pasante'];
+    $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
     if (!in_array($u['cargo'], $cargosValidos, true)) {
         echo json_encode(['error' => 'Cargo no válido']);
         exit;
