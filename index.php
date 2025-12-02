@@ -227,17 +227,16 @@
 //     exit;
 // }
 
-$accion = $_GET['accion'] ?? '';
-$modulo = $_GET['modulo'] ?? '';
+// $accion = $_GET['accion'] ?? '';
+// $modulo = $_GET['modulo'] ?? '';
 
-if (isset($_GET["modulo"]) && $_GET["modulo"] === "usuario_roles") {
-    include_once __DIR__ . "/src/controllers/rol_usuario_controller.php";
-    include_once __DIR__ . "/Config/database.php";
-    exit;
-}
+// if (isset($_GET["modulo"]) && $_GET["modulo"] === "usuario_roles") {
+//     include_once __DIR__ . "/src/controllers/rol_usuario_controller.php";
+//     include_once __DIR__ . "/Config/database.php";
+//     exit;
+// }
 
-echo '<h1>API activa</h1>';
-
+// echo '<h1>Conexion activa</h1>';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
