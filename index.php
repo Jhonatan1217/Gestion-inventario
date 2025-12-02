@@ -246,7 +246,7 @@ define('BASE_URL', $protocol . $host . $script_dir);
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Proyecto 0</title>
+    <title>Gestion Inventario</title>
     <link rel="icon" type="image/png" href="">
     <!-- <link rel="stylesheet" href="./public/css/output.css"> -->
 </head>
