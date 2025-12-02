@@ -1,5 +1,4 @@
 <?php
-// Clase Usuario para manejar operaciones CRUD sobre la tabla 'usuarios'
 class Usuario {
     private $conn;
     private $table = "usuarios";
@@ -91,7 +90,6 @@ public function obtenerPorId($id) {
         $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
 
-        // Crear variable real para pasar por referencia
         $estadoBD = $estado == 1 ? 'activo' : 'inactivo';
 
         $stmt->bindParam(':estado', $estadoBD);
