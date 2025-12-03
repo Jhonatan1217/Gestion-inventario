@@ -30,13 +30,12 @@ if (!$accion) {
 
 switch ($accion) {
 
-    //Listar usuarios
-
+    //List users
     case 'listar':
         echo json_encode($usuario->listar());
         break;
 
-    //Obtener usuario por id
+    //Get user by id
     case 'obtener':
     $id_usuario = $_GET['id_usuario'] ?? null;
 
@@ -52,7 +51,7 @@ switch ($accion) {
         );
     break;
 
-    //Crear usuario
+    //Create user
     case 'crear':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -101,7 +100,7 @@ switch ($accion) {
     echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
 
-    //Actualizar usuario
+    //Update user
     case 'actualizar':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -147,7 +146,7 @@ switch ($accion) {
     );
     break;
 
-    //Eliminar usuario
+    //Delete user
     case 'eliminar':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -169,7 +168,7 @@ switch ($accion) {
     );
     break;
 
-    //Cambiar estado al usuario
+    //Change user status
     case 'cambiar_estado':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -197,7 +196,6 @@ switch ($accion) {
             : ['error' => 'No se pudo actualizar el estado']
     );
     break;
-
 
     default:
         echo json_encode(['error' => 'Acción no válida']);

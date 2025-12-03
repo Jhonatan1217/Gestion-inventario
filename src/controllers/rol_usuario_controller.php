@@ -16,6 +16,7 @@ $accion = $_GET["accion"] ?? "";
 
 switch ($accion) {
 
+    //Assign role to user
     case "asignar":
         $raw = file_get_contents("php://input");
         $data = json_decode($raw, true);
@@ -37,10 +38,12 @@ switch ($accion) {
         );
         break;
 
+    //Listar los usuarios con los roles ya asignados
     case "listar":
         echo json_encode($controller->listarAsignaciones());
         break;
 
+    //Eliminar asignación de rol a usuario
     case "eliminar":
         $id = $_GET["id_usuario_rol"] ?? null;
         if (!$id) {
