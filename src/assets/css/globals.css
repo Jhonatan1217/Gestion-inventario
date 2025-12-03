@@ -211,6 +211,23 @@ body {
 .bg-background { background-color: var(--background); }
 .text-foreground { color: var(--foreground); }
 
+.bg-badge-secondary {
+  background-color: color-mix(in srgb, var(--secondary) 18%, white);
+}
+
+.text-badge-secondary {
+  color: var(--secondary);
+}
+
+.bg-badge-secondary-dot {
+  background-color: var(--secondary);
+}
+
+.bg-secondary-13 {
+  background-color: color-mix(in srgb, var(--secondary) 13%, transparent);
+}
+
+
 /* Cards */
 .bg-card { background-color: var(--card); }
 .text-card-foreground { color: var(--card-foreground); }
@@ -221,10 +238,12 @@ body {
 
 /* Primary */
 .bg-primary { background-color: var(--primary); }
+.text-primary { color: var(--primary); }              /* <-- añadido */
 .text-primary-foreground { color: var(--primary-foreground); }
 
 /* Secondary */
 .bg-secondary { background-color: var(--secondary); }
+.text-secondary { color: var(--secondary); }          /* <-- añadido */
 .text-secondary-foreground { color: var(--secondary-foreground); }
 
 /* Muted */
