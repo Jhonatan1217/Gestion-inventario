@@ -7,6 +7,7 @@ class UsuarioRolesFuncionales {
         $this->conn = $db;
     }
 
+    //Function to assign roles to users
     public function asignarRol($id_usuario, $id_rol, $asignado_por) {
         $sql = "INSERT INTO {$this->table} (id_usuario, id_rol, asignado_por) VALUES (:u, :r, :a)";
         $stmt = $this->conn->prepare($sql);
@@ -16,6 +17,7 @@ class UsuarioRolesFuncionales {
         return $stmt->execute();
     }
 
+    //Function to list role assignments to users
     public function listarAsignaciones() {
         $sql = "SELECT * FROM {$this->table}";
         $stmt = $this->conn->prepare($sql);
@@ -23,6 +25,7 @@ class UsuarioRolesFuncionales {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    //Function to delete role assignment from user
     public function eliminarAsignacion($id_usuario_rol) {
         $sql = "DELETE FROM {$this->table} WHERE id_usuario_rol = :id";
         $stmt = $this->conn->prepare($sql);

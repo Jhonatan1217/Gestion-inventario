@@ -14,7 +14,7 @@ if (!isset($conn)) {
 }
 
 $programa = new Programa($conn);
-$accion = $_GET['accion'] ?? '';
+$accion = $_GET['accion'] ?? '';  
 
 if ($accion === '') {
     echo json_encode(['error'=>'Debe especificar acción']);
@@ -23,10 +23,12 @@ if ($accion === '') {
 
 switch ($accion) {
 
+    //List programs
     case 'listar':
         echo json_encode($programa->listar());
         break;
 
+    //Get program by id
     case 'obtener':
         $id_programa = $_GET['id_programa'] ?? null;
         if (!$id_programa) {
@@ -36,6 +38,7 @@ switch ($accion) {
         echo json_encode($programa->obtenerPorId($id_programa) ?: ['error'=>'Programa no encontrado']);
         break;
 
+    //Create program
     case 'crear':
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -63,7 +66,7 @@ switch ($accion) {
         );
         break;
 
-
+    //Update program
     case 'actualizar':
         $data = json_decode(file_get_contents("php://input"), true);
         $id = $_GET['id_programa'] ?? $data['id_programa'] ?? null;
@@ -102,6 +105,7 @@ switch ($accion) {
         );
         break;
 
+    //Delete Program
     case 'eliminar':
         $id_programa = $_GET['id_programa'] ?? null;
         if (!$id_programa) {
@@ -115,6 +119,7 @@ switch ($accion) {
         );
         break;
 
+    //Change program status
     case 'cambiar_estado':
         $data = json_decode(file_get_contents("php://input"), true);
         $id_programa = $data['id_programa'] ?? null;

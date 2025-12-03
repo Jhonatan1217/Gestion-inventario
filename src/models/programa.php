@@ -7,12 +7,14 @@ class Programa {
         $this->conn = $db;
     }
 
+    // Function to list all programs
     public function listar() {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table}");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Function to get a program by its ID
     public function obtenerPorId($id) {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -20,6 +22,7 @@ class Programa {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Function to create a new program
     public function crear($codigo, $nombre, $nivel, $descripcion, $duracion, $estado) {
         $stmt = $this->conn->prepare("
             INSERT INTO {$this->table}
@@ -35,6 +38,7 @@ class Programa {
         return $stmt->execute();
     }
 
+    // Function to update an existing program
     public function actualizar($id, $codigo, $nombre, $nivel, $descripcion, $duracion, $estado) {
         $stmt = $this->conn->prepare("
             UPDATE {$this->table}
@@ -55,13 +59,15 @@ class Programa {
         $stmt->bindParam(':estado', $estado);
         return $stmt->execute();
     }
-
+ 
+    // Function to delete a program
     public function eliminar($id) {
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-
+    
+    // Function to change the status of a program (active/inactive)
     public function cambiarEstado($id, $estado) {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET estado = :estado WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

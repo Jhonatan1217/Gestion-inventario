@@ -7,7 +7,7 @@ $pass = '';
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "conexion exitosa";
+    echo "conexion exitosa a la base de datos";
 } catch (PDOException $e) {
     header('Content-Type: application/json');
     echo json_encode([
