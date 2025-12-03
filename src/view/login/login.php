@@ -2,6 +2,70 @@
 // =====================================
 // LOGIN PAGE — VERSIÓN PHP SIN REACT
 // =====================================
+
+
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Incluye la conexión a la BD y la BASE_URL si ya la defines allí
+// Ajusta la ruta según tu proyecto
+require_once __DIR__ . '/../../../Config/database.php';
+
+// Si no tienes BASE_URL definida en otro sitio, la calculamos aquí
+if (!defined('BASE_URL')) {
+    $protocol   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $host       = $_SERVER['HTTP_HOST'];
+    $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+    define('BASE_URL', $protocol . $host . $script_dir);
+}
+
+// Si ya está logueado, mandarlo al dashboard (index.php)
+if (isset($_SESSION['usuario_id'])) {
+    header('Location: ' . BASE_URL . 'index.php');
+    exit;
+}
+
+$loginError = "";
+
+// ------------------------
+// PROCESAR LOGIN (POST)
+// ------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email    = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($email === '' || $password === '') {
+        $loginError = "Por favor ingresa tu correo y contraseña.";
+    } else {
+        try {
+            // Ajusta el nombre de tabla/campos según tu BD
+            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
+                    FROM usuarios 
+                    WHERE correo = :correo 
+                    LIMIT 1";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Asumo que guardas la contraseña con password_hash()
+            if ($user && password_verify($password, $user['password_hash'])) {
+                // Guardar datos mínimos en sesión
+                $_SESSION['usuario_id']     = $user['id_usuario'];
+                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+                $_SESSION['usuario_rol']    = $user['rol'];
+
+                header('Location: ' . BASE_URL . 'index.php');
+                exit;
+            } else {
+                $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+            }
+        } catch (PDOException $e) {
+            $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
