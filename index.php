@@ -32,59 +32,59 @@
 // }
 
 
-if (isset($_GET['accion']) && isset($_GET['modulo'])) {
+// if (isset($_GET['accion']) && isset($_GET['modulo'])) {
 
-    include_once __DIR__ . "/Config/database.php";
-    $modulo = $_GET['modulo'];
-    $accion = $_GET['accion'];
+//     include_once __DIR__ . "/Config/database.php";
+//     $modulo = $_GET['modulo'];
+//     $accion = $_GET['accion'];
 
-    switch ($modulo) {
+//     switch ($modulo) {
 
        
-        case 'movimiento':
-            include_once __DIR__ . "/src/controllers/movimiento_controller.php";
+//         case 'movimiento':
+//             include_once __DIR__ . "/src/controllers/movimiento_controller.php";
 
          
-            $controller = new MovimientoModel($conn);
+//             $controller = new MovimientoModel($conn);
 
-            switch ($accion) {
+//             switch ($accion) {
 
-                case 'listar':
-                    $controller->listar();
-                    break;
+//                 case 'listar':
+//                     $controller->listar();
+//                     break;
 
-                case 'obtener':
-                    $controller->obtener($_GET['id_movimiento'] ?? null);
-                    break;
+//                 case 'obtener':
+//                     $controller->obtener($_GET['id_movimiento'] ?? null);
+//                     break;
 
-                case 'crear':
-                    $controller->crear();
-                    break;
+//                 case 'crear':
+//                     $controller->crear();
+//                     break;
 
-                case 'actualizar':
-                    $controller->actualizar();
-                    break;
+//                 case 'actualizar':
+//                     $controller->actualizar();
+//                     break;
 
-                case 'activar':
-                    $controller->activar();
-                    break;
+//                 case 'activar':
+//                     $controller->activar();
+//                     break;
 
-                case 'inactivar':
-                    $controller->inactivar();
-                    break;
+//                 case 'inactivar':
+//                     $controller->inactivar();
+//                     break;
 
-                default:
-                    echo json_encode(['error' => 'Acción inválida en el módulo movimiento']);
-            }
-            break;
+//                 default:
+//                     echo json_encode(['error' => 'Acción inválida en el módulo movimiento']);
+//             }
+//             break;
 
        
-        default:
-            echo json_encode(['error' => 'Módulo movimiento']);
-    }
+//         default:
+//             echo json_encode(['error' => 'Módulo movimiento']);
+//     }
 
-    exit;
-}
+//     exit;
+// }
  
 
 
@@ -186,91 +186,91 @@ if (isset($_GET['accion']) && isset($_GET['modulo'])) {
 //     exit;
 // }
 
-// if (isset($_GET['accion']) && isset($_GET['modulo']) && $_GET['modulo'] === 'bodega') {
+if (isset($_GET['accion']) && isset($_GET['modulo']) && $_GET['modulo'] === 'bodega') {
 
-//     header('Content-Type: application/json; charset=utf-8');
+    header('Content-Type: application/json; charset=utf-8');
 
-//     include_once __DIR__ . "/src/controllers/bodega_controller.php";
-//     include_once __DIR__ . "/Config/database.php";
+    include_once __DIR__ . "/src/controllers/bodega_controller.php";
+    include_once __DIR__ . "/Config/database.php";
 
-//     $model = new BodegaModel($conn);
-//     $accion = $_GET['accion'] ?? '';
+    $model = new BodegaModel($conn);
+    $accion = $_GET['accion'] ?? '';
 
-//     switch ($accion) {
-//         case 'listar':
-//             echo json_encode($model->listar());
-//             break;
+    switch ($accion) {
+        case 'listar':
+            echo json_encode($model->listar());
+            break;
 
-//         case 'obtener':
-//             $id = $_GET['id_bodega'] ?? null;
-//             echo json_encode($model->obtenerPorId($id) ?: ['error'=>'Bodega no encontrada']);
-//             break;
+        case 'obtener':
+            $id = $_GET['id_bodega'] ?? null;
+            echo json_encode($model->obtenerPorId($id) ?: ['error'=>'Bodega no encontrada']);
+            break;
 
-//         case 'crear':
-//             $data = json_decode(file_get_contents("php://input"), true);
-//             if (!$data) {
-//                 echo json_encode(['error'=>'No se recibió JSON válido']);
-//                 exit;
-//             }
+        case 'crear':
+            $data = json_decode(file_get_contents("php://input"), true);
+            if (!$data) {
+                echo json_encode(['error'=>'No se recibió JSON válido']);
+                exit;
+            }
 
-//             echo json_encode(
-//                 $model->crear(
-//                     $data['codigo_bodega'],
-//                     $data['nombre'],
-//                     $data['ubicacion'],
-//                     $data['estado']
-//                 )
-//                 ? ['mensaje'=>'Bodega creada correctamente']
-//                 : ['error'=>'No se pudo crear la bodega']
-//             );
-//             break;
+            echo json_encode(
+                $model->crear(
+                    $data['codigo_bodega'],
+                    $data['nombre'],
+                    $data['ubicacion'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Bodega creada correctamente']
+                : ['error'=>'No se pudo crear la bodega']
+            );
+            break;
 
-//         case 'actualizar':
-//             $data = json_decode(file_get_contents("php://input"), true);
-//             $id = $_GET['id_bodega'] ?? $data['id_bodega'] ?? null;
+        case 'actualizar':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $_GET['id_bodega'] ?? $data['id_bodega'] ?? null;
 
-//             echo json_encode(
-//                 $model->actualizar(
-//                     $id,
-//                     $data['codigo_bodega'],
-//                     $data['nombre'],
-//                     $data['ubicacion'],
-//                     $data['estado']
-//                 )
-//                 ? ['mensaje'=>'Bodega actualizada correctamente']
-//                 : ['error'=>'No se pudo actualizar']
-//             );
-//             break;
+            echo json_encode(
+                $model->actualizar(
+                    $id,
+                    $data['codigo_bodega'],
+                    $data['nombre'],
+                    $data['ubicacion'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Bodega actualizada correctamente']
+                : ['error'=>'No se pudo actualizar']
+            );
+            break;
 
-//         case 'eliminar':
-//             $data = json_decode(file_get_contents("php://input"), true);
-//             $id = $_GET['id_bodega'] ?? $data['id_bodega'] ?? null;
+        case 'eliminar':
+            $data = json_decode(file_get_contents("php://input"), true);
+            $id = $_GET['id_bodega'] ?? $data['id_bodega'] ?? null;
 
-//             echo json_encode(
-//                 $model->eliminar($id)
-//                 ? ['mensaje'=>'Bodega eliminada correctamente']
-//                 : ['error'=>'No se pudo eliminar']
-//             );
-//             break;
+            echo json_encode(
+                $model->eliminar($id)
+                ? ['mensaje'=>'Bodega eliminada correctamente']
+                : ['error'=>'No se pudo eliminar']
+            );
+            break;
 
-//         case 'cambiar_estado':
-//             $data = json_decode(file_get_contents("php://input"), true);
-//             echo json_encode(
-//                 $model->cambiarEstado(
-//                     $data['id_bodega'],
-//                     $data['estado']
-//                 )
-//                 ? ['mensaje'=>'Estado actualizado correctamente']
-//                 : ['error'=>'No se pudo actualizar estado']
-//             );
-//             break;
+        case 'cambiar_estado':
+            $data = json_decode(file_get_contents("php://input"), true);
+            echo json_encode(
+                $model->cambiarEstado(
+                    $data['id_bodega'],
+                    $data['estado']
+                )
+                ? ['mensaje'=>'Estado actualizado correctamente']
+                : ['error'=>'No se pudo actualizar estado']
+            );
+            break;
 
-//         default:
-//             echo json_encode(['error'=>'Acción inválida']);
-//             break;
-//     }
-//     exit;
-// }
+        default:
+            echo json_encode(['error'=>'Acción inválida']);
+            break;
+    }
+    exit;
+}
 // if (isset($_GET['accion'])&& $_GET['accion'] === 'raes') {
 
 //     header('Content-Type: application/json; charset=utf-8');
