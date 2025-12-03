@@ -20,7 +20,6 @@ function colapsarEspacios($s) {
     return trim(preg_replace('/\s{2,}/u', ' ', (string)$s));
 }
 
-// Instanciar modelo
 $usuario = new Usuario($conn);
 
 $accion = $_GET['accion'] ?? null;
@@ -31,18 +30,28 @@ if (!$accion) {
 
 switch ($accion) {
 
+    //List users
     case 'listar':
         echo json_encode($usuario->listar());
         break;
 
+    //Get user by id
     case 'obtener':
-        if (!isset($_GET['id_usuario'])) {
+    $id_usuario = $_GET['id_usuario'] ?? null;
+
+        if (!$id_usuario) {
             echo json_encode(['error' => 'Debe enviar el parámetro id_usuario']);
             exit;
         }
-        echo json_encode($usuario->obtenerPorId($_GET['id_usuario']));
-        break;
 
+        $res = $usuario->obtenerPorId($id_usuario);
+
+        echo json_encode(
+            $res ? $res : ['error' => 'Usuario no encontrado']
+        );
+    break;
+
+    //Create user
     case 'crear':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -61,27 +70,23 @@ switch ($accion) {
         exit;
     }
 
-    // Normalizar nombre
     $u['nombre_completo'] = colapsarEspacios($u['nombre_completo']);
     if ($u['nombre_completo'] === '' || !validarSoloTexto($u['nombre_completo'])) {
         echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
         exit;
     }
 
-    // Validar cargo permitido por ENUM
-    $cargosValidos = ['Coordinador','Instructor','Pasante'];
+    $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
     if (!in_array($u['cargo'], $cargosValidos, true)) {
         echo json_encode(['error' => 'Cargo no válido']);
         exit;
     }
 
-    // Verificar UNIQUE correo
     if ($usuario->obtenerPorCorreo($u['correo'])) {
         echo json_encode(['error' => 'El correo ya está registrado']);
         exit;
     }
 
-    // Llamado correcto al modelo (enviando parámetros individuales)
     $usuario->crear(
         $u['nombre_completo'],
         $u['tipo_documento'],
@@ -95,7 +100,7 @@ switch ($accion) {
     echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
 
-
+    //Update user
     case 'actualizar':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -113,21 +118,16 @@ switch ($accion) {
         exit;
     }
 
-    // Normalizar y validar nombre
     $nombre = colapsarEspacios($nombre);
     if ($nombre === '' || !validarSoloTexto($nombre)) {
         echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
         exit;
     }
-
-    // Validar cargo por ENUM
     $cargosValidos = ['Coordinador','Instructor','Pasante'];
     if (!in_array($cargo, $cargosValidos, true)) {
         echo json_encode(['error' => 'Cargo no válido']);
         exit;
     }
-
-    // Si el correo cambió, verificar que no exista en otro usuario
     $usuarioActual = $usuario->obtenerPorId($id_usuario);
     if (!$usuarioActual) {
         echo json_encode(['error' => 'Usuario no encontrado']);
@@ -139,7 +139,6 @@ switch ($accion) {
         exit;
     }
 
-    // Llamado correcto al modelo
     echo json_encode(
         $usuario->actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion)
             ? ['mensaje' => 'Usuario actualizado correctamente']
@@ -147,6 +146,7 @@ switch ($accion) {
     );
     break;
 
+    //Delete user
     case 'eliminar':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -156,14 +156,11 @@ switch ($accion) {
         echo json_encode(['error' => 'Debe enviar el parámetro id_usuario']);
         exit;
     }
-
-    // Verificar que el usuario exista antes de eliminar
     if (!$usuario->obtenerPorId($id_usuario)) {
         echo json_encode(['error' => 'Usuario no encontrado']);
         exit;
     }
 
-    // Llamar al modelo para eliminar
     echo json_encode(
         $usuario->eliminar($id_usuario)
             ? ['mensaje' => 'Usuario eliminado correctamente']
@@ -171,6 +168,7 @@ switch ($accion) {
     );
     break;
 
+    //Change user status
     case 'cambiar_estado':
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -198,7 +196,6 @@ switch ($accion) {
             : ['error' => 'No se pudo actualizar el estado']
     );
     break;
-
 
     default:
         echo json_encode(['error' => 'Acción no válida']);
