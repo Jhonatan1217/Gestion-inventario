@@ -1,127 +1,155 @@
 <?php
-// MovimientoModel: Handles CRUD operations for the "movimientos_material" table.
-class MovimientoModel {
-    private $conn; // PDO connection
 
+require_once __DIR__ . "/../models/movimiento.php";
+require_once __DIR__ . "/../../Config/database.php";
+
+class MovimientoController {
+
+    private $model;
+
+    // Constructor: receives the PDO connection and creates the model instance.
+    // Also sets the response header to JSON format.
+   
     public function __construct(PDO $conn) {
-        $this->conn = $conn;
+        $this->model = new MovimientoModel($conn);
+        header("Content-Type: application/json; charset=utf-8");
     }
 
-    // List all movements (newest first)
+    /* List all movements */
     public function listar() {
-        try {
-            $sql = "SELECT * FROM movimientos_material ORDER BY fecha_hora DESC";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return ['error' => $e->getMessage()];
-        }
+        // Get the result object from the model
+        $result = $this->model->listarMovimientos();
+
+        // Fetch all rows as associative array
+        $data = $result->fetchAll(PDO::FETCH_ASSOC);
+
+        // Return JSON response with all movements
+        echo json_encode($data);
     }
 
-    // Get movement by ID
-    public function obtenerPorId($id) {
-        try {
-            $sql = "SELECT * FROM movimientos_material WHERE id_movimiento = :id";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return ['error' => $e->getMessage()];
+    /* Get movement by ID */
+    public function obtener() {
+        // Get the ID from the query string
+        $id = $_GET["id"] ?? null;
+
+        // Validate that ID was provided
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
         }
+
+        // Query the model for the specific movement
+        $data = $this->model->obtenerMovimiento($id);
+
+        // Return the movement data or error if not found
+        echo json_encode($data ?: ["error" => "Movimiento no encontrado"]);
     }
 
-    // Create a new movement
-    public function crear($tipo_movimiento, $fecha_hora, $id_usuario, $id_material,
-                         $id_bodega, $id_subbodega, $cantidad, $id_programa,
-                         $id_ficha, $id_rae, $observaciones, $id_solicitud) {
-        try {
-            $sql = "INSERT INTO movimientos_material 
-                    (tipo_movimiento, fecha_hora, id_usuario, id_material, id_bodega,
-                     id_subbodega, cantidad, id_programa, id_ficha, id_rae,
-                     observaciones, id_solicitud)
-                    VALUES
-                    (:tipo, :fecha, :usuario, :material, :bodega, :subbodega,
-                     :cantidad, :programa, :ficha, :rae, :obs, :solicitud)";
-            
-            $stmt = $this->conn->prepare($sql);
+    /* Create new movement */
+    public function crear() {
+        // Decode the JSON input from the request body
+        $input = json_decode(file_get_contents("php://input"), true);
 
-            // Bind params
-            $stmt->bindParam(':tipo', $tipo_movimiento);
-            $stmt->bindParam(':fecha', $fecha_hora);
-            $stmt->bindParam(':usuario', $id_usuario, PDO::PARAM_INT);
-            $stmt->bindParam(':material', $id_material, PDO::PARAM_INT);
-            $stmt->bindParam(':bodega', $id_bodega, PDO::PARAM_INT);
-            $stmt->bindParam(':subbodega', $id_subbodega, PDO::PARAM_INT);
-            $stmt->bindParam(':cantidad', $cantidad, PDO::PARAM_INT);
-            $stmt->bindParam(':programa', $id_programa, PDO::PARAM_INT);
-            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
-            $stmt->bindParam(':rae', $id_rae, PDO::PARAM_INT);
-            $stmt->bindParam(':obs', $observaciones);
-            $stmt->bindParam(':solicitud', $id_solicitud, PDO::PARAM_INT);
-
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error creating movement: " . $e->getMessage());
-            return false;
+        // Validate that valid JSON was received
+        if (!$input) {
+            echo json_encode(["error" => "Datos inválidos"]);
+            return;
         }
+
+        // Create the movement in the database
+        $ok = $this->model->crearMovimiento($input);
+
+        // Return success or error response
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Movimiento creado correctamente" : "Error al crear movimiento"
+        ]);
     }
 
-    // Update movement by ID
-    public function actualizar($id, $tipo_movimiento, $fecha_hora, $id_usuario, $id_material,
-                              $id_bodega, $id_subbodega, $cantidad, $id_programa,
-                              $id_ficha, $id_rae, $observaciones, $id_solicitud) {
-        try {
-            $sql = "UPDATE movimientos_material SET
-                    tipo_movimiento = :tipo,
-                    fecha_hora = :fecha,
-                    id_usuario = :usuario,
-                    id_material = :material,
-                    id_bodega = :bodega,
-                    id_subbodega = :subbodega,
-                    cantidad = :cantidad,
-                    id_programa = :programa,
-                    id_ficha = :ficha,
-                    id_rae = :rae,
-                    observaciones = :obs,
-                    id_solicitud = :solicitud
-                    WHERE id_movimiento = :id";
+    /* Update existing movement */
+    public function actualizar() {
+        // Decode the JSON input from the request body
+        $input = json_decode(file_get_contents("php://input"), true);
 
-            $stmt = $this->conn->prepare($sql);
-
-            // Bind params
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':tipo', $tipo_movimiento);
-            $stmt->bindParam(':fecha', $fecha_hora);
-            $stmt->bindParam(':usuario', $id_usuario, PDO::PARAM_INT);
-            $stmt->bindParam(':material', $id_material, PDO::PARAM_INT);
-            $stmt->bindParam(':bodega', $id_bodega, PDO::PARAM_INT);
-            $stmt->bindParam(':subbodega', $id_subbodega, PDO::PARAM_INT);
-            $stmt->bindParam(':cantidad', $cantidad, PDO::PARAM_INT);
-            $stmt->bindParam(':programa', $id_programa, PDO::PARAM_INT);
-            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
-            $stmt->bindParam(':rae', $id_rae, PDO::PARAM_INT);
-            $stmt->bindParam(':obs', $observaciones);
-            $stmt->bindParam(':solicitud', $id_solicitud, PDO::PARAM_INT);
-
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error updating movement: " . $e->getMessage());
-            return false;
+        // Validate that the movement ID is present in the input
+        if (!isset($input["id_movimiento"])) {
+            echo json_encode(["error" => "id_movimiento requerido"]);
+            return;
         }
+
+        // Extract the ID from the input data
+        $id = $input["id_movimiento"];
+
+        // Update the movement in the database
+        $ok = $this->model->actualizarMovimiento($id, $input);
+
+        // Return success or error response
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Movimiento actualizado correctamente" : "Error al actualizar movimiento"
+        ]);
     }
 
-    // Delete movement by ID
-    public function eliminar($id) {
-        try {
-            $sql = "DELETE FROM movimientos_material WHERE id_movimiento = :id";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error deleting movement: " . $e->getMessage());
-            return false;
+    /* Delete movement */
+    public function eliminar() {
+        // Get the movement ID from the query string
+        $id = $_GET["id_movimiento"] ?? null;
+
+        // Validate that ID was provided
+        if (!$id) {
+            echo json_encode(["error" => "id_movimiento requerido"]);
+            return;
         }
+
+        // Delete the movement from the database
+        $ok = $this->model->eliminarMovimiento($id);
+
+        // Return success or error response
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Movimiento eliminado" : "Error al eliminar movimiento"
+        ]);
     }
+}
+
+/* Router - Routes requests to controller methods */
+
+// Get the action from the query string
+$accion = $_GET["accion"] ?? null;
+
+// Validate that an action was specified
+if (!$accion) {
+    echo json_encode(["error" => "Acción requerida"]);
+    exit;
+}
+
+// Create controller instance with database connection
+$controller = new MovimientoController($conn);
+
+// Route the request to the appropriate controller method
+switch ($accion) {
+
+    case "listar":
+        $controller->listar();
+        break;
+
+    case "obtener":
+        $controller->obtener();
+        break;
+
+    case "crear":
+        $controller->crear();
+        break;
+
+    case "actualizar":
+        $controller->actualizar();
+        break;
+
+    case "eliminar":
+        $controller->eliminar();
+        break;
+
+    default:
+        // Invalid action requested
+        echo json_encode(["error" => "Acción no válida"]);
 }

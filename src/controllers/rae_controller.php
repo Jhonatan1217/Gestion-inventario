@@ -1,114 +1,156 @@
 <?php
 
-// Include the RAE model
+header("Content-Type: application/json; charset=utf-8");
+
+require_once __DIR__ . "/../../Config/database.php";
 require_once __DIR__ . "/../models/rae.php";
 
-// Controller class for RAE operations
-class rae_controller {
+class RaeController {
 
-    private $model; // Instance of the RAE model
+    private $model;
 
-    // Constructor: initialize the model and set JSON header
-    public function __construct($conn) {
-        $this->model = new rae_model($conn);
-        header("Content-Type: application/json"); // Always return JSON
+    // Constructor: receives the PDO connection and creates the model instance
+    public function __construct(PDO $conn) {
+        $this->model = new RaeModel($conn);
     }
 
-    /* ==========================
-       LIST ALL RAE ENTRIES
-    ========================== */
+    /* List all RAEs */
     public function listar() {
-        $data = $this->model->listar(); // Call the model's listar method
-        echo json_encode($data); // Return data as JSON
+        // Get all RAEs from the model and return as JSON
+        echo json_encode($this->model->listar());
     }
 
-    /* ==========================
-       GET RAE BY ID
-    ========================== */
+    /* Get RAE by ID */
     public function obtener($id) {
+        // Validate that ID was provided
         if (!$id) {
-            echo json_encode(['error' => 'ID requerido']); // Error if ID is missing
+            echo json_encode(['error' => 'id_rae requerido']);
             return;
         }
-        $data = $this->model->obtener($id); // Get data from model
-        echo json_encode($data ?: ['error' => 'RAE no encontrada']); // Return data or error
+
+        // Query the model for the specific RAE
+        $data = $this->model->obtener($id);
+        
+        // Return the RAE data or error if not found
+        echo json_encode($data ?: ['error' => 'RAE no encontrada']);
     }
 
-    /* ==========================
-       CREATE NEW RAE
-    ========================== */
+    /* Create new RAE */
     public function crear() {
-        $input = json_decode(file_get_contents('php://input'), true); // Read JSON input
+        // Decode the JSON input from the request body
+        $input = json_decode(file_get_contents("php://input"), true);
 
+        // Validate that valid JSON was received
         if (!$input) {
-            echo json_encode(['error' => 'Datos inválidos']); // Error if input is invalid
+            echo json_encode(['error' => 'Datos inválidos']);
             return;
         }
 
-        $ok = $this->model->crear($input); // Call model create method
+        // Create the RAE in the database
+        $ok = $this->model->crear($input);
 
-        // Return success message
+        // Return success or error response
         echo json_encode([
             'success' => $ok,
-            'message' => $ok ? 'RAE creada correctamente' : 'Error al crear RAE'
+            'message' => $ok ? "RAE creada correctamente" : "Error al crear RAE"
         ]);
     }
 
-    /* ==========================
-       UPDATE EXISTING RAE
-    ========================== */
+    /* Update existing RAE */
     public function actualizar() {
-        $input = json_decode(file_get_contents('php://input'), true); // Read JSON input
+        // Decode the JSON input from the request body
+        $input = json_decode(file_get_contents("php://input"), true);
 
+        // Validate that the RAE ID is present in the input
         if (!isset($input['id_rae'])) {
-            echo json_encode(['error' => 'id_rae requerido']); // ID is required
+            echo json_encode(['error' => 'id_rae requerido']);
             return;
         }
 
-        $ok = $this->model->actualizar($input); // Call model update method
+        // Update the RAE in the database
+        $ok = $this->model->actualizar($input);
 
-        // Return success message
+        // Return success or error response
         echo json_encode([
             'success' => $ok,
-            'message' => $ok ? 'RAE actualizada correctamente' : 'Error al actualizar RAE'
+            'message' => $ok ? "RAE actualizada correctamente" : "Error al actualizar RAE"
         ]);
     }
 
-    /* ==========================
-       ACTIVATE RAE
-    ========================== */
-    public function activar() {
-        $id = $_GET['id_rae'] ?? null; // Get ID from query string
-
+    /* Activate RAE */
+    public function activar($id) {
+        // Validate that ID was provided
         if (!$id) {
-            echo json_encode(['error' => 'id_rae requerido']); // ID required
+            echo json_encode(['error' => 'id_rae requerido']);
             return;
         }
 
-        $ok = $this->model->activar($id); // Call model activate method
+        // Change RAE status to active
+        $ok = $this->model->activar($id);
 
+        // Return success or error response
         echo json_encode([
             'success' => $ok,
-            'message' => $ok ? 'RAE activada' : 'Error al activar RAE'
+            'message' => $ok ? "RAE activada" : "Error al activar RAE"
         ]);
     }
 
-    /* ==========================
-       DEACTIVATE RAE
-    ========================== */
-    public function inactivar() {
-        $id = $_GET['id_rae'] ?? null; // Get ID from query string
-
+    /* Deactivate RAE */
+    public function inactivar($id) {
+        // Validate that ID was provided
         if (!$id) {
-            echo json_encode(['error' => 'id_rae requerido']); // ID required
+            echo json_encode(['error' => 'id_rae requerido']);
             return;
         }
 
-        $ok = $this->model->inactivar($id); // Call model deactivate method
+        // Change RAE status to inactive
+        $ok = $this->model->inactivar($id);
 
+        // Return success or error response
         echo json_encode([
             'success' => $ok,
-            'message' => $ok ? 'RAE inactivada' : 'Error al inactivar RAE'
+            'message' => $ok ? "RAE inactivada" : "Error al inactivar RAE"
         ]);
     }
+}
+
+/* Router - Routes requests to controller methods */
+
+// Get the action and ID from query string
+$accion = $_GET['accion'] ?? null;
+$id = $_GET['id_rae'] ?? null;
+
+// Create controller instance with database connection
+$controller = new RaeController($conn);
+
+// Route the request to the appropriate controller method
+switch ($accion) {
+
+    case "listar":
+        $controller->listar();
+        break;
+
+    case "obtener":
+        $controller->obtener($id);
+        break;
+
+    case "crear":
+        $controller->crear();
+        break;
+
+    case "actualizar":
+        $controller->actualizar();
+        break;
+
+    case "activar":
+        $controller->activar($id);
+        break;
+
+    case "inactivar":
+        $controller->inactivar($id);
+        break;
+
+    default:
+        // Invalid action requested
+        echo json_encode(["error" => "Acción no válida"]);
 }
