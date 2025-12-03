@@ -7,7 +7,7 @@ class Usuario {
         $this->conn = $db;
     }
 
-    // Funcion para listar todos los usuarios
+    //Function to list all users
     public function listar() {
         $sql = "SELECT * FROM " . $this->table;
         $stmt = $this->conn->prepare($sql);
@@ -15,17 +15,17 @@ class Usuario {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Función para obtener un usuario por su ID
-public function obtenerPorId($id) {
-    $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindParam(':id_usuario', $id);
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+    // Function to get a user by their ID
+    public function obtenerPorId($id) {
+        $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id_usuario', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
 
-    // Funcion para obtener un usuario por correo (para validar unicidad o login después)
+    // Function to get a user by their email (for uniqueness validation or login later)
     public function obtenerPorCorreo($correo) {
         $sql = "SELECT * FROM " . $this->table . " WHERE correo = :correo";
         $stmt = $this->conn->prepare($sql);
@@ -34,7 +34,7 @@ public function obtenerPorId($id) {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para crear un nuevo usuario
+    // Function to create a new user
     public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion) {
         $sql = "INSERT INTO usuarios (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, direccion, estado)
                 VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :direccion, 'activo')";
@@ -50,7 +50,7 @@ public function obtenerPorId($id) {
     return $stmt->execute();
 }
 
-    // Funcion para actualizar un usuario existente
+    // Function to update an existing user
     public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion) {
     $sql = "UPDATE usuarios SET 
                 nombre_completo = :nombre,
@@ -76,7 +76,7 @@ public function obtenerPorId($id) {
     return $stmt->execute();
 }
 
-    // Funcion para eliminar un usuario
+    // Function to delete a user
     public function eliminar($id) {
         $sql = "DELETE FROM " . $this->table . " WHERE id_usuario = :id";
         $stmt = $this->conn->prepare($sql);
@@ -84,8 +84,7 @@ public function obtenerPorId($id) {
         $stmt->execute();
     }
 
-    // Funcion para cambiar el estado de un usuario (activo/inactivo)
-
+    // Function to change the status of a user (active/inactive)
     public function cambiarEstado($id_usuario, $estado) {
         $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);

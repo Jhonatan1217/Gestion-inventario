@@ -7,14 +7,14 @@ class Programa {
         $this->conn = $db;
     }
 
-    // Funcion para listar todos los programas
+    // Function to list all programs
     public function listar() {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table}");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para obtener un programa por su ID
+    // Function to get a program by its ID
     public function obtenerPorId($id) {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -22,7 +22,7 @@ class Programa {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para crear un nuevo programa
+    // Function to create a new program
     public function crear($codigo, $nombre, $nivel, $descripcion, $duracion, $estado) {
         $stmt = $this->conn->prepare("
             INSERT INTO {$this->table}
@@ -38,7 +38,7 @@ class Programa {
         return $stmt->execute();
     }
 
-    // Funcion para actualizar un programa existente
+    // Function to update an existing program
     public function actualizar($id, $codigo, $nombre, $nivel, $descripcion, $duracion, $estado) {
         $stmt = $this->conn->prepare("
             UPDATE {$this->table}
@@ -60,14 +60,14 @@ class Programa {
         return $stmt->execute();
     }
  
-    // Funcion para eliminar un programa
+    // Function to delete a program
     public function eliminar($id) {
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
     
-    // Funcion para cambiar el estado de un programa (activo/inactivo)
+    // Function to change the status of a program (active/inactive)
     public function cambiarEstado($id, $estado) {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET estado = :estado WHERE id_programa = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
