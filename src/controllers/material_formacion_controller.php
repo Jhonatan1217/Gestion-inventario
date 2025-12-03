@@ -106,7 +106,7 @@ class MaterialFormacionController {
 $controller = new MaterialFormacionController($conn);
 
 // read action
-$action = $_GET['action'] ?? null;
+$accion = $_GET['accion'] ?? null;
 
 // simple JSON response function
 function sendJSON($data, $code = 200)
@@ -117,7 +117,7 @@ function sendJSON($data, $code = 200)
     exit;
 }
 
-switch ($action) {
+switch ($accion) {
 
     case "listar":
         sendJSON($controller->listar());
@@ -151,7 +151,7 @@ switch ($action) {
         break;
 
     default:
-        sendJSON(["status" => "error", "message" => "Unknown action"]);
+        sendJSON(["status" => "error", "message" => "Acción no reconocida"]);
         break;
 }
 
