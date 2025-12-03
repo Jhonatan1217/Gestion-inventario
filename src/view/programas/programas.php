@@ -122,10 +122,10 @@ $programas = [
     <link rel="stylesheet" href="../../assets/css/global.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-background text-foreground">
+<body class="bg-background text-foreground min-h-screen flex flex-col">
     
     <!-- CONTENIDO PRINCIPAL - Sin header ni sidebar (componentes separados) -->
-    <main class="p-8">
+    <main class="flex-1 p-8">
         <!-- Título de la página -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
@@ -170,7 +170,7 @@ $programas = [
                     </button>
                     
                     <!-- Botón nuevo programa -->
-                    <button class="bg-primary hover:bg-secondary text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium">
+                    <button onclick="openCreateModal()" id="btnNewProgram" class="bg-primary hover:bg-secondary text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium">
                         <i class="fas fa-plus"></i>
                         Nuevo Programa
                     </button>
@@ -208,11 +208,20 @@ $programas = [
                     <!-- Filas de datos -->
                     <tbody>
                         <?php foreach ($programas as $index => $programa): ?>
-                        <tr class="border-b border-border hover:bg-muted transition-colors">
-                            
+                        <tr 
+                            class="border-b border-border hover:bg-muted transition-colors"
+                            data-index="<?php echo $index; ?>"
+                            data-codigo="<?php echo htmlspecialchars($programa['codigo']); ?>"
+                            data-nombre="<?php echo htmlspecialchars($programa['nombre']); ?>"
+                            data-descripcion="<?php echo htmlspecialchars($programa['descripcion']); ?>"
+                            data-nivel="<?php echo htmlspecialchars($programa['nivel']); ?>"
+                            data-duracion="<?php echo htmlspecialchars($programa['duracion']); ?>"
+                            data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
+                            data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
+                        >
                             <!-- Código del programa -->
                             <td class="py-4 px-4 text-sm font-medium text-foreground">
-                                <?php echo $programa['codigo']; ?>
+                                <span class="js-code"><?php echo $programa['codigo']; ?></span>
                             </td>
                             
                             <!-- Información del programa con ícono -->
@@ -223,14 +232,15 @@ $programas = [
                                         <i class="fas fa-graduation-cap text-primary text-sm"></i>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-medium text-foreground"><?php echo $programa['nombre']; ?></div>
-                                        <div class="text-xs text-muted-foreground"><?php echo $programa['descripcion']; ?></div>
+                                        <div class="text-sm font-medium text-foreground js-name"><?php echo $programa['nombre']; ?></div>
+                                        <div class="text-xs text-muted-foreground js-descripcion"><?php echo $programa['descripcion']; ?></div>
                                     </div>
                                 </div>
                             </td>
                             
                             <!-- Badge de nivel (Técnico/Tecnólogo) -->
                             <td class="py-4 px-4">
+                                <span class="js-nivel">
                                 <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
                                         <?php echo $programa['nivel']; ?>
@@ -240,13 +250,14 @@ $programas = [
                                         <?php echo $programa['nivel']; ?>
                                     </span>
                                 <?php endif; ?>
+                                </span>
                             </td>
                             
                             <!-- Duración con ícono de reloj -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="far fa-clock"></i>
-                                    <?php echo $programa['duracion']; ?>
+                                    <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
                                 </div>
                             </td>
                             
@@ -254,12 +265,13 @@ $programas = [
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="fas fa-users"></i>
-                                    <?php echo $programa['instructores']; ?>
+                                    <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
                                 </div>
                             </td>
                             
                             <!-- Badge de estado (Activo/Inactivo) -->
                             <td class="py-4 px-4">
+                                <span class="js-estado">
                                 <?php if (strtolower($programa['estado']) === 'activo'): ?>
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">
                                         <?php echo $programa['estado']; ?>
@@ -269,30 +281,23 @@ $programas = [
                                         <?php echo $programa['estado']; ?>
                                     </span>
                                 <?php endif; ?>
+                                </span>
                             </td>
                             
                             <!-- Menú de acciones -->
                             <td class="py-4 px-4">
                                 <div class="relative">
-                                    <button 
-                                        onclick="toggleActionMenu(<?php echo $index; ?>)" 
-                                        class="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded"
-                                    >
+                                    <button onclick="toggleActionMenu(<?php echo $index; ?>)" class="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded">
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
-                                    
-                                    <!-- Menú desplegable -->
-                                    <div 
-                                        id="actionMenu<?php echo $index; ?>" 
-                                        class="hidden absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border z-50"
-                                    >
-                                        <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-t-lg transition-colors">
-                                            <i class="far fa-eye text-muted-foreground"></i>
-                                            Ver detalles
-                                        </button>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground transition-colors">
+                                    <div id="actionMenu<?php echo $index; ?>" class="hidden absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border z-50">
+                                        <button onclick="openEditModal(<?php echo $index; ?>)" class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-t-lg transition-colors">
                                             <i class="far fa-edit text-muted-foreground"></i>
                                             Editar
+                                        </button>
+                                        <button onclick="openViewModal(<?php echo $index; ?>)" class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground transition-colors">
+                                            <i class="far fa-eye text-muted-foreground"></i>
+                                            Ver detalles
                                         </button>
                                         <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-b-lg transition-colors">
                                             <i class="fas fa-ban text-muted-foreground"></i>
@@ -312,7 +317,17 @@ $programas = [
                 <?php foreach ($programas as $index => $programa): ?>
                 
                 <!-- Tarjeta individual del programa -->
-                <div class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1">
+                <div 
+                    class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
+                    data-index="<?php echo $index; ?>"
+                    data-codigo="<?php echo htmlspecialchars($programa['codigo']); ?>"
+                    data-nombre="<?php echo htmlspecialchars($programa['nombre']); ?>"
+                    data-descripcion="<?php echo htmlspecialchars($programa['descripcion']); ?>"
+                    data-nivel="<?php echo htmlspecialchars($programa['nivel']); ?>"
+                    data-duracion="<?php echo htmlspecialchars($programa['duracion']); ?>"
+                    data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
+                    data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
+                >
                     
                     <!-- Header de la tarjeta -->
                     <div class="flex items-start justify-between mb-4">
@@ -322,43 +337,22 @@ $programas = [
                                 <i class="fas fa-graduation-cap text-primary text-lg"></i>
                             </div>
                             <div>
-                                <h3 class="font-semibold text-foreground"><?php echo $programa['nombre']; ?></h3>
-                                <p class="text-xs text-muted-foreground"><?php echo $programa['codigo']; ?></p>
+                                <h3 class="font-semibold text-foreground js-name"><?php echo $programa['nombre']; ?></h3>
+                                <p class="text-xs text-muted-foreground js-code"><?php echo $programa['codigo']; ?></p>
                             </div>
                         </div>
                         
-                        <!-- Botón de menú en la tarjeta -->
-                        <div class="relative">
-                            <button 
-                                onclick="toggleActionMenu('grid<?php echo $index; ?>')" 
-                                class="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded transition-colors"
-                            >
-                                <i class="fas fa-ellipsis-h"></i>
+                        <!-- Botón de editar directo (modo tarjetas) -->
+                        <div>
+                            <button onclick="openEditModal(<?php echo $index; ?>)" title="Editar" class="text-muted-foreground hover:text-foreground p-2 bg-muted hover:bg-muted rounded-lg transition-colors flex items-center gap-2">
+                                <i class="far fa-edit"></i>
+                                <span class="sr-only">Editar</span>
                             </button>
-                            
-                            <!-- Menú desplegable de la tarjeta -->
-                            <div 
-                                id="actionMenugrid<?php echo $index; ?>" 
-                                class="hidden absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border z-50"
-                            >
-                                <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-t-lg transition-colors">
-                                    <i class="far fa-eye text-muted-foreground"></i>
-                                    Ver detalles
-                                </button>
-                                <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground transition-colors">
-                                    <i class="far fa-edit text-muted-foreground"></i>
-                                    Editar
-                                </button>
-                                <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-b-lg transition-colors">
-                                    <i class="fas fa-ban text-muted-foreground"></i>
-                                    Deshabilitar
-                                </button>
-                            </div>
                         </div>
                     </div>
 
                     <!-- Descripción del programa -->
-                    <p class="text-sm text-muted-foreground mb-4"><?php echo $programa['descripcion']; ?></p>
+                    <p class="text-sm text-muted-foreground mb-4 js-descripcion"><?php echo $programa['descripcion']; ?></p>
 
                     <!-- Información adicional -->
                     <div class="space-y-2 mb-4">
@@ -368,6 +362,7 @@ $programas = [
                         </div>
                         <div class="flex items-center justify-between">
                             <!-- Badge de nivel -->
+                            <span class="js-nivel">
                             <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
                                     <?php echo $programa['nivel']; ?>
@@ -377,11 +372,12 @@ $programas = [
                                     <?php echo $programa['nivel']; ?>
                                 </span>
                             <?php endif; ?>
+                            </span>
                             
                             <!-- Duración -->
                             <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                 <i class="far fa-clock"></i>
-                                <?php echo $programa['duracion']; ?>
+                                <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
                             </div>
                         </div>
                         
@@ -390,13 +386,14 @@ $programas = [
                             <span class="text-xs text-muted-foreground">Instructor/es</span>
                             <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                 <i class="fas fa-users"></i>
-                                <?php echo $programa['instructores']; ?>
+                                <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Badge de estado y toggle -->
                     <div class="flex items-center justify-between pt-4 border-t border-border">
+                        <span class="js-estado">
                         <?php if (strtolower($programa['estado']) === 'activo'): ?>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">
                                 <?php echo $programa['estado']; ?>
@@ -406,6 +403,7 @@ $programas = [
                                 <?php echo $programa['estado']; ?>
                             </span>
                         <?php endif; ?>
+                        </span>
                         
                         <!-- Toggle switch -->
                         <label class="relative inline-flex items-center cursor-pointer">
@@ -421,6 +419,158 @@ $programas = [
                 <?php endforeach; ?>
             </div>
         </div>
+
+        <!-- Modal de edición de programa -->
+        <div id="editProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+            <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
+            <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Editar Programa</h3>
+                    <button onclick="closeEditModal()" class="text-muted-foreground hover:text-foreground"><i class="fas fa-times"></i></button>
+                </div>
+                <form id="editProgramForm" class="space-y-3">
+                    <input type="hidden" id="edit_index">
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Código *</label>
+                        <input id="edit_codigo" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
+                        <select id="edit_nivel" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                            <option>Técnico</option>
+                            <option>Tecnólogo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Nombre del programa *</label>
+                        <input id="edit_nombre" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Descripción *</label>
+                        <textarea id="edit_descripcion" rows="3" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
+                            <input id="edit_duracion" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-muted-foreground mb-1">Instructores</label>
+                            <input id="edit_instructores" type="number" min="0" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Estado</label>
+                        <select id="edit_estado" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                            <option>Activo</option>
+                            <option>Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 mt-4">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Modal de ver detalles -->
+        <div id="viewProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+            <div class="absolute inset-0 bg-black/40" onclick="closeViewModal()"></div>
+            <div class="relative max-w-md w-full bg-card rounded-lg shadow-lg border border-border p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold" id="view_title">Detalles del Programa</h3>
+                        <p class="text-xs text-muted-foreground">Modifica la información del programa</p>
+                    </div>
+                    <button onclick="closeViewModal()" class="text-muted-foreground hover:text-foreground"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 bg-[#e6f7ea] rounded-full flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-primary text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-foreground" id="view_name">Nombre Programa</div>
+                        <div class="text-xs text-muted-foreground" id="view_code">COD-000</div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-muted-foreground mb-4" id="view_description">Descripción del programa</p>
+
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-muted-foreground">Nivel:</span>
+                        <span id="view_nivel" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">Técnico</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-muted-foreground">Duración:</span>
+                        <span id="view_duracion" class="text-sm font-medium text-foreground">0 meses</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-muted-foreground">Instructor:</span>
+                        <span id="view_instructor" class="text-sm font-medium text-foreground">Juan Guillermo Crespo</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-muted-foreground">Estado:</span>
+                        <span id="view_estado" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">Activo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Crear Nuevo Programa (UI only) -->
+        <div id="createProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+            <div class="absolute inset-0 bg-black/40" onclick="closeCreateModal()"></div>
+            <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold">Crear Nuevo Programa</h3>
+                        <p class="text-xs text-muted-foreground">Complete los datos para registrar un nuevo programa de formación</p>
+                    </div>
+                    <button onclick="closeCreateModal()" class="text-muted-foreground hover:text-foreground"><i class="fas fa-times"></i></button>
+                </div>
+
+                <form id="createProgramForm" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-muted-foreground mb-1">Código *</label>
+                            <input id="create_codigo" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="TEC-001">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
+                            <select id="create_nivel" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                                <option>Técnico</option>
+                                <option>Tecnólogo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Nombre del programa *</label>
+                        <input id="create_nombre" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="Técnico en Construcción">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Descripción *</label>
+                        <textarea id="create_descripcion" rows="4" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="Formación técnica de procesos constructivos"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
+                        <input id="create_duracion" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="18 meses">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 mt-4">
+                        <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Crear Programa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+                <?php
+            include_once __DIR__ . '/../../includes/footer.php';
+        ?>
     </main>
     <script src="../../assets/js/programas.js"></script>
 </body>

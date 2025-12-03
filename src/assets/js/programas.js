@@ -54,3 +54,107 @@ document.addEventListener('click', function(event) {
         closeAllMenus();
     }
 });
+
+// Abrir modal de edición y prellenar datos
+function openEditModal(index) {
+    // Cerrar menús abiertos
+    closeAllMenus();
+    const modal = document.getElementById('editProgramModal');
+    const el = document.querySelector(`[data-index="${index}"]`);
+    if (!el) return;
+
+    // Leer datos del elemento (dataset)
+    const data = el.dataset;
+
+    document.getElementById('edit_index').value = index;
+    document.getElementById('edit_codigo').value = data.codigo || '';
+    document.getElementById('edit_nivel').value = data.nivel || '';
+    document.getElementById('edit_nombre').value = data.nombre || '';
+    document.getElementById('edit_descripcion').value = data.descripcion || '';
+    document.getElementById('edit_duracion').value = data.duracion || '';
+    document.getElementById('edit_instructores').value = data.instructores || '';
+    document.getElementById('edit_estado').value = data.estado || '';
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('edit_codigo').focus();
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editProgramModal');
+    if (!modal) return;
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+// Abrir modal de ver detalles
+function openViewModal(index) {
+    closeAllMenus();
+    const modal = document.getElementById('viewProgramModal');
+    const el = document.querySelector(`[data-index="${index}"]`);
+    if (!el || !modal) return;
+
+    const data = el.dataset;
+    document.getElementById('view_name').textContent = data.nombre || '';
+    document.getElementById('view_code').textContent = data.codigo || '';
+    document.getElementById('view_description').textContent = data.descripcion || '';
+    document.getElementById('view_nivel').textContent = data.nivel || '';
+    document.getElementById('view_duracion').textContent = data.duracion || '';
+    // instructor fijo por ahora
+    document.getElementById('view_instructor').textContent = 'Juan Guillermo Crespo';
+    document.getElementById('view_estado').textContent = data.estado || '';
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeViewModal() {
+    const modal = document.getElementById('viewProgramModal');
+    if (!modal) return;
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+// Manejador mínimo de submit: deshabilitado por ahora (solo evita envío)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editProgramForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Guardado deshabilitado — los inputs están listos para cuando implementemos la funcionalidad.
+        console.log('Guardado deshabilitado: funcionalidad pendiente.');
+        // Opcionalmente cerrar modal para flujo de UI, sin aplicar cambios.
+        closeEditModal();
+    });
+});
+
+// Funciones para abrir/cerrar modal Crear Programa (UI only)
+function openCreateModal() {
+    closeAllMenus();
+    const modal = document.getElementById('createProgramModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    // focus en primer input
+    const input = document.getElementById('create_codigo');
+    if (input) input.focus();
+}
+
+function closeCreateModal() {
+    const modal = document.getElementById('createProgramModal');
+    if (!modal) return;
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+// Manejador mínimo del formulario Crear (previene envío)
+document.addEventListener('DOMContentLoaded', function() {
+    const createForm = document.getElementById('createProgramForm');
+    if (!createForm) return;
+    createForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Crear programa: guardado deshabilitado (UI only)');
+        closeCreateModal();
+    });
+});
