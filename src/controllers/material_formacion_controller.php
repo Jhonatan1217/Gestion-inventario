@@ -12,25 +12,22 @@ class MaterialFormacionController {
         $this->model = new MaterialFormacionModel($conn);
     }
 
-    /* ============================================================
-       LIST MATERIALS
-       ============================================================ */
+ 
+    //   LIST MATERIALS
     public function listar()
     {
         return $this->model->getAll();
     }
 
-    /* ============================================================
-       GET MATERIAL BY ID
-       ============================================================ */
+ 
+    //   GET MATERIAL BY ID
     public function obtener($id)
     {
         return $this->model->getById($id);
     }
 
-    /* ============================================================
-       CREATE MATERIAL
-       ============================================================ */
+ 
+    //   CREATE MATERIAL
     public function crear($data)
     {
         // Model returns false when validation fails
@@ -49,9 +46,8 @@ class MaterialFormacionController {
         ];
     }
 
-    /* ============================================================
-       UPDATE MATERIAL
-       ============================================================ */
+ 
+    //   UPDATE MATERIAL
     public function actualizar($id, $data)
     {
         $ok = $this->model->update($id, $data);
@@ -69,9 +65,8 @@ class MaterialFormacionController {
         ];
     }
 
-    /* ============================================================
-       DELETE MATERIAL
-       ============================================================ */
+ 
+    //   DELETE MATERIAL
     public function eliminar($id)
     {
         $ok = $this->model->delete($id);
@@ -89,26 +84,24 @@ class MaterialFormacionController {
         ];
     }
 
-    /* ============================================================
-       SEARCH MATERIAL
-       ============================================================ */
+ 
+    //   SEARCH MATERIAL
     public function buscar($term)
     {
         return $this->model->search($term);
     }
 
-    /* ============================================================
-       MATERIAL STOCK
-       ============================================================ */
+ 
+    //   MATERIAL STOCK
     public function stock($id)
     {
         return $this->model->getStockTotal($id);
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+
 // API-LIKE ACTION HANDLER (switch)
-///////////////////////////////////////////////////////////////////////////////
+
 
 $controller = new MaterialFormacionController($conn);
 
