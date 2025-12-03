@@ -85,7 +85,6 @@ class Usuario {
     }
 
     // Function to change the status of a user (active/inactive)
-
     public function cambiarEstado($id_usuario, $estado) {
         $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);

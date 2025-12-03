@@ -119,7 +119,7 @@ switch ($accion) {
         );
         break;
 
-    //Change status to the program
+    //Change program status
     case 'cambiar_estado':
         $data = json_decode(file_get_contents("php://input"), true);
         $id_programa = $data['id_programa'] ?? null;

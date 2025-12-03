@@ -38,12 +38,12 @@ switch ($accion) {
         );
         break;
 
-    //Listar los usuarios con los roles ya asignados
+    //List users with assigned roles
     case "listar":
         echo json_encode($controller->listarAsignaciones());
         break;
 
-    //Eliminar asignación de rol a usuario
+    //Delete role assignment from user
     case "eliminar":
         $id = $_GET["id_usuario_rol"] ?? null;
         if (!$id) {
