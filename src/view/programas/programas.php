@@ -126,6 +126,9 @@ $programas = [
     
     <!-- CONTENIDO PRINCIPAL - Sin header ni sidebar (componentes separados) -->
     <main class="flex-1 p-8">
+        <?php
+            // include_once __DIR__ . '/../../includes/footer.php';
+        ?>
         <!-- Título de la página -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
@@ -568,9 +571,6 @@ $programas = [
                 </form>
             </div>
         </div>
-                <?php
-            include_once __DIR__ . '/../../includes/footer.php';
-        ?>
     </main>
     <script src="../../assets/js/programas.js"></script>
 </body>
