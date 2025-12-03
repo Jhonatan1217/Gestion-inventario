@@ -1,98 +1,150 @@
 <?php
 
-class rae_model {
+class RaeModel {
+    private $conn; // PDO connection
 
-    private $conn; // PDO
-
-    public function __construct($conn) {
+    public function __construct(PDO $conn) {
         $this->conn = $conn;
     }
 
-    /* ==========================
-       LISTAR RAES
-    ========================== */
-    public function listar() {
-
-        $sql = "SELECT r.*, p.nombre_programa
-                FROM raes r
-                LEFT JOIN programas_formacion p ON p.id_programa = r.id_programa
-                ORDER BY r.id_rae DESC";
-
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-
-        // CORREGIDO → PDO usa fetchAll()
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    /* LIST ALL RAEs */
+    public function listar(): array {
+        try {
+            $sql = "SELECT * FROM raes ORDER BY id_rae DESC";
+            $stmt = $this->conn->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 
-    /* ==========================
-       OBTENER POR ID
-    ========================== */
-    public function obtener($id) {
+    /* GET RAE BY ID */
+    public function obtenerPorId(int $id): ?array {
+        try {
+            $sql = "SELECT * FROM raes WHERE id_rae = :id LIMIT 1";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
 
-        $sql = "SELECT r.*, p.nombre_programa
-                FROM raes r
-                LEFT JOIN programas_formacion p ON p.id_programa = r.id_programa
-                WHERE r.id_rae = :id";
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ?: null;
 
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 
-    /* ==========================
-       CREAR
-    ========================== */
-    public function crear($data) {
+    /* CREATE RAE */
+    public function crear(
+        string $codigo_rae,
+        string $nombre_rae,
+        string $descripcion,
+        int $id_ficha,
+        string $fecha_inicio,
+        string $fecha_fin,
+        string $estado
+    ): bool {
+        try {
+            $sql = "INSERT INTO raes 
+                    (codigo_rae, nombre_rae, descripcion, id_ficha, fecha_inicio, fecha_fin, estado)
+                    VALUES (:codigo, :nombre, :descripcion, :ficha, :inicio, :fin, :estado)";
 
-        $sql = "INSERT INTO raes (codigo_rae, descripcion_rae, id_programa, estado)
-                VALUES (:codigo_rae, :descripcion_rae, :id_programa, 'Activo')";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':codigo', $codigo_rae);
+            $stmt->bindParam(':nombre', $nombre_rae);
+            $stmt->bindParam(':descripcion', $descripcion);
+            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
+            $stmt->bindParam(':inicio', $fecha_inicio);
+            $stmt->bindParam(':fin', $fecha_fin);
+            $stmt->bindParam(':estado', $estado);
 
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            ':codigo_rae'     => $data['codigo_rae'],
-            ':descripcion_rae' => $data['descripcion_rae'],
-            ':id_programa'     => $data['id_programa']
-        ]);
+            return $stmt->execute();
+
+        } catch (PDOException $e) {
+            error_log("Error al crear RAE: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /* ==========================
-       ACTUALIZAR
-    ========================== */
-    public function actualizar($data) {
+    /* UPDATE RAE */
+    public function actualizar(
+        int $id,
+        string $codigo_rae,
+        string $nombre_rae,
+        string $descripcion,
+        int $id_ficha,
+        string $fecha_inicio,
+        string $fecha_fin,
+        string $estado
+    ): bool {
+        try {
+            $sql = "UPDATE raes 
+                    SET codigo_rae = :codigo,
+                        nombre_rae = :nombre,
+                        descripcion = :descripcion,
+                        id_ficha = :ficha,
+                        fecha_inicio = :inicio,
+                        fecha_fin = :fin,
+                        estado = :estado
+                    WHERE id_rae = :id";
 
-        $sql = "UPDATE raes
-                SET codigo_rae = :codigo_rae,
-                    descripcion_rae = :descripcion_rae,
-                    id_programa = :id_programa
-                WHERE id_rae = :id_rae";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':codigo', $codigo_rae);
+            $stmt->bindParam(':nombre', $nombre_rae);
+            $stmt->bindParam(':descripcion', $descripcion);
+            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
+            $stmt->bindParam(':inicio', $fecha_inicio);
+            $stmt->bindParam(':fin', $fecha_fin);
+            $stmt->bindParam(':estado', $estado);
 
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            ':codigo_rae'      => $data['codigo_rae'],
-            ':descripcion_rae' => $data['descripcion_rae'],
-            ':id_programa'     => $data['id_programa'],
-            ':id_rae'          => $data['id_rae']
-        ]);
+            return $stmt->execute();
+
+        } catch (PDOException $e) {
+            error_log("Error al actualizar RAE: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /* ==========================
-       ACTIVAR
-    ========================== */
-    public function activar($id) {
-        $sql = "UPDATE raes SET estado = 'Activo' WHERE id_rae = :id";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([':id' => $id]);
+    /* DELETE RAE */
+    public function eliminar(int $id): bool {
+        try {
+            $sql = "DELETE FROM raes WHERE id_rae = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error al eliminar RAE: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /* ==========================
-       INACTIVAR
-    ========================== */
-    public function inactivar($id) {
-        $sql = "UPDATE raes SET estado = 'Inactivo' WHERE id_rae = :id";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([':id' => $id]);
+    /* CHANGE STATUS */
+    public function cambiarEstado(int $id, string $estado): bool {
+        try {
+            $sql = "UPDATE raes SET estado = :estado WHERE id_rae = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':estado', $estado);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error al cambiar estado de RAE: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /*LIST RAEs BY FICHA */
+    public function listarPorFicha(int $id_ficha): array {
+        try {
+            $sql = "SELECT * FROM raes WHERE id_ficha = :ficha ORDER BY fecha_inicio DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 }
