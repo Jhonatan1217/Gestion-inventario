@@ -36,13 +36,13 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be created. Check classification and inventory code."
+                "message" => "El Material no fue creado. Revisa la clasificación y el código de inventario."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material created successfully."
+            "message" => "El Material fue creado exitosamente."
         ];
     }
 
@@ -55,13 +55,13 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be updated. Check classification and inventory code."
+                "message" => "El Material no fue actualizado. Revisa la clasificación y el código de inventario."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material updated successfully."
+            "message" => "El Material fue actualizado exitosamente."
         ];
     }
 
@@ -74,13 +74,13 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be deleted because it is used in other tables."
+                "message" => "El Material no puede ser eliminado porque está en uso en otras tablas."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material deleted successfully."
+            "message" => "El Material fue eliminado exitosamente."
         ];
     }
 

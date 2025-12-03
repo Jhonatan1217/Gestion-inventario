@@ -38,29 +38,31 @@ class MaterialFormacionModel {
        
     public function create($data)
     {
-        // Convert empty string to NULL
-        $codigo = ($data['codigo_inventario'] === "" ? null : $data['codigo_inventario']);
+        // Safe read: use NULL if key does not exist or is empty
+        $codigo = (isset($data['codigo_inventario']) && $data['codigo_inventario'] !== "")
+            ? $data['codigo_inventario']
+            : null;
 
-        // If Inventariado → inventory code required
+        // If material is Inventariado → must have code
         if ($data['clasificacion'] === "Inventariado" && $codigo === null) {
-            return false;
+            return false; // Controller will return error JSON
         }
 
         $sql = "INSERT INTO material_formacion 
-                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario, estado)
-                VALUES (?, ?, ?, ?, ?, ?)";
+                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario)
+                VALUES (?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
             $data['nombre'],
-            $data['descripcion'],
+            $data['descripcion'] ?? null,
             $data['unidad_medida'],
             $data['clasificacion'],
-            $codigo,
-            $data['estado']
+            $codigo
         ]);
     }
+
 
     
     //   UPDATE MATERIAL
