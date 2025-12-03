@@ -1,44 +1,32 @@
 <?php
 require_once __DIR__ . "/../models/bodega.php";
 
-/**
- * Controlador REST para las bodegas.
- */
 class BodegaController {
 
-    /**
-     * @var BodegaModel
-     */
-    private $model;
+    private $model; // Instance of BodegaModel
 
+    // Constructor: receives a PDO connection and initializes the model
     public function __construct(PDO $conn) {
         $this->model = new BodegaModel($conn);
     }
 
-    /**
-     * Envía una respuesta JSON uniforme.
-     */
+    // Sends a standardized JSON response with a status code
     private function jsonResponse(array $payload, int $statusCode = 200): void {
         http_response_code($statusCode);
         header("Content-Type: application/json; charset=utf-8");
         echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     }
 
-    /**
-     * Obtiene y valida el ID recibido por POST.
-     */
+    // Retrieves and validates the ID sent via POST; returns null if invalid
     private function getPostId(): ?int {
         if (!isset($_POST["id"]) || !is_numeric($_POST["id"])) {
-            $this->jsonResponse(["status" => "error", "msg" => "ID requerido o inválido"], 400);
+            $this->jsonResponse(["status" => "error"], 400);
             return null;
         }
-
         return (int) $_POST["id"];
     }
 
-    /* ================================
-       LISTAR
-    ================================ */
+    // List all warehouses, optionally filtered by status
     public function listar(): void {
         $estado = isset($_GET["estado"]) && $_GET["estado"] !== ""
             ? (int) $_GET["estado"]
@@ -48,32 +36,31 @@ class BodegaController {
         $this->jsonResponse(["status" => "ok", "data" => $bodegas]);
     }
 
-    /* ================================
-       OBTENER
-    ================================ */
+    // Get a warehouse by its ID
     public function obtener($id = null): void {
         $id = $id ?? ($_GET["id"] ?? null);
+
         if ($id === null || !is_numeric($id)) {
-            $this->jsonResponse(["status" => "error", "msg" => "Debe enviar un ID válido"], 400);
+            $this->jsonResponse(["status" => "error"], 400);
             return;
         }
 
         $bodega = $this->model->getBodegaById((int) $id);
+
         if (!$bodega) {
-            $this->jsonResponse(["status" => "error", "msg" => "Bodega no encontrada"], 404);
+            $this->jsonResponse(["status" => "error"], 404);
             return;
         }
 
         $this->jsonResponse(["status" => "ok", "data" => $bodega]);
     }
 
-    /* ================================
-       CREAR
-    ================================ */
+    // Create a new warehouse
     public function crear(): void {
         $nombre = trim($_POST["nombre"] ?? "");
+
         if ($nombre === "") {
-            $this->jsonResponse(["status" => "error", "msg" => "Nombre requerido"], 400);
+            $this->jsonResponse(["status" => "error"], 400);
             return;
         }
 
@@ -87,9 +74,7 @@ class BodegaController {
         $this->jsonResponse($this->model->crearBodega($data));
     }
 
-    /* ================================
-       ACTUALIZAR
-    ================================ */
+    // Update an existing warehouse
     public function actualizar(): void {
         $id = $this->getPostId();
         if ($id === null) {
@@ -101,7 +86,7 @@ class BodegaController {
         $descripcion = trim($_POST["descripcion"] ?? "");
 
         if ($nombre === "") {
-            $this->jsonResponse(["status" => "error", "msg" => "Nombre requerido"], 400);
+            $this->jsonResponse(["status" => "error"], 400);
             return;
         }
 
@@ -115,9 +100,7 @@ class BodegaController {
         $this->jsonResponse($this->model->actualizarBodega($data));
     }
 
-    /* ================================
-       ACTIVAR
-    ================================ */
+    // Activate a warehouse: set state to 1
     public function activar(): void {
         $id = $this->getPostId();
         if ($id === null) {
@@ -127,9 +110,7 @@ class BodegaController {
         $this->jsonResponse($this->model->cambiarEstado($id, 1));
     }
 
-    /* ================================
-       INACTIVAR
-    ================================ */
+    // Deactivate a warehouse: set state to 0
     public function inactivar(): void {
         $id = $this->getPostId();
         if ($id === null) {
@@ -139,4 +120,3 @@ class BodegaController {
         $this->jsonResponse($this->model->cambiarEstado($id, 0));
     }
 }
- 
