@@ -1,10 +1,8 @@
 <?php
 
-// BodegaModel: Handles CRUD operations for the "bodegas" table
 class BodegaModel {
-    private $conn; // PDO connection object
+    private $conn; 
 
-    // Constructor: initialize PDO connection
     public function __construct(PDO $conn) {
         $this->conn = $conn;
     }
@@ -35,16 +33,15 @@ class BodegaModel {
     }
 
     /* CREATE NEW BODEGA */
-    public function crear(string $codigo, string $nombre, string $ubicacion, string $estado): bool {
+    public function crear(string $codigo, string $nombre, string $ubicacion): bool {
         try {
-            $sql = "INSERT INTO bodegas (codigo_bodega, nombre, ubicacion, estado)
-                    VALUES (:codigo, :nombre, :ubicacion, :estado)"; // Insert statement
+            $sql = "INSERT INTO bodegas (codigo_bodega, nombre, ubicacion)
+                    VALUES (:codigo, :nombre, :ubicacion)"; // Insert statement
 
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':codigo', $codigo);
             $stmt->bindParam(':nombre', $nombre);
             $stmt->bindParam(':ubicacion', $ubicacion);
-            $stmt->bindParam(':estado', $estado);
 
             return $stmt->execute(); // Execute and return true/false
         } catch (PDOException $e) {

@@ -5,9 +5,7 @@ require_once __DIR__ . "/../../Config/database.php";
 // It is established that all responses will be in JSON format.
 header("Content-Type: application/json; charset=utf-8");
 
-/**
- * Controller REST to handle CRUD operations for warehouses.
- */
+/* Controller REST to handle CRUD operations for warehouses.*/
 class BodegaController {
 
     /**Instance of the warehouse model.*/
@@ -70,7 +68,6 @@ class BodegaController {
             $data['codigo_bodega'],
             $data['nombre'],
             $data['ubicacion'],
-            $data['estado']
         );
 
         // Message according to success or failure
@@ -98,7 +95,6 @@ class BodegaController {
             $data['codigo_bodega'],
             $data['nombre'],
             $data['ubicacion'],
-            $data['estado']
         );
 
         $this->jsonResponse(
