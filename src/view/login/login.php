@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Incluye la conexión a la BD y la BASE_URL si ya la defines allí
-require_once __DIR__ . '/../../../Config/database.php';
+require_once _DIR_ . '/../../../Config/database.php';
 
 // Si no tienes BASE_URL definida en otro sitio, la calculamos aquí
 if (!defined('BASE_URL')) {
@@ -39,31 +39,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Ajusta el nombre de tabla/campos según tu BD
-            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
-                    FROM usuarios 
-                    WHERE correo = :correo 
-                    LIMIT 1";
+            try {
+    // AJUSTA los nombres de columnas a lo que tengas realmente en la tabla
+    $sql = "SELECT id_usuario, nombre_completo, correo, password 
+            FROM usuarios 
+            WHERE correo = :correo 
+            LIMIT 1";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Asumo que guardas la contraseña con password_hash()
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Guardar datos mínimos en sesión
-                $_SESSION['usuario_id']     = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                $_SESSION['usuario_rol']    = $user['rol'];
+            if ($user) {
+                $hash = $user['password']; // columna real de tu tabla
 
-                // 🔁 Redirige al dashboard a través del index de la raíz
-                header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
-                exit;
+                $passwordOk = false;
+
+                // 1) Si está hasheada con password_hash()
+                if (password_verify($password, $hash)) {
+                    $passwordOk = true;
+                } else {
+                    // 2) Si está en texto plano (temporal, si tu BD aún no usa hash)
+                    if ($password === $hash) {
+                        $passwordOk = true;
+                    }
+                }
+
+                if ($passwordOk) {
+                    // Guardar datos en sesión
+                    $_SESSION['usuario_id']     = $user['id_usuario'];
+                    $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+                    // $_SESSION['usuario_rol']    = $user['rol']; // ← LO QUITAMOS
+
+                    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
+                    exit;
+                } else {
+                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+                }
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
+
         } catch (PDOException $e) {
-            $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
+            $loginError = "Error BD: " . $e->getMessage();
         }
+              } catch (PDOException $e) {
+            // SOLO PARA DEPURAR: muestra el mensaje real
+            $loginError = "Error BD: " . $e->getMessage();
+        }
+
     }
 }
 ?>
@@ -197,8 +221,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       // Cambiar icono
       eyeIcon.innerHTML = isText
-        ? `<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>`
-        : `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-7-11-7a19.207 19.207 0 015.677-5.48m3.461-.762A11.413 11.413 0 0112 5c7 0 11 7 11 7a20.626 20.626 0 01-2.364 3.442M3 3l18 18"/>`;
+        ? <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+        : <path d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-7-11-7a19.207 19.207 0 015.677-5.48m3.461-.762A11.413 11.413 0 0112 5c7 0 11 7 11 7a20.626 20.626 0 01-2.364 3.442M3 3l18 18"/>;
     });
 
     // Mantener el loader pero dejar que PHP maneje la redirección
