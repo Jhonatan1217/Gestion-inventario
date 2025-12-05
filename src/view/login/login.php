@@ -37,8 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = "Por favor ingresa tu correo y contraseña.";
     } else {
         try {
-            // Ajusta el nombre de tabla/campos según tu BD
-            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
+            // Ajustado a tu tabla: password y cargo (rol)
+            $sql = "SELECT 
+                        id_usuario, 
+                        nombre_completo, 
+                        correo, 
+                        password,      -- columna real en la BD
+                        cargo          -- usaremos esto como rol
                     FROM usuarios 
                     WHERE correo = :correo 
                     LIMIT 1";
@@ -47,20 +52,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Asumo que guardas la contraseña con password_hash()
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Guardar datos mínimos en sesión
-                $_SESSION['usuario_id']     = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                $_SESSION['usuario_rol']    = $user['rol'];
+            if ($user) {
+                // 🔐 Si guardas la contraseña hasheada con password_hash()
+                if (password_verify($password, $user['password'])) {
+                    // Guardar datos mínimos en sesión
+                    $_SESSION['usuario_id']     = $user['id_usuario'];
+                    $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+                    $_SESSION['usuario_rol']    = $user['cargo']; // Coordinador, Instructor, etc.
 
-                // 🔁 Redirige al dashboard (una carpeta arriba de /login/)
-                header('Location: ' . BASE_URL . '../dashboard/index.php');
-                exit;
+                    // Redirige al dashboard
+                    header('Location: ' . BASE_URL . '../dashboard/index.php');
+                    exit;
+                } else {
+                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+                }
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
         } catch (PDOException $e) {
+            // Puedes loguear el error si quieres: $e->getMessage()
             $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
         }
     }
@@ -209,7 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       btn.disabled = true;
       loader.classList.remove("hidden");
       text.textContent = "Iniciando sesión...";
-      // No hacemos preventDefault ni redirección en JS:
       // PHP se encarga de validar y redirigir.
     });
   </script>

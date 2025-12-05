@@ -292,6 +292,25 @@ body {
 .rounded-xl { border-radius: var(--radius-xl); }
 
 /* ===========================
+   INPUTS OFICIALES SIGA
+   =========================== */
+
+.input-siga {
+  background-color: #FFFFFF !important;            /* Fondo blanco */
+  border: 1px solid var(--border) !important;      /* Borde institucional */
+  padding: 0.55rem 0.75rem !important;             /* Altura exacta */
+  border-radius: var(--radius-md) !important;      /* Radio institucional */
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.input-siga::placeholder {
+  color: color-mix(in srgb, var(--foreground) 40%, transparent);
+  opacity: 0.7;
+}
+
+
+/* ===========================
    ANIMACIONES PERSONALIZADAS
    =========================== */
 

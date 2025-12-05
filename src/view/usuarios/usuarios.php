@@ -45,6 +45,15 @@
     .modal-overlay.active {
       display: flex;
     }
+
+    /* ===========================
+       AJUSTES MODAL CREAR USUARIO
+       =========================== */
+
+    /* Que el modal no sea tan grande (más parecido al de la segunda imagen) */
+    #modalUsuario > div {
+      max-width: 640px; /* aprox como el diseño original */
+    }
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
@@ -154,22 +163,24 @@
         <input type="hidden" id="hiddenUserId" value="">
 
         <div class="grid gap-4 sm:grid-cols-2">
+          <!-- Nombre completo full width -->
           <div class="space-y-2 sm:col-span-2">
             <label for="nombre_completo" class="text-sm font-medium">Nombre completo *</label>
             <input
               id="nombre_completo"
               type="text"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="Ej: Juan Pablo Hernández Castro"
               required
             />
           </div>
 
+          <!-- Tipo documento -->
           <div class="space-y-2">
             <label for="tipo_documento" class="text-sm font-medium">Tipo de documento *</label>
             <select
               id="tipo_documento"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               required
             >
               <option value="CC">Cédula de Ciudadanía</option>
@@ -179,33 +190,36 @@
             </select>
           </div>
 
+          <!-- Número documento -->
           <div class="space-y-2">
             <label for="numero_documento" class="text-sm font-medium">Número de documento *</label>
             <input
               id="numero_documento"
               type="text"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="1098765432"
               required
             />
           </div>
 
+          <!-- Teléfono -->
           <div class="space-y-2">
             <label for="telefono" class="text-sm font-medium">Teléfono *</label>
             <input
               id="telefono"
               type="text"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="3101234567"
               required
             />
           </div>
 
+          <!-- Cargo / Rol -->
           <div class="space-y-2">
             <label for="cargo" class="text-sm font-medium">Cargo / Rol *</label>
             <select
               id="cargo"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               required
             >
               <option value="coordinador">Coordinador</option>
@@ -216,23 +230,37 @@
             </select>
           </div>
 
+          <!-- Correo (full) -->
           <div class="space-y-2 sm:col-span-2">
             <label for="correo" class="text-sm font-medium">Correo electrónico *</label>
             <input
               id="correo"
               type="email"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="usuario@sena.edu.co"
               required
             />
           </div>
 
+          <!-- Contraseña (full, NUEVO CAMPO) -->
+          <div class="space-y-2 sm:col-span-2">
+            <label for="password" class="text-sm font-medium">Contraseña *</label>
+            <input
+              id="password"
+              type="password"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
+              placeholder="Ingrese una contraseña segura"
+              required
+            />
+          </div>
+
+          <!-- Dirección (full) -->
           <div class="space-y-2 sm:col-span-2">
             <label for="direccion" class="text-sm font-medium">Dirección *</label>
             <input
               id="direccion"
               type="text"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="Calle 45 #23-10, Bogotá"
               required
             />
@@ -289,426 +317,512 @@
   <!-- JS – LÓGICA EQUIVALENTE A useState React -->
   <!-- ========================================= -->
   <script>
-    // ====== Configuración de roles (equivalente a roleLabels / roleBadgeStyles) ======
-    const roleLabels = {
-      coordinador: "Coordinador",
-      instructor: "Instructor",
-      pasante: "Pasante",
-      encargado_inventario: "Encargado de Inventario",
-      encargado_bodega: "Encargado de Bodega",
-    };
+  // =========================
+  // CONFIG: URL DEL CONTROLADOR
+  // =========================
+  const API_URL = "../../controllers/usuario_controller.php"; // 👈 AJUSTA ESTA RUTA
 
-    const roleBadgeStyles = {
-      coordinador: "bg-chart-4/10 text-chart-4",
-      instructor: "bg-primary/10 text-primary",
-      pasante: "bg-chart-3/10 text-chart-3",
-      encargado_inventario: "bg-chart-2/10 text-chart-2",
-      encargado_bodega: "bg-chart-1/10 text-chart-1",
-    };
+  // ====== Configuración de roles (equivalente a roleLabels / roleBadgeStyles) ======
+  const roleLabels = {
+    coordinador: "Coordinador",
+    instructor: "Instructor",
+    pasante: "Pasante",
+    encargado_inventario: "Encargado de Inventario",
+    encargado_bodega: "Encargado de Bodega",
+  };
 
-    // ====== Mock users (equivalente a mockUsers) ======
-    const mockUsers = [
-      {
-        id: "1",
-        nombre_completo: "Ana María Rodríguez",
-        tipo_documento: "CC",
-        numero_documento: "1098765432",
-        telefono: "3101234567",
-        cargo: "coordinador",
-        correo: "ana.rodriguez@sena.edu.co",
-        direccion: "Calle 10 #12-34, Bogotá",
-        estado: true,
-        created_at: "2025-01-10",
-      },
-      {
-        id: "2",
-        nombre_completo: "Carlos Pérez",
-        tipo_documento: "CC",
-        numero_documento: "1022334455",
-        telefono: "3209876543",
-        cargo: "instructor",
-        correo: "carlos.perez@sena.edu.co",
-        direccion: "Carrera 7 #45-20, Bogotá",
-        estado: true,
-        created_at: "2025-01-12",
-      },
-      {
-        id: "3",
-        nombre_completo: "Laura Gómez",
-        tipo_documento: "TI",
-        numero_documento: "1002003004",
-        telefono: "3007654321",
-        cargo: "pasante",
-        correo: "laura.gomez@sena.edu.co",
-        direccion: "Av. Siempre Viva 123",
-        estado: false,
-        created_at: "2025-01-15",
-      },
-    ];
+  const roleBadgeStyles = {
+    coordinador: "bg-chart-4/10 text-chart-4",
+    instructor: "bg-primary/10 text-primary",
+    pasante: "bg-chart-3/10 text-chart-3",
+    encargado_inventario: "bg-chart-2/10 text-chart-2",
+    encargado_bodega: "bg-chart-1/10 text-chart-1",
+  };
 
-    let users = [...mockUsers];
-    let selectedUser = null;
+  // ====== Mock users como respaldo si falla el backend ======
+  const mockUsers = [
+    {
+      id: "1",
+      nombre_completo: "Ana María Rodríguez",
+      tipo_documento: "CC",
+      numero_documento: "1098765432",
+      telefono: "3101234567",
+      cargo: "coordinador",
+      correo: "ana.rodriguez@sena.edu.co",
+      direccion: "Calle 10 #12-34, Bogotá",
+      estado: true,
+      created_at: "2025-01-10",
+    },
+    {
+      id: "2",
+      nombre_completo: "Carlos Pérez",
+      tipo_documento: "CC",
+      numero_documento: "1022334455",
+      telefono: "3209876543",
+      cargo: "instructor",
+      correo: "carlos.perez@sena.edu.co",
+      direccion: "Carrera 7 #45-20, Bogotá",
+      estado: true,
+      created_at: "2025-01-12",
+    },
+    {
+      id: "3",
+      nombre_completo: "Laura Gómez",
+      tipo_documento: "TI",
+      numero_documento: "1002003004",
+      telefono: "3007654321",
+      cargo: "pasante",
+      correo: "laura.gomez@sena.edu.co",
+      direccion: "Av. Siempre Viva 123",
+      estado: false,
+      created_at: "2025-01-15",
+    },
+  ];
 
-    // ====== Referencias DOM ======
-    const tbodyUsuarios = document.getElementById("tbodyUsuarios");
-    const inputBuscar = document.getElementById("inputBuscar");
-    const selectFiltroRol = document.getElementById("selectFiltroRol");
+  // Aquí vivirá siempre la lista que se usa para pintar la tabla
+  let users = [...mockUsers];
+  let selectedUser = null;
 
-    const modalUsuario = document.getElementById("modalUsuario");
-    const btnNuevoUsuario = document.getElementById("btnNuevoUsuario");
-    const btnCerrarModalUsuario = document.getElementById("btnCerrarModalUsuario");
-    const btnCancelarModalUsuario = document.getElementById("btnCancelarModalUsuario");
+  // ====== Referencias DOM ======
+  const tbodyUsuarios = document.getElementById("tbodyUsuarios");
+  const inputBuscar = document.getElementById("inputBuscar");
+  const selectFiltroRol = document.getElementById("selectFiltroRol");
 
-    const formUsuario = document.getElementById("formUsuario");
-    const hiddenUserId = document.getElementById("hiddenUserId");
-    const modalUsuarioTitulo = document.getElementById("modalUsuarioTitulo");
-    const modalUsuarioDescripcion = document.getElementById("modalUsuarioDescripcion");
+  const modalUsuario = document.getElementById("modalUsuario");
+  const btnNuevoUsuario = document.getElementById("btnNuevoUsuario");
+  const btnCerrarModalUsuario = document.getElementById("btnCerrarModalUsuario");
+  const btnCancelarModalUsuario = document.getElementById("btnCancelarModalUsuario");
 
-    const inputNombreCompleto = document.getElementById("nombre_completo");
-    const inputTipoDocumento = document.getElementById("tipo_documento");
-    const inputNumeroDocumento = document.getElementById("numero_documento");
-    const inputTelefono = document.getElementById("telefono");
-    const inputCargo = document.getElementById("cargo");
-    const inputCorreo = document.getElementById("correo");
-    const inputDireccion = document.getElementById("direccion");
+  const formUsuario = document.getElementById("formUsuario");
+  const hiddenUserId = document.getElementById("hiddenUserId");
+  const modalUsuarioTitulo = document.getElementById("modalUsuarioTitulo");
+  const modalUsuarioDescripcion = document.getElementById("modalUsuarioDescripcion");
 
-    const modalVerUsuario = document.getElementById("modalVerUsuario");
-    const btnCerrarModalVerUsuario = document.getElementById("btnCerrarModalVerUsuario");
-    const detalleUsuarioContent = document.getElementById("detalleUsuarioContent");
+  const inputNombreCompleto = document.getElementById("nombre_completo");
+  const inputTipoDocumento = document.getElementById("tipo_documento");
+  const inputNumeroDocumento = document.getElementById("numero_documento");
+  const inputTelefono = document.getElementById("telefono");
+  const inputCargo = document.getElementById("cargo");
+  const inputCorreo = document.getElementById("correo");
+  const inputPassword = document.getElementById("password");
+  const inputDireccion = document.getElementById("direccion");
 
-    // ====== Funciones helpers ======
-    function getInitials(nombre) {
-      return nombre
-        .split(" ")
-        .filter(Boolean)
-        .map(n => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase();
-    }
+  // 👇 si tienes un select para programa, usa este id
+  const inputPrograma = document.getElementById("id_programa"); // opcional pero requerido por tu backend
 
-    function openModalUsuario(editUser = null) {
-      selectedUser = editUser;
-      modalUsuario.classList.add("active");
+  const modalVerUsuario = document.getElementById("modalVerUsuario");
+  const btnCerrarModalVerUsuario = document.getElementById("btnCerrarModalVerUsuario");
+  const detalleUsuarioContent = document.getElementById("detalleUsuarioContent");
 
-      if (editUser) {
-        modalUsuarioTitulo.textContent = "Editar Usuario";
-        modalUsuarioDescripcion.textContent = "Modifica la información del usuario";
-        hiddenUserId.value = editUser.id;
+  // ====== Helpers ======
+  function getInitials(nombre) {
+    return nombre
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
 
-        inputNombreCompleto.value = editUser.nombre_completo;
-        inputTipoDocumento.value = editUser.tipo_documento;
-        inputNumeroDocumento.value = editUser.numero_documento;
-        inputTelefono.value = editUser.telefono;
-        inputCargo.value = editUser.cargo;
-        inputCorreo.value = editUser.correo;
-        inputDireccion.value = editUser.direccion;
-      } else {
-        modalUsuarioTitulo.textContent = "Crear Nuevo Usuario";
-        modalUsuarioDescripcion.textContent = "Complete los datos para registrar un nuevo usuario";
-        hiddenUserId.value = "";
-        formUsuario.reset();
-        inputTipoDocumento.value = "CC";
-        inputCargo.value = "instructor";
+  function openModalUsuario(editUser = null) {
+    selectedUser = editUser;
+    modalUsuario.classList.add("active");
+
+    if (editUser) {
+      modalUsuarioTitulo.textContent = "Editar Usuario";
+      modalUsuarioDescripcion.textContent = "Modifica la información del usuario";
+      hiddenUserId.value = editUser.id; // id interno = id_usuario en BD
+
+      inputNombreCompleto.value = editUser.nombre_completo;
+      inputTipoDocumento.value = editUser.tipo_documento;
+      inputNumeroDocumento.value = editUser.numero_documento;
+      inputTelefono.value = editUser.telefono;
+      inputCargo.value = editUser.cargo;
+      inputCorreo.value = editUser.correo;
+      inputPassword.value = ""; // no mostramos contraseña existente
+      inputDireccion.value = editUser.direccion;
+      if (inputPrograma && editUser.id_programa) {
+        inputPrograma.value = editUser.id_programa;
       }
-    }
-
-    function closeModalUsuario() {
-      modalUsuario.classList.remove("active");
-      selectedUser = null;
+    } else {
+      modalUsuarioTitulo.textContent = "Crear Nuevo Usuario";
+      modalUsuarioDescripcion.textContent = "Complete los datos para registrar un nuevo usuario";
       hiddenUserId.value = "";
+      formUsuario.reset();
+      inputTipoDocumento.value = "CC";
+      inputCargo.value = "instructor";
     }
+  }
 
-    function openModalVerUsuario(user) {
-      selectedUser = user;
-      modalVerUsuario.classList.add("active");
+  function closeModalUsuario() {
+    modalUsuario.classList.remove("active");
+    selectedUser = null;
+    hiddenUserId.value = "";
+  }
+
+  function openModalVerUsuario(user) {
+    selectedUser = user;
+    modalVerUsuario.classList.add("active");
+
+    const estadoBadgeClass = user.estado
+      ? "bg-success/10 text-success"
+      : "bg-destructive/10 text-destructive";
+
+    detalleUsuarioContent.innerHTML = `
+      <div class="flex items-center gap-4">
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary text-xl">
+          ${getInitials(user.nombre_completo)}
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg">${user.nombre_completo}</h3>
+          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${
+            roleBadgeStyles[user.cargo] || ""
+          }">
+            ${roleLabels[user.cargo] || user.cargo}
+          </span>
+        </div>
+      </div>
+      <div class="grid gap-3 text-sm">
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Documento:</span>
+          <span class="col-span-2">${user.tipo_documento} ${user.numero_documento}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Teléfono:</span>
+          <span class="col-span-2">${user.telefono}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Correo:</span>
+          <span class="col-span-2">${user.correo}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Dirección:</span>
+          <span class="col-span-2">${user.direccion}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Estado:</span>
+          <span class="col-span-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
+            ${user.estado ? "Activo" : "Inactivo"}
+          </span>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <span class="text-muted-foreground">Registrado:</span>
+          <span class="col-span-2">${user.created_at || ""}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function closeModalVerUsuario() {
+    modalVerUsuario.classList.remove("active");
+    selectedUser = null;
+  }
+
+  function toggleStatus(userId) {
+    // De momento solo front. Si quieres persistir en BD, crea un endpoint en PHP.
+    users = users.map((u) =>
+      u.id === userId ? { ...u, estado: !u.estado } : u
+    );
+    renderTable();
+  }
+
+  // =========================
+  // LÓGICA PARA HABLAR CON EL BACKEND
+  // =========================
+  async function cargarUsuarios() {
+    try {
+      const res = await fetch(`${API_URL}?accion=listar`);
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        console.error("Respuesta inesperada al listar usuarios:", data);
+        // Si algo raro pasa, mantenemos los mockUsers
+        users = [...mockUsers];
+      } else {
+        // Adaptamos campos de BD → front (id_usuario → id)
+        users = data.map((u) => ({
+          id: u.id_usuario, // 👈 importante para que todo el front siga igual
+          nombre_completo: u.nombre_completo,
+          tipo_documento: u.tipo_documento,
+          numero_documento: u.numero_documento,
+          telefono: u.telefono,
+          cargo: u.cargo,
+          correo: u.correo,
+          direccion: u.direccion,
+          estado: u.estado == 1 || u.estado === true,
+          created_at: u.created_at || "",
+          id_programa: u.id_programa ?? null,
+        }));
+      }
+
+      renderTable();
+    } catch (error) {
+      console.error("Error al cargar usuarios:", error);
+      // error → usamos mock
+      users = [...mockUsers];
+      renderTable();
+    }
+  }
+
+  async function crearUsuario(payload) {
+    const res = await fetch(`${API_URL}?accion=crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  }
+
+  async function actualizarUsuario(payload) {
+    const res = await fetch(`${API_URL}?accion=actualizar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  }
+
+  // ====== Render de la tabla ======
+  function renderTable() {
+    const search = inputBuscar.value.trim().toLowerCase();
+    const rol = selectFiltroRol.value;
+
+    const filtered = users.filter((u) => {
+      const matchName = u.nombre_completo.toLowerCase().includes(search);
+      const matchRol = rol ? u.cargo === rol : true;
+      return matchName && matchRol;
+    });
+
+    tbodyUsuarios.innerHTML = "";
+
+    filtered.forEach((user) => {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-muted/40";
 
       const estadoBadgeClass = user.estado
         ? "bg-success/10 text-success"
         : "bg-destructive/10 text-destructive";
 
-      detalleUsuarioContent.innerHTML = `
-        <div class="flex items-center gap-4">
-          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary text-xl">
-            ${getInitials(user.nombre_completo)}
-          </div>
-          <div>
-            <h3 class="font-semibold text-lg">${user.nombre_completo}</h3>
-            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${roleBadgeStyles[user.cargo] || ""}">
-              ${roleLabels[user.cargo] || user.cargo}
-            </span>
-          </div>
-        </div>
-        <div class="grid gap-3 text-sm">
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Documento:</span>
-            <span class="col-span-2">${user.tipo_documento} ${user.numero_documento}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Teléfono:</span>
-            <span class="col-span-2">${user.telefono}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Correo:</span>
-            <span class="col-span-2">${user.correo}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Dirección:</span>
-            <span class="col-span-2">${user.direccion}</span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Estado:</span>
-            <span class="col-span-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
-              ${user.estado ? "Activo" : "Inactivo"}
-            </span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <span class="text-muted-foreground">Registrado:</span>
-            <span class="col-span-2">${user.created_at}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    function closeModalVerUsuario() {
-      modalVerUsuario.classList.remove("active");
-      selectedUser = null;
-    }
-
-    function toggleStatus(userId) {
-      users = users.map(u =>
-        u.id === userId ? { ...u, estado: !u.estado } : u
-      );
-      renderTable();
-    }
-
-    // ====== Render de la tabla ======
-    function renderTable() {
-      const search = inputBuscar.value.trim().toLowerCase();
-      const rol = selectFiltroRol.value;
-
-      const filtered = users.filter(u => {
-        const matchName = u.nombre_completo.toLowerCase().includes(search);
-        const matchRol = rol ? u.cargo === rol : true;
-        return matchName && matchRol;
-      });
-
-      tbodyUsuarios.innerHTML = "";
-
-      filtered.forEach(user => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-muted/40";
-
-        const estadoBadgeClass = user.estado
-          ? "bg-success/10 text-success"
-          : "bg-destructive/10 text-destructive";
-
-        tr.innerHTML = `
-          <td class="px-4 py-3 align-middle">
-            <div class="flex items-center gap-3">
-              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
-                ${getInitials(user.nombre_completo)}
-              </div>
-              <div>
-                <p class="font-medium text-sm">${user.nombre_completo}</p>
-                <p class="text-xs text-muted-foreground">${user.correo}</p>
-              </div>
+      tr.innerHTML = `
+        <td class="px-4 py-3 align-middle">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
+              ${getInitials(user.nombre_completo)}
             </div>
-          </td>
-          <td class="px-4 py-3 align-middle">
-            <span class="text-sm">${user.tipo_documento} ${user.numero_documento}</span>
-          </td>
-          <td class="px-4 py-3 align-middle">
-            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${roleBadgeStyles[user.cargo] || ""}">
-              ${roleLabels[user.cargo] || user.cargo}
-            </span>
-          </td>
-          <td class="px-4 py-3 align-middle">
-            <span class="text-sm">${user.telefono}</span>
-          </td>
-          <td class="px-4 py-3 align-middle">
-            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
-              ${user.estado ? "Activo" : "Inactivo"}
-            </span>
-          </td>
-          <td class="px-4 py-3 align-middle text-right">
-            <div class="relative inline-block text-left">
+            <div>
+              <p class="font-medium text-sm">${user.nombre_completo}</p>
+              <p class="text-xs text-muted-foreground">${user.correo}</p>
+            </div>
+          </div>
+        </td>
+        <td class="px-4 py-3 align-middle">
+          <span class="text-sm">${user.tipo_documento} ${user.numero_documento}</span>
+        </td>
+        <td class="px-4 py-3 align-middle">
+          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${
+            roleBadgeStyles[user.cargo] || ""
+          }">
+            ${roleLabels[user.cargo] || user.cargo}
+          </span>
+        </td>
+        <td class="px-4 py-3 align-middle">
+          <span class="text-sm">${user.telefono}</span>
+        </td>
+        <td class="px-4 py-3 align-middle">
+          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
+            ${user.estado ? "Activo" : "Inactivo"}
+          </span>
+        </td>
+        <td class="px-4 py-3 align-middle text-right">
+          <div class="relative inline-block text-left">
+            <button
+              type="button"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+              data-menu-trigger="${user.id}"
+            >
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 6.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+              </svg>
+            </button>
+            <div
+              class="hidden absolute right-0 mt-2 w-48 rounded-md border border-border bg-popover shadow-md z-20"
+              data-menu="${user.id}"
+            >
               <button
                 type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                data-menu-trigger="${user.id}"
+                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
+                data-action="ver"
+                data-id="${user.id}"
               >
-                <!-- Icono MoreHorizontal -->
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                      viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 6.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                        d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
+                Ver detalles
               </button>
-              <div
-                class="hidden absolute right-0 mt-2 w-48 rounded-md border border-border bg-popover shadow-md z-20"
-                data-menu="${user.id}"
+              <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
+                data-action="editar"
+                data-id="${user.id}"
               >
-                <button
-                  type="button"
-                  class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                  data-action="ver"
-                  data-id="${user.id}"
-                >
-                  <!-- Eye -->
-                  <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                       viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  Ver detalles
-                </button>
-                <button
-                  type="button"
-                  class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                  data-action="editar"
-                  data-id="${user.id}"
-                >
-                  <!-- Edit -->
-                  <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                       viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                  Editar
-                </button>
-                <hr class="border-border">
-                <button
-                  type="button"
-                  class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                  data-action="toggle"
-                  data-id="${user.id}"
-                >
-                  ${
-                    user.estado
-                      ? `
-                        <!-- UserX -->
-                        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M16 3l5 5M21 3l-5 5"/>
-                        </svg>
-                        Desactivar
-                      `
-                      : `
-                        <!-- UserCheck -->
-                        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M9 7l2 2 4-4"/>
-                        </svg>
-                        Activar
-                      `
-                  }
-                </button>
-              </div>
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar
+              </button>
+              <hr class="border-border">
+              <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
+                data-action="toggle"
+                data-id="${user.id}"
+              >
+                ${
+                  user.estado
+                    ? `
+                      <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                           viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M16 3l5 5M21 3l-5 5"/>
+                      </svg>
+                      Desactivar
+                    `
+                    : `
+                      <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                           viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M9 7l2 2 4-4"/>
+                      </svg>
+                      Activar
+                    `
+                }
+              </button>
             </div>
-          </td>
-        `;
+          </div>
+        </td>
+      `;
 
-        tbodyUsuarios.appendChild(tr);
-      });
+      tbodyUsuarios.appendChild(tr);
+    });
 
-      attachMenuEvents();
-    }
+    attachMenuEvents();
+  }
 
-    // Manejo de dropdown menú (tres puntitos)
-    function attachMenuEvents() {
-      // Cerrar todos cuando hago click fuera
-      document.addEventListener("click", (e) => {
-        if (!e.target.closest("[data-menu-trigger]") && !e.target.closest("[data-menu]")) {
-          document.querySelectorAll("[data-menu]").forEach(el => el.classList.add("hidden"));
+  // Manejo de dropdown menú (tres puntitos)
+  function attachMenuEvents() {
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (
+          !e.target.closest("[data-menu-trigger]") &&
+          !e.target.closest("[data-menu]")
+        ) {
+          document
+            .querySelectorAll("[data-menu]")
+            .forEach((el) => el.classList.add("hidden"));
         }
-      }, { once: true });
+      },
+      { once: true }
+    );
 
-      // Toggle del menú
-      document.querySelectorAll("[data-menu-trigger]").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const id = btn.getAttribute("data-menu-trigger");
-          const menu = document.querySelector(`[data-menu="${id}"]`);
-          if (!menu) return;
-          const isHidden = menu.classList.contains("hidden");
-          document.querySelectorAll("[data-menu]").forEach(el => el.classList.add("hidden"));
-          if (isHidden) menu.classList.remove("hidden");
-        });
+    document.querySelectorAll("[data-menu-trigger]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-menu-trigger");
+        const menu = document.querySelector(`[data-menu="${id}"]`);
+        if (!menu) return;
+        const isHidden = menu.classList.contains("hidden");
+        document
+          .querySelectorAll("[data-menu]")
+          .forEach((el) => el.classList.add("hidden"));
+        if (isHidden) menu.classList.remove("hidden");
       });
+    });
 
-      // Acciones del menú
-      document.querySelectorAll("[data-menu] [data-action]").forEach(btn => {
-        btn.onclick = () => {
-          const action = btn.getAttribute("data-action");
-          const id = btn.getAttribute("data-id");
-          const user = users.find(u => u.id === id);
-          if (!user) return;
+    document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
+      btn.onclick = () => {
+        const action = btn.getAttribute("data-action");
+        const id = btn.getAttribute("data-id");
+        const user = users.find((u) => u.id === id);
+        if (!user) return;
 
-          if (action === "ver") {
-            openModalVerUsuario(user);
-          } else if (action === "editar") {
-            openModalUsuario(user);
-          } else if (action === "toggle") {
-            toggleStatus(id);
-          }
-        };
-      });
+        if (action === "ver") {
+          openModalVerUsuario(user);
+        } else if (action === "editar") {
+          openModalUsuario(user);
+        } else if (action === "toggle") {
+          toggleStatus(id);
+        }
+      };
+    });
+  }
+
+  // ====== Eventos globales ======
+  inputBuscar.addEventListener("input", renderTable);
+  selectFiltroRol.addEventListener("change", renderTable);
+
+  btnNuevoUsuario.addEventListener("click", () => openModalUsuario(null));
+  btnCerrarModalUsuario.addEventListener("click", closeModalUsuario);
+  btnCancelarModalUsuario.addEventListener("click", closeModalUsuario);
+
+  btnCerrarModalVerUsuario.addEventListener("click", closeModalVerUsuario);
+
+  // Enviar formulario crear/editar → llama al backend
+  formUsuario.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      nombre_completo: inputNombreCompleto.value.trim(),
+      tipo_documento: inputTipoDocumento.value,
+      numero_documento: inputNumeroDocumento.value.trim(),
+      telefono: inputTelefono.value.trim(),
+      cargo: inputCargo.value,
+      correo: inputCorreo.value.trim(),
+      password: inputPassword.value.trim(),
+      direccion: inputDireccion.value.trim(),
+      id_programa: inputPrograma ? inputPrograma.value : null,
+    };
+
+    const isEdit = !!hiddenUserId.value;
+
+    if (isEdit) {
+      payload.id_usuario = hiddenUserId.value;
     }
 
-    // ====== Eventos globales ======
-    inputBuscar.addEventListener("input", renderTable);
-    selectFiltroRol.addEventListener("change", renderTable);
+    try {
+      const data = isEdit
+        ? await actualizarUsuario(payload)
+        : await crearUsuario(payload);
 
-    btnNuevoUsuario.addEventListener("click", () => openModalUsuario(null));
-    btnCerrarModalUsuario.addEventListener("click", closeModalUsuario);
-    btnCancelarModalUsuario.addEventListener("click", closeModalUsuario);
-
-    btnCerrarModalVerUsuario.addEventListener("click", closeModalVerUsuario);
-
-    // Enviar formulario crear/editar
-    formUsuario.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const payload = {
-        id: hiddenUserId.value || String(users.length + 1),
-        nombre_completo: inputNombreCompleto.value.trim(),
-        tipo_documento: inputTipoDocumento.value,
-        numero_documento: inputNumeroDocumento.value.trim(),
-        telefono: inputTelefono.value.trim(),
-        cargo: inputCargo.value,
-        correo: inputCorreo.value.trim(),
-        direccion: inputDireccion.value.trim(),
-      };
-
-      if (hiddenUserId.value) {
-        // Editar
-        users = users.map(u =>
-          u.id === hiddenUserId.value ? { ...u, ...payload } : u
-        );
-      } else {
-        // Nuevo
-        users.push({
-          ...payload,
-          estado: true,
-          created_at: new Date().toISOString().split("T")[0],
-        });
+      if (data.error) {
+        alert(data.error); // aquí puedes cambiar por SweetAlert si quieres
+        return;
       }
 
       closeModalUsuario();
-      renderTable();
-    });
+      await cargarUsuarios();
+    } catch (error) {
+      console.error("Error al guardar usuario:", error);
+      alert("Ocurrió un error al guardar el usuario.");
+    }
+  });
 
-    // Render inicial
-    renderTable();
-  </script>
+  // Render inicial: intentamos cargar desde backend; si falla, se quedan los mock
+  cargarUsuarios();
+</script>
+
 </body>
 </html>
