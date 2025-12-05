@@ -1,105 +1,103 @@
 <?php
 
-/**
- * Modelo responsable de las operaciones sobre la tabla bodegas.
- */
 class BodegaModel {
-
-    /**
-     * @var PDO
-     */
-    private $conn;
+    private $conn; 
 
     public function __construct(PDO $conn) {
         $this->conn = $conn;
     }
 
-    /* ============================================
-       LISTAR BODEGAS
-    ============================================ */
-    public function getBodegas(?int $estado = null): array {
-        if ($estado !== null) {
-            $sql = "SELECT * FROM bodegas WHERE estado = ?";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute([$estado]);
-        } else {
-            $sql = "SELECT * FROM bodegas";
-            $stmt = $this->conn->query($sql);
+    /* LIST ALL BODEGAS */
+    public function listar(): array {
+        try {
+            $sql = "SELECT * FROM bodegas ORDER BY nombre"; // Select all bodegas ordered by name
+            $stmt = $this->conn->query($sql); // Direct query
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all rows as associative array
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()]; // Return error on failure
         }
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /* ============================================
-       BUSCAR POR ID
-    ============================================ */
-    public function getBodegaById(int $id): ?array {
-        $sql = "SELECT * FROM bodegas WHERE id = ? LIMIT 1";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row ?: null;
+    /* GET BODEGA BY ID */
+    public function obtenerPorId(int $id): ?array {
+        try {
+            $sql = "SELECT * FROM bodegas WHERE id_bodega = :id LIMIT 1"; // Select bodega by ID
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT); // Bind ID parameter
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch single row
+            return $row ?: null; // Return row or null if not found
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
 
-    /* ============================================
-       CREAR
-    ============================================ */
-    public function crearBodega(array $data): array {
-        $sql = "INSERT INTO bodegas (nombre, ubicacion, descripcion, estado, fecha_creacion)
-                VALUES (?, ?, ?, ?, NOW())";
+    /* CREATE NEW BODEGA */
+    public function crear(string $codigo, string $nombre, string $ubicacion): bool {
+        try {
+            $sql = "INSERT INTO bodegas (codigo_bodega, nombre, ubicacion)
+                    VALUES (:codigo, :nombre, :ubicacion)"; // Insert statement
 
-        $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':codigo', $codigo);
+            $stmt->bindParam(':nombre', $nombre);
+            $stmt->bindParam(':ubicacion', $ubicacion);
 
-        $ok = $stmt->execute([
-            $data["nombre"],
-            $data["ubicacion"],
-            $data["descripcion"],
-            $data["estado"]
-        ]);
-
-        return $ok
-            ? ["status" => "ok", "msg" => "Bodega creada correctamente"]
-            : ["status" => "error", "msg" => "Error al crear bodega"];
+            return $stmt->execute(); // Execute and return true/false
+        } catch (PDOException $e) {
+            error_log("Error crear bodega: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /* ============================================
-       ACTUALIZAR
-    ============================================ */
-    public function actualizarBodega(array $data): array {
-        $sql = "UPDATE bodegas 
-                SET nombre = ?, ubicacion = ?, descripcion = ?
-                WHERE id = ?";
+    /* UPDATE BODEGA */
+    public function actualizar(int $id, string $codigo, string $nombre, string $ubicacion, string $estado): bool {
+        try {
+            $sql = "UPDATE bodegas 
+                    SET codigo_bodega = :codigo,
+                        nombre = :nombre, 
+                        ubicacion = :ubicacion,
+                        estado = :estado
+                    WHERE id_bodega = :id"; // Update statement by ID
 
-        $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':codigo', $codigo);
+            $stmt->bindParam(':nombre', $nombre);
+            $stmt->bindParam(':ubicacion', $ubicacion);
+            $stmt->bindParam(':estado', $estado);
 
-        $ok = $stmt->execute([
-            $data["nombre"],
-            $data["ubicacion"],
-            $data["descripcion"],
-            $data["id"]
-        ]);
-
-        return $ok
-            ? ["status" => "ok", "msg" => "Bodega actualizada correctamente"]
-            : ["status" => "error", "msg" => "Error al actualizar"];
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error actualizar bodega: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /* ============================================
-       CAMBIAR ESTADO
-    ============================================ */
-    public function cambiarEstado(int $id, int $estado): array {
-        $sql = "UPDATE bodegas SET estado = ? WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
+    /*DELETE BODEGA*/
+    public function eliminar(int $id): bool {
+        try {
+            $sql = "DELETE FROM bodegas WHERE id_bodega = :id"; // Delete statement
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error eliminar bodega: " . $e->getMessage());
+            return false;
+        }
+    }
 
-        $ok = $stmt->execute([$estado, $id]);
-
-        return $ok
-            ? [
-                "status" => "ok",
-                "msg" => $estado === 1 ? "Bodega activada" : "Bodega inactivada"
-            ]
-            : ["status" => "error", "msg" => "Error al cambiar estado"];
+    /* CHANGE BODEGA STATE (Active/Inactive)*/
+    public function cambiarEstado(int $id, string $estado): bool {
+        try {
+            $sql = "UPDATE bodegas SET estado = :estado WHERE id_bodega = :id"; // Update only estado
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':estado', $estado);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error cambiar estado bodega: " . $e->getMessage());
+            return false;
+        }
     }
 }
-

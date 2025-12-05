@@ -9,9 +9,9 @@ class MaterialFormacionModel {
         $this->db = $conn;
     }
 
-    /* ============================================================
-       GET ALL MATERIALS
-       ============================================================ */
+    
+    //   GET ALL MATERIALS
+       
     public function getAll()
     {
         $sql = "SELECT * FROM material_formacion ORDER BY nombre ASC";
@@ -21,9 +21,9 @@ class MaterialFormacionModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /* ============================================================
-       GET MATERIAL BY ID
-       ============================================================ */
+    
+    //   GET MATERIAL BY ID
+       
     public function getById($id_material)
     {
         $sql = "SELECT * FROM material_formacion WHERE id_material = ?";
@@ -33,38 +33,40 @@ class MaterialFormacionModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /* ============================================================
-       CREATE MATERIAL
-       ============================================================ */
+    
+    //  CREATE MATERIAL
+       
     public function create($data)
     {
-        // Convert empty string to NULL
-        $codigo = ($data['codigo_inventario'] === "" ? null : $data['codigo_inventario']);
+        // Safe read: use NULL if key does not exist or is empty
+        $codigo = (isset($data['codigo_inventario']) && $data['codigo_inventario'] !== "")
+            ? $data['codigo_inventario']
+            : null;
 
-        // If Inventariado → inventory code required
+        // If material is Inventariado → must have code
         if ($data['clasificacion'] === "Inventariado" && $codigo === null) {
-            return false;
+            return false; // Controller will return error JSON
         }
 
         $sql = "INSERT INTO material_formacion 
-                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario, estado)
-                VALUES (?, ?, ?, ?, ?, ?)";
+                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario)
+                VALUES (?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
             $data['nombre'],
-            $data['descripcion'],
+            $data['descripcion'] ?? null,
             $data['unidad_medida'],
             $data['clasificacion'],
-            $codigo,
-            $data['estado']
+            $codigo
         ]);
     }
 
-    /* ============================================================
-       UPDATE MATERIAL
-       ============================================================ */
+
+    
+    //   UPDATE MATERIAL
+       
     public function update($id_material, $data)
     {
         // Convert empty string to NULL
@@ -93,9 +95,9 @@ class MaterialFormacionModel {
         ]);
     }
 
-    /* ============================================================
-       DELETE MATERIAL (check all relations)
-       ============================================================ */
+    
+    //    DELETE MATERIAL (check all relations)
+       
     public function delete($id_material)
     {
         // Tables that use id_material
@@ -128,9 +130,9 @@ class MaterialFormacionModel {
         return $stmt->execute([$id_material]);
     }
 
-    /* ============================================================
-       GET TOTAL STOCK (bodega + subbodega)
-       ============================================================ */
+    
+    //   GET TOTAL STOCK (bodega + subbodega)
+       
     public function getStockTotal($id_material)
     {
         $sql = "
@@ -150,9 +152,9 @@ class MaterialFormacionModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /* ============================================================
-       SEARCH MATERIAL BY NAME OR CODE
-       ============================================================ */
+    
+    //   SEARCH MATERIAL BY NAME OR CODE
+       
     public function search($term)
     {
         $like = "%".$term."%";

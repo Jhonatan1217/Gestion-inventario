@@ -1,142 +1,171 @@
 <?php
 require_once __DIR__ . "/../models/bodega.php";
+require_once __DIR__ . "/../../Config/database.php";
 
-/**
- * Controlador REST para las bodegas.
- */
+// It is established that all responses will be in JSON format.
+header("Content-Type: application/json; charset=utf-8");
+
+/* Controller REST to handle CRUD operations for warehouses.*/
 class BodegaController {
 
-    /**
-     * @var BodegaModel
-     */
+    /**Instance of the warehouse model.*/
     private $model;
 
+    /**Constructor: receives the connection and creates the model.*/
     public function __construct(PDO $conn) {
         $this->model = new BodegaModel($conn);
     }
 
-    /**
-     * Envía una respuesta JSON uniforme.
-     */
-    private function jsonResponse(array $payload, int $statusCode = 200): void {
-        http_response_code($statusCode);
-        header("Content-Type: application/json; charset=utf-8");
-        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    /**Send a JSON response with HTTP code.*/
+    private function jsonResponse($data, int $code = 200) {
+        http_response_code($code);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
-    /**
-     * Obtiene y valida el ID recibido por POST.
-     */
-    private function getPostId(): ?int {
-        if (!isset($_POST["id"]) || !is_numeric($_POST["id"])) {
-            $this->jsonResponse(["status" => "error", "msg" => "ID requerido o inválido"], 400);
-            return null;
-        }
-
-        return (int) $_POST["id"];
+    /* Gets the JSON sent by the client (POST/PUT).*/
+    private function getJson() {
+        return json_decode(file_get_contents("php://input"), true);
     }
 
-    /* ================================
-       LISTAR
-    ================================ */
-    public function listar(): void {
-        $estado = isset($_GET["estado"]) && $_GET["estado"] !== ""
-            ? (int) $_GET["estado"]
-            : null;
-
-        $bodegas = $this->model->getBodegas($estado);
-        $this->jsonResponse(["status" => "ok", "data" => $bodegas]);
+    /* Lists all warehouses.*/
+   
+    public function listar() {
+        $this->jsonResponse($this->model->listar());
     }
 
-    /* ================================
-       OBTENER
-    ================================ */
-    public function obtener($id = null): void {
-        $id = $id ?? ($_GET["id"] ?? null);
-        if ($id === null || !is_numeric($id)) {
-            $this->jsonResponse(["status" => "error", "msg" => "Debe enviar un ID válido"], 400);
+    /* Gets a warehouse by its ID.*/
+    public function obtener() {
+        $id = $_GET["id_bodega"] ?? null;
+
+        // ID validation
+        if (!$id) {
+            $this->jsonResponse(["error" => "ID no proporcionado"], 400);
             return;
         }
 
-        $bodega = $this->model->getBodegaById((int) $id);
-        if (!$bodega) {
-            $this->jsonResponse(["status" => "error", "msg" => "Bodega no encontrada"], 404);
-            return;
-        }
+        // Query to the model
+        $bodega = $this->model->obtenerPorId($id);
 
-        $this->jsonResponse(["status" => "ok", "data" => $bodega]);
+        // If it exists, returns 200, if not, 404
+        $this->jsonResponse(
+            $bodega ?: ["error" => "Bodega no encontrada"],
+            $bodega ? 200 : 404
+        );
     }
 
-    /* ================================
-       CREAR
-    ================================ */
-    public function crear(): void {
-        $nombre = trim($_POST["nombre"] ?? "");
-        if ($nombre === "") {
-            $this->jsonResponse(["status" => "error", "msg" => "Nombre requerido"], 400);
+    /* Creates a new warehouse.*/
+    public function crear() {
+        $data = $this->getJson();
+
+        // JSON validation
+        if (!$data) {
+            $this->jsonResponse(["error" => "JSON inválido"], 400);
             return;
         }
 
-        $data = [
-            "nombre" => $nombre,
-            "ubicacion" => trim($_POST["ubicacion"] ?? ""),
-            "descripcion" => trim($_POST["descripcion"] ?? ""),
-            "estado" => 1
-        ];
+        // Insertion in DB
+        $ok = $this->model->crear(
+            $data['codigo_bodega'],
+            $data['nombre'],
+            $data['ubicacion'],
+        );
 
-        $this->jsonResponse($this->model->crearBodega($data));
+        // Message according to success or failure
+        $this->jsonResponse(
+            $ok ? ["mensaje" => "Bodega creada correctamente"]
+                : ["error" => "No se pudo crear"],
+            $ok ? 200 : 500
+        );
     }
 
-    /* ================================
-       ACTUALIZAR
-    ================================ */
-    public function actualizar(): void {
-        $id = $this->getPostId();
-        if ($id === null) {
+    /* Updates an existing warehouse.*/
+    public function actualizar() {
+        $data = $this->getJson();
+        $id = $_GET["id_bodega"] ?? $data["id_bodega"] ?? null;
+
+        // Validación de ID
+        if (!$id) {
+            $this->jsonResponse(["error" => "ID faltante"], 400);
             return;
         }
 
-        $nombre = trim($_POST["nombre"] ?? "");
-        $ubicacion = trim($_POST["ubicacion"] ?? "");
-        $descripcion = trim($_POST["descripcion"] ?? "");
+        // Update in DB
+        $ok = $this->model->actualizar(
+            $id,
+            $data['codigo_bodega'],
+            $data['nombre'],
+            $data['ubicacion'],
+        );
 
-        if ($nombre === "") {
-            $this->jsonResponse(["status" => "error", "msg" => "Nombre requerido"], 400);
-            return;
-        }
-
-        $data = [
-            "id" => $id,
-            "nombre" => $nombre,
-            "ubicacion" => $ubicacion,
-            "descripcion" => $descripcion
-        ];
-
-        $this->jsonResponse($this->model->actualizarBodega($data));
+        $this->jsonResponse(
+            $ok ? ["mensaje" => "Bodega actualizada correctamente"]
+                : ["error" => "No se pudo actualizar"],
+            $ok ? 200 : 500
+        );
     }
 
-    /* ================================
-       ACTIVAR
-    ================================ */
-    public function activar(): void {
-        $id = $this->getPostId();
-        if ($id === null) {
+    /*Deletes a warehouse by ID.*/
+    public function eliminar() {
+        $data = $this->getJson();
+        $id = $_GET["id_bodega"] ?? $data["id_bodega"] ?? null;
+
+        // ID validation
+        if (!$id) {
+            $this->jsonResponse(["error" => "ID faltante"], 400);
             return;
         }
 
-        $this->jsonResponse($this->model->cambiarEstado($id, 1));
+        // Deletion in DB
+        $ok = $this->model->eliminar($id);
+
+        $this->jsonResponse(
+            $ok ? ["mensaje" => "Bodega eliminada correctamente"]
+                : ["error" => "No se pudo eliminar"],
+            $ok ? 200 : 500
+        );
     }
 
-    /* ================================
-       INACTIVAR
-    ================================ */
-    public function inactivar(): void {
-        $id = $this->getPostId();
-        if ($id === null) {
+    /*Changes the state of a warehouse (active/inactive).*/
+    public function cambiar_estado() {
+        $data = $this->getJson();
+
+        // Data validation
+        if (!isset($data["id_bodega"], $data["estado"])) {
+            $this->jsonResponse(["error" => "Datos incompletos"], 400);
             return;
         }
 
-        $this->jsonResponse($this->model->cambiarEstado($id, 0));
+        // State update
+        $ok = $this->model->cambiarEstado(
+            $data["id_bodega"],
+            $data["estado"]
+        );
+
+        $this->jsonResponse(
+            $ok ? ["mensaje" => "Estado actualizado correctamente"]
+                : ["error" => "No se pudo actualizar el estado"],
+            $ok ? 200 : 500
+        );
     }
 }
- 
+
+// Action received by GET
+$accion = $_GET["accion"] ?? null;
+
+// Action validation
+if (!$accion) {
+    echo json_encode(["error" => "Acción no especificada"]);
+    exit;
+}
+
+// Controller instance
+$controller = new BodegaController($conn);
+
+// Method verification
+if (!method_exists($controller, $accion)) {
+    echo json_encode(["error" => "Acción inválida"]);
+    exit;
+}
+
+// Dynamic method call
+$controller->$accion();

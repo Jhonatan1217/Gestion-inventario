@@ -12,25 +12,22 @@ class MaterialFormacionController {
         $this->model = new MaterialFormacionModel($conn);
     }
 
-    /* ============================================================
-       LIST MATERIALS
-       ============================================================ */
+ 
+    //   LIST MATERIALS
     public function listar()
     {
         return $this->model->getAll();
     }
 
-    /* ============================================================
-       GET MATERIAL BY ID
-       ============================================================ */
+ 
+    //   GET MATERIAL BY ID
     public function obtener($id)
     {
         return $this->model->getById($id);
     }
 
-    /* ============================================================
-       CREATE MATERIAL
-       ============================================================ */
+ 
+    //   CREATE MATERIAL
     public function crear($data)
     {
         // Model returns false when validation fails
@@ -39,19 +36,18 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be created. Check classification and inventory code."
+                "message" => "El Material no fue creado. Revisa la clasificación y el código de inventario."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material created successfully."
+            "message" => "El Material fue creado exitosamente."
         ];
     }
 
-    /* ============================================================
-       UPDATE MATERIAL
-       ============================================================ */
+ 
+    //   UPDATE MATERIAL
     public function actualizar($id, $data)
     {
         $ok = $this->model->update($id, $data);
@@ -59,19 +55,18 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be updated. Check classification and inventory code."
+                "message" => "El Material no fue actualizado. Revisa la clasificación y el código de inventario."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material updated successfully."
+            "message" => "El Material fue actualizado exitosamente."
         ];
     }
 
-    /* ============================================================
-       DELETE MATERIAL
-       ============================================================ */
+ 
+    //   DELETE MATERIAL
     public function eliminar($id)
     {
         $ok = $this->model->delete($id);
@@ -79,41 +74,39 @@ class MaterialFormacionController {
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "Material cannot be deleted because it is used in other tables."
+                "message" => "El Material no puede ser eliminado porque está en uso en otras tablas."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "Material deleted successfully."
+            "message" => "El Material fue eliminado exitosamente."
         ];
     }
 
-    /* ============================================================
-       SEARCH MATERIAL
-       ============================================================ */
+ 
+    //   SEARCH MATERIAL
     public function buscar($term)
     {
         return $this->model->search($term);
     }
 
-    /* ============================================================
-       MATERIAL STOCK
-       ============================================================ */
+ 
+    //   MATERIAL STOCK
     public function stock($id)
     {
         return $this->model->getStockTotal($id);
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+
 // API-LIKE ACTION HANDLER (switch)
-///////////////////////////////////////////////////////////////////////////////
+
 
 $controller = new MaterialFormacionController($conn);
 
 // read action
-$action = $_GET['action'] ?? null;
+$accion = $_GET['accion'] ?? null;
 
 // simple JSON response function
 function sendJSON($data, $code = 200)
@@ -124,7 +117,7 @@ function sendJSON($data, $code = 200)
     exit;
 }
 
-switch ($action) {
+switch ($accion) {
 
     case "listar":
         sendJSON($controller->listar());
@@ -158,7 +151,7 @@ switch ($action) {
         break;
 
     default:
-        sendJSON(["status" => "error", "message" => "Unknown action"]);
+        sendJSON(["status" => "error", "message" => "Acción no reconocida"]);
         break;
 }
 
