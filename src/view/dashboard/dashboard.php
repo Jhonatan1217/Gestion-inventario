@@ -117,24 +117,14 @@ $pieGradient = implode(", ", $gradientParts);
     <link rel="stylesheet" href="../../assets/css/globals.css">
 </head>
 <body>
-<?php
-// mismo criterio que usa el sidebar para colapsar
-$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
-$sidebarMarginClass = $collapsed ? 'ml-[70px]' : 'ml-[260px]';
-?>
-
-<?php include __DIR__ . '/../../includes/sidebar.php'; ?>
-
-<!-- CONTENIDO PRINCIPAL -->
-<div class="<?php echo $sidebarMarginClass; ?> space-y-6 animate-fade-in-up p-6">
-
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p class="text-muted-foreground">Resumen general del inventario y actividad reciente</p>
-        </div>
-        <div class="flex gap-2">
+<div class="space-y-6 animate-fade-in-up">
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p class="text-muted-foreground">Resumen general del inventario y actividad reciente</p>
+    </div>
+    <div class="flex gap-2">
         <a href="/dashboard/solicitudes">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted gap-2">
         <i data-lucide="clock" class="h-4 w-4"></i>
@@ -160,12 +150,12 @@ $sidebarMarginClass = $collapsed ? 'ml-[70px]' : 'ml-[260px]';
     </div>
     <div class="flex items-center gap-2 mt-2">
         <p class="text-2xl font-bold"><?php echo count($mockMateriales); ?></p>
-        <span class="text-xs text-success flex items-center">+12%<i data-lucide="trending-up" class="h-3 w-3"></i></span>
+        <span class="text-xs text-success flex items-center">+12%</span>
     </div>
 
     <p class="text-xs text-muted-foreground"><?php echo $materialesActivos; ?> disponibles</p>
     <div class="flex items-center gap-1 text-xs text-success">
-        
+        <i data-lucide="trending-up" class="h-3 w-3"></i>
     </div>
     </div>
 
@@ -504,4 +494,7 @@ $sidebarMarginClass = $collapsed ? 'ml-[70px]' : 'ml-[260px]';
     }
   });
 </script>
+<<<<<<< HEAD
 
+=======
+>>>>>>> d8818e6453caca7b291773be5b6fe2a52fe833f2

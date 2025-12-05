@@ -3,13 +3,11 @@
 // LOGIN PAGE — VERSIÓN PHP SIN REACT
 // =====================================
 
-
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Incluye la conexión a la BD y la BASE_URL si ya la defines allí
-// Ajusta la ruta según tu proyecto
 require_once __DIR__ . '/../../../Config/database.php';
 
 // Si no tienes BASE_URL definida en otro sitio, la calculamos aquí
@@ -17,12 +15,13 @@ if (!defined('BASE_URL')) {
     $protocol   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
     $host       = $_SERVER['HTTP_HOST'];
     $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
-    define('BASE_URL', $protocol . $host . $script_dir);
+    define('BASE_URL', $protocol . $host . $script_dir); // ej: .../src/view/login/
 }
 
-// Si ya está logueado, mandarlo al dashboard (index.php)
+// Si ya está logueado, mandarlo al dashboard (usando el index de la raíz)
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . 'index.php');
+    // vamos al index.php de la raíz, con page=dashboard
+    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
     exit;
 }
 
@@ -56,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['usuario_nombre'] = $user['nombre_completo'];
                 $_SESSION['usuario_rol']    = $user['rol'];
 
-                header('Location: ' . BASE_URL . 'index.php');
+                // 🔁 Redirige al dashboard a través del index de la raíz
+                header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
                 exit;
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
@@ -87,19 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Card -->
   <div class="relative w-full max-w-md shadow-xl bg-white rounded-xl border border-gray-200 fade-in">
 
-    
     <!-- Header -->
     <div class="space-y-4 text-center pb-2 p-6">
       <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-secondary">
-
-       <img src="../../assets/img/logo-sena-blanco.png" alt="logo sena blanco" class="h-8 w-auto object-contain">
-
+        <img src="../../assets/img/logo-sena-blanco.png" alt="logo sena blanco" class="h-8 w-auto object-contain">
       </div>
 
       <div>
         <h1 class="text-2xl font-bold">Bienvenido a SIGA</h1>
         <p class="mt-1 text-gray-500">Sistema de Gestión de Almacén</p>
       </div>
+
+      <?php if ($loginError !== ""): ?>
+        <p class="mt-2 text-sm text-red-600">
+          <?= htmlspecialchars($loginError) ?>
+        </p>
+      <?php endif; ?>
     </div>
 
     <!-- Form -->
@@ -145,13 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               id="togglePassword"
               class="absolute right-0 top-0 h-11 w-11 flex items-center justify-center hover:bg-transparent"
             >
-
               <!-- ICONO EYE -->
               <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
                 <circle cx="12" cy="12" r="3"/>
               </svg>
-
             </button>
           </div>
         </div>
@@ -179,7 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </button>
 
       </form>
-
     </div>
   </div>
 
@@ -201,10 +201,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         : `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-7-11-7a19.207 19.207 0 015.677-5.48m3.461-.762A11.413 11.413 0 0112 5c7 0 11 7 11 7a20.626 20.626 0 01-2.364 3.442M3 3l18 18"/>`;
     });
 
-    // Simulación del loading y redirección
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
+    // Mantener el loader pero dejar que PHP maneje la redirección
+    document.getElementById("loginForm").addEventListener("submit", function () {
       const btn = document.getElementById("btnLogin");
       const loader = document.getElementById("loaderIcon");
       const text = document.getElementById("btnText");
@@ -212,10 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       btn.disabled = true;
       loader.classList.remove("hidden");
       text.textContent = "Iniciando sesión...";
-
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1000);
+      // PHP se encarga de validar y redirigir.
     });
   </script>
 

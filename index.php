@@ -1,42 +1,15 @@
 <?php
-// // Si viene 'accion' ignoramos el router de páginas y usamos API  (SOLO PARA PRUEBAS Y modificar dependiendo del controlador)
-// if (isset($_GET['accion'])) {
-//     include_once __DIR__ . "/Config/database.php";
-//     include_once __DIR__ . "/src/controllers/usuario_controller.php";
-//     $controller = new usuario($conn);
-
-//     switch ($_GET['accion']) {
-//         case 'listar':
-//             $controller->listar();
-//             break;
-//         case 'obtener':
-//             $controller->obtener($_GET['id_usuario'] ?? null);
-//             break;
-//         case 'crear':
-//             $controller->crear();
-//             break;
-//         case 'actualizar':
-//             $controller->actualizar($_GET['id_usuario'] ?? null);
-//             break;
-//         case 'eliminar':
-//             $controller->eliminar($_GET['id_usuario'] ?? null);
-//             break;
-//         case 'cambiar_estado':
-//             $controller->cambiarEstado();
-//             break;
-//         default:
-//             echo json_encode(['error'=>'Acción inválida']);
-//     }
-//     exit; 
-// }
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 define('ACCESO_PERMITIDO', true);
 
 session_start();
 
-// Ruta base del proyecto
+// =============================
+// CONFIGURACIÓN BASE
+// =============================
+
+// Ruta base del proyecto (carpeta GESTION_INVENTARIO / Gestion-inventario)
 define('BASE_PATH', __DIR__);
 
 // Base URL dinámica
@@ -45,17 +18,27 @@ $host       = $_SERVER['HTTP_HOST'];
 $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
 define('BASE_URL', $protocol . $host . $script_dir);
 
+// 🔐 Nombre de la clave de sesión donde guardas el ID del usuario
+//   AJÚSTALO al nombre REAL que uses en login.php
+$SESSION_USER_KEY = 'usuario_id';  // si en tu login usaste 'id_usuario', cambia esto
+
 // =============================
 // LÓGICA DE PÁGINA ACTUAL
 // =============================
 
-// Página solicitada (por defecto 'landing')
 $page = $_GET['page'] ?? 'landing';
 $page = basename($page); // sanitizar
 
-// 1) Si es la LANDING → mostrar solo landing.php sin header/sidebar/footer
+// Si el usuario YA está logueado y pide la landing,
+// lo mandamos al dashboard (o la página que quieras como inicio logueado)
+if (isset($_SESSION[$SESSION_USER_KEY]) && $page === 'landing') {
+    header('Location: ' . BASE_URL . 'index.php?page=dashboard');
+    exit;
+}
+
+// 1) LANDING PÚBLICA (sin header/sidebar)
 if ($page === 'landing') {
-    $landingFile = BASE_PATH . "/src/view/landing.php"; // ajusta ruta si tu vista está en otro lado
+    $landingFile = BASE_PATH . "/src/view/landing.php";
 
     if (file_exists($landingFile)) {
         include $landingFile;
@@ -64,26 +47,24 @@ if ($page === 'landing') {
                 No se encontró la vista <strong>landing.php</strong>.
               </p>";
     }
-    exit; // importante: no seguir renderizando el layout
+    exit;
 }
 
-// 2) A PARTIR DE AQUÍ, TODAS LAS PÁGINAS SON PROTEGIDAS
-//    Si NO hay sesión → mandar al login (que puede ser tu login.php que me pasaste)
-
-if (!isset($_SESSION['usuario_id'])) {
-    // Ajusta la ruta según dónde tengas el login
-    header('Location: ' . BASE_URL . 'src/view/auth/login.php');
+// 2) PÁGINAS PROTEGIDAS → si no hay sesión, mandar al login
+if (!isset($_SESSION[$SESSION_USER_KEY])) {
+    // login REAL según tu árbol: src/view/login/login.php
+    header('Location: ' . BASE_URL . 'src/view/login/login.php');
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion Inventario</title>
+    <title>Gestión Inventario</title>
     <link rel="icon" type="image/png" href="">
-    <!-- <link rel="stylesheet" href="./public/css/output.css"> -->
+    <link rel="stylesheet" href="src/assets/css/globals.css">
+    <!-- aquí metes tu CSS/Tailwind si no lo haces en los includes -->
 </head>
 <body class="flex flex-col min-h-screen font-sans bg-white text-gray-900">
     <header>
@@ -95,8 +76,5 @@ if (!isset($_SESSION['usuario_id'])) {
         <?php require_once BASE_PATH . '/src/includes/main.php'; ?>
     </main>
 
-    <footer>
-        <?php require_once BASE_PATH . '/src/includes/footer.php'; ?>
-    </footer>
 </body>
 </html>
