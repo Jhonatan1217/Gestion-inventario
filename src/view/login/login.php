@@ -18,9 +18,10 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', $protocol . $host . $script_dir); // ej: .../src/view/login/
 }
 
-// Si ya está logueado, mandarlo al dashboard
+// Si ya está logueado, mandarlo al dashboard (usando el index de la raíz)
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . '../dashboard/index.php');
+    // vamos al index.php de la raíz, con page=dashboard
+    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
     exit;
 }
 
@@ -37,13 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = "Por favor ingresa tu correo y contraseña.";
     } else {
         try {
-            // Ajustado a tu tabla: password y cargo (rol)
-            $sql = "SELECT 
-                        id_usuario, 
-                        nombre_completo, 
-                        correo, 
-                        password,      -- columna real en la BD
-                        cargo          -- usaremos esto como rol
+            // Ajusta el nombre de tabla/campos según tu BD
+            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
                     FROM usuarios 
                     WHERE correo = :correo 
                     LIMIT 1";
@@ -52,25 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user) {
-                // 🔐 Si guardas la contraseña hasheada con password_hash()
-                if (password_verify($password, $user['password'])) {
-                    // Guardar datos mínimos en sesión
-                    $_SESSION['usuario_id']     = $user['id_usuario'];
-                    $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                    $_SESSION['usuario_rol']    = $user['cargo']; // Coordinador, Instructor, etc.
+            // Asumo que guardas la contraseña con password_hash()
+            if ($user && password_verify($password, $user['password_hash'])) {
+                // Guardar datos mínimos en sesión
+                $_SESSION['usuario_id']     = $user['id_usuario'];
+                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+                $_SESSION['usuario_rol']    = $user['rol'];
 
-                    // Redirige al dashboard
-                    header('Location: ' . BASE_URL . '../dashboard/index.php');
-                    exit;
-                } else {
-                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
-                }
+                // 🔁 Redirige al dashboard a través del index de la raíz
+                header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
+                exit;
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
         } catch (PDOException $e) {
-            // Puedes loguear el error si quieres: $e->getMessage()
             $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
         }
     }

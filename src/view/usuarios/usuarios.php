@@ -103,11 +103,11 @@
             class="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">Todos</option>
-            <option value="coordinador">Coordinador</option>
-            <option value="instructor">Instructor</option>
-            <option value="pasante">Pasante</option>
-            <option value="encargado_inventario">Encargado Inventario</option>
-            <option value="encargado_bodega">Encargado Bodega</option>
+            <option value="Coordinador">Coordinador</option>
+            <option value="Instructor">Instructor</option>
+            <option value="Pasante">Pasante</option>
+            <option value="Encargado Inventario">Encargado Inventario</option>
+            <option value="Encargado Bodega">Encargado Bodega</option>
           </select>
         </div>
       </div>
@@ -222,11 +222,11 @@
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               required
             >
-              <option value="coordinador">Coordinador</option>
-              <option value="instructor">Instructor</option>
-              <option value="pasante">Pasante</option>
-              <option value="encargado_inventario">Encargado de Inventario</option>
-              <option value="encargado_bodega">Encargado de Bodega</option>
+              <option value="Coordinador">Coordinador</option>
+              <option value="Instructor">Instructor</option>
+              <option value="Pasante">Pasante</option>
+              <option value="Encargado Inventario">Encargado de Inventario</option>
+              <option value="Encargado Bodega">Encargado de Bodega</option>
             </select>
           </div>
 
@@ -324,19 +324,19 @@
 
   // ====== Configuración de roles (equivalente a roleLabels / roleBadgeStyles) ======
   const roleLabels = {
-    coordinador: "Coordinador",
-    instructor: "Instructor",
-    pasante: "Pasante",
-    encargado_inventario: "Encargado de Inventario",
-    encargado_bodega: "Encargado de Bodega",
+    "Coordinador": "Coordinador",
+    "Instructor": "Instructor",
+    "Pasante": "Pasante",
+    "Encargado Inventario": "Encargado de Inventario",
+    "Encargado Bodega": "Encargado de Bodega",
   };
 
   const roleBadgeStyles = {
-    coordinador: "bg-chart-4/10 text-chart-4",
-    instructor: "bg-primary/10 text-primary",
-    pasante: "bg-chart-3/10 text-chart-3",
-    encargado_inventario: "bg-chart-2/10 text-chart-2",
-    encargado_bodega: "bg-chart-1/10 text-chart-1",
+    "Coordinador": "bg-chart-4/10 text-chart-4",
+    "Instructor": "bg-primary/10 text-primary",
+    "Pasante": "bg-chart-3/10 text-chart-3",
+    "Encargado Inventario": "bg-chart-2/10 text-chart-2",
+    "Encargado Bodega": "bg-chart-1/10 text-chart-1",
   };
 
   // ====== Mock users como respaldo si falla el backend ======
@@ -347,7 +347,7 @@
       tipo_documento: "CC",
       numero_documento: "1098765432",
       telefono: "3101234567",
-      cargo: "coordinador",
+      cargo: "Coordinador",
       correo: "ana.rodriguez@sena.edu.co",
       direccion: "Calle 10 #12-34, Bogotá",
       estado: true,
@@ -359,7 +359,7 @@
       tipo_documento: "CC",
       numero_documento: "1022334455",
       telefono: "3209876543",
-      cargo: "instructor",
+      cargo: "Instructor",
       correo: "carlos.perez@sena.edu.co",
       direccion: "Carrera 7 #45-20, Bogotá",
       estado: true,
@@ -371,7 +371,7 @@
       tipo_documento: "TI",
       numero_documento: "1002003004",
       telefono: "3007654321",
-      cargo: "pasante",
+      cargo: "Pasante",
       correo: "laura.gomez@sena.edu.co",
       direccion: "Av. Siempre Viva 123",
       estado: false,
@@ -451,7 +451,7 @@
       hiddenUserId.value = "";
       formUsuario.reset();
       inputTipoDocumento.value = "CC";
-      inputCargo.value = "instructor";
+      inputCargo.value = "Instructor";
     }
   }
 
