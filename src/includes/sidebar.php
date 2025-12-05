@@ -135,11 +135,14 @@ if (!defined('BASE_URL')) {
       </button>
 
       <!-- Logout (icono rojo) -->
-      <button class="h-9 w-9 flex items-center justify-center rounded-md text-red-500 hover:bg-red-100">
+      <a 
+        href="<?= BASE_URL ?>logout.php"
+        class="h-9 w-9 flex items-center justify-center rounded-md text-red-500 hover:bg-red-100"
+      >
         <i data-lucide="log-out" class="h-5 w-5"></i>
-      </button>
+      </a>
 
-      <!-- Botón colapsar (a la derecha de cerrar sesión) -->
+      <!-- Botón colapsar -->
       <a
         href="?coll=<?php echo $collapsed ? "0" : "1"; ?>"
         class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent"
