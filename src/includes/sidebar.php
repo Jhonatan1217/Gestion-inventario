@@ -1,20 +1,20 @@
 <?php
-// Ruta actual (simulación)
-$pathname = $_SERVER['REQUEST_URI'] ?? "/dashboard";
+// Página actual según el router (?page=...)
+$currentPage = $_GET['page'] ?? 'dashboard';
 
-// Datos del menú
+// Datos del menú (usamos 'page' en vez de href directo)
 $navigation = [
-  ["name" => "Dashboard",   "href" => "/dashboard",             "icon" => "LayoutDashboard"],
-  ["name" => "Usuarios",    "href" => "/dashboard/usuarios",    "icon" => "Users"],
-  ["name" => "Bodegas",     "href" => "/dashboard/bodegas",     "icon" => "Warehouse"],
-  ["name" => "Materiales",  "href" => "/dashboard/materiales",  "icon" => "Package"],
-  ["name" => "Movimientos", "href" => "/dashboard/movimientos", "icon" => "ArrowLeftRight"],
-  ["name" => "Solicitudes", "href" => "/dashboard/solicitudes", "icon" => "ClipboardList", "badge" => 2],
-  ["name" => "Programas",   "href" => "/dashboard/programas",   "icon" => "GraduationCap"],
-  ["name" => "Fichas",      "href" => "/dashboard/fichas",      "icon" => "FolderKanban"],
-  ["name" => "RAEs",        "href" => "/dashboard/raes",        "icon" => "BookOpen"],
-  ["name" => "Evidencias",  "href" => "/dashboard/evidencias",  "icon" => "FileText"],
-  ["name" => "Reportes",    "href" => "/dashboard/reportes",    "icon" => "BarChart3"],
+  ["name" => "Dashboard",   "page" => "dashboard",   "icon" => "LayoutDashboard"],
+  ["name" => "Usuarios",    "page" => "usuarios",    "icon" => "Users"],
+  ["name" => "Bodegas",     "page" => "bodegas",     "icon" => "Warehouse"],
+  ["name" => "Materiales",  "page" => "materiales",  "icon" => "Package"],
+  ["name" => "Movimientos", "page" => "movimientos", "icon" => "ArrowLeftRight"],
+  ["name" => "Solicitudes", "page" => "solicitudes", "icon" => "ClipboardList", "badge" => 2],
+  ["name" => "Programas",   "page" => "programas",   "icon" => "GraduationCap"],
+  ["name" => "Fichas",      "page" => "fichas",      "icon" => "FolderKanban"],
+  ["name" => "RAEs",        "page" => "raes",        "icon" => "BookOpen"],
+  ["name" => "Evidencias",  "page" => "evidencias",  "icon" => "FileText"],
+  ["name" => "Reportes",    "page" => "reportes",    "icon" => "BarChart3"],
 ];
 
 // Estado del sidebar
@@ -37,11 +37,17 @@ function getLucideIconName(string $key): string {
     default:                 return 'circle-help';
   }
 }
+
+// Asegurarnos de tener BASE_URL (normalmente ya viene desde index.php)
+if (!defined('BASE_URL')) {
+  $protocol   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+  $host       = $_SERVER['HTTP_HOST'];
+  $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+  define('BASE_URL', $protocol . $host . $script_dir);
+}
 ?>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-
-
 
 <aside
   class="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300
@@ -51,10 +57,10 @@ function getLucideIconName(string $key): string {
   <!-- Logo -->
   <div class="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
     <?php if (!$collapsed): ?>
-      <a href="/dashboard" class="flex items-center gap-3">
+      <a href="<?= BASE_URL ?>index.php?page=dashboard" class="flex items-center gap-3">
         <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white">
           <img
-            src="../assets/img/logo-sena-negro.png"
+            src="src/assets/img/logo-sena-negro.png"
             alt="Logo SENA"
             class="max-h-10 w-auto object-contain"
           />
@@ -81,14 +87,16 @@ function getLucideIconName(string $key): string {
 
       <?php foreach ($navigation as $item): ?>
         <?php
-          $isActive =
-            $pathname === $item["href"] ||
-            strpos($pathname, $item["href"] . "/") === 0;
+          // URL final SIEMPRE pasa por index.php?page=...
+          $itemHref = BASE_URL . 'index.php?page=' . $item['page'];
+
+          // Activo si coincide el parámetro page
+          $isActive = ($currentPage === $item['page']);
 
           $iconName = getLucideIconName($item["icon"]);
         ?>
 
-        <a href="<?php echo $item["href"]; ?>"
+        <a href="<?php echo $itemHref; ?>"
           class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all
           <?php echo $isActive
             ? 'bg-sidebar-accent text-sidebar-primary'

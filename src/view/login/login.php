@@ -18,9 +18,10 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', $protocol . $host . $script_dir); // ej: .../src/view/login/
 }
 
-// Si ya está logueado, mandarlo al dashboard
+// Si ya está logueado, mandarlo al dashboard (usando el index de la raíz)
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . '../dashboard/index.php');
+    // vamos al index.php de la raíz, con page=dashboard
+    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
     exit;
 }
 
@@ -54,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['usuario_nombre'] = $user['nombre_completo'];
                 $_SESSION['usuario_rol']    = $user['rol'];
 
-                // 🔁 Redirige al dashboard (una carpeta arriba de /login/)
-                header('Location: ' . BASE_URL . '../dashboard/index.php');
+                // 🔁 Redirige al dashboard a través del index de la raíz
+                header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
                 exit;
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
@@ -209,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       btn.disabled = true;
       loader.classList.remove("hidden");
       text.textContent = "Iniciando sesión...";
-      // No hacemos preventDefault ni redirección en JS:
       // PHP se encarga de validar y redirigir.
     });
   </script>

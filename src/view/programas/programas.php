@@ -1,5 +1,5 @@
 <?php
-// Datos de ejemplo para los programas
+// Sample data for programs
 $programas = [
     [
         'codigo' => 'TEC-001',
@@ -83,14 +83,14 @@ $programas = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programas de Formación - SENA</title>
     
-    <!-- Configuración de Tailwind CSS -->
+    <!-- Tailwind CSS Configuration -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // Colores del tema SENA desde global.css
+                        // SENA theme colors from global.css
                         background: '#f9fafb',
                         foreground: '#0f172a',
                         card: '#ffffff',
@@ -118,30 +118,30 @@ $programas = [
             }
         }
     </script>
-    <!-- Solo importamos global.css del SENA, sin styles.css personalizado -->
+    <!-- Import SENA global.css only, without custom styles.css -->
     <link rel="stylesheet" href="../../assets/css/global.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-background text-foreground min-h-screen flex flex-col">
     
-    <!-- CONTENIDO PRINCIPAL - Sin header ni sidebar (componentes separados) -->
+    <!-- MAIN CONTENT - Without header or sidebar (separate components) -->
     <main class="flex-1 p-8">
         <?php
             // include_once __DIR__ . '/../../includes/footer.php';
         ?>
-        <!-- Título de la página -->
+        <!-- Page title -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
             <p class="text-muted-foreground mt-1">Gestiona los programas técnicos y tecnológicos</p>
         </div>
 
-        <!-- Contenedor principal con bordes y sombra -->
+        <!-- Main container with borders and shadow -->
         <div class="bg-card rounded-lg shadow-sm border border-border p-6">
             
-            <!-- Barra de filtros y acciones -->
+            <!-- Filter bar and actions -->
             <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                 
-                <!-- Barra de búsqueda -->
+                <!-- Search bar -->
                 <div class="relative flex-1 max-w-md">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
                     <input 
@@ -151,15 +151,15 @@ $programas = [
                     >
                 </div>
                 
-                <!-- Botones de acción -->
+                <!-- Action buttons -->
                 <div class="flex items-center gap-3">
                     
-                    <!-- Botones de vista (tabla/grid) -->
+                    <!-- View buttons (table/grid) -->
                     <button 
                         onclick="toggleView('table')" 
                         id="viewTableBtn" 
                         class="p-2 hover:bg-muted rounded-lg transition-colors bg-muted"
-                        title="Vista de tabla"
+                        title="Table view"
                     >
                         <i class="fas fa-list text-muted-foreground"></i>
                     </button>
@@ -167,18 +167,18 @@ $programas = [
                         onclick="toggleView('grid')" 
                         id="viewGridBtn" 
                         class="p-2 hover:bg-muted rounded-lg transition-colors"
-                        title="Vista de bloques"
+                        title="Block view"
                     >
                         <i class="fas fa-th-large text-muted-foreground"></i>
                     </button>
                     
-                    <!-- Botón nuevo programa -->
+                    <!-- New program button -->
                     <button onclick="openCreateModal()" id="btnNewProgram" class="bg-primary hover:bg-secondary text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium">
                         <i class="fas fa-plus"></i>
                         Nuevo Programa
                     </button>
                     
-                    <!-- Filtro desplegable -->
+                    <!-- Dropdown filter -->
                     <div class="relative">
                         <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none"></i>
                         <select class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-card text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
@@ -191,11 +191,11 @@ $programas = [
                 </div>
             </div>
 
-            <!-- VISTA DE TABLA -->
+            <!-- TABLE VIEW -->
             <div id="tableView" class="overflow-x-auto">
                 <table class="w-full border-collapse">
                     
-                    <!-- Encabezados de la tabla -->
+                    <!-- Table headers -->
                     <thead>
                         <tr class="border-b border-border bg-muted">
                             <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Código</th>
@@ -208,7 +208,7 @@ $programas = [
                         </tr>
                     </thead>
                     
-                    <!-- Filas de datos -->
+                    <!-- Data rows -->
                     <tbody>
                         <?php foreach ($programas as $index => $programa): ?>
                         <tr 
@@ -222,15 +222,15 @@ $programas = [
                             data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
                             data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
                         >
-                            <!-- Código del programa -->
+                            <!-- Program code -->
                             <td class="py-4 px-4 text-sm font-medium text-foreground">
                                 <span class="js-code"><?php echo $programa['codigo']; ?></span>
                             </td>
                             
-                            <!-- Información del programa con ícono -->
+                            <!-- Program information with icon -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-3">
-                                    <!-- Ícono circular -->
+                                    <!-- Circular icon -->
                                     <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
                                         <i class="fas fa-graduation-cap text-primary text-sm"></i>
                                     </div>
@@ -241,7 +241,7 @@ $programas = [
                                 </div>
                             </td>
                             
-                            <!-- Badge de nivel (Técnico/Tecnólogo) -->
+                            <!-- Level badge (Técnico/Tecnólogo) -->
                             <td class="py-4 px-4">
                                 <span class="js-nivel">
                                 <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
@@ -256,7 +256,7 @@ $programas = [
                                 </span>
                             </td>
                             
-                            <!-- Duración con ícono de reloj -->
+                            <!-- Duration with clock icon -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="far fa-clock"></i>
@@ -264,7 +264,7 @@ $programas = [
                                 </div>
                             </td>
                             
-                            <!-- Cantidad de instructores -->
+                            <!-- Number of instructors -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="fas fa-users"></i>
@@ -272,7 +272,7 @@ $programas = [
                                 </div>
                             </td>
                             
-                            <!-- Badge de estado (Activo/Inactivo) -->
+                            <!-- Status badge (Active/Inactive) -->
                             <td class="py-4 px-4">
                                 <span class="js-estado">
                                 <?php if (strtolower($programa['estado']) === 'activo'): ?>
@@ -287,7 +287,7 @@ $programas = [
                                 </span>
                             </td>
                             
-                            <!-- Menú de acciones -->
+                            <!-- Actions menu -->
                             <td class="py-4 px-4">
                                 <div class="relative">
                                     <button onclick="toggleActionMenu(<?php echo $index; ?>)" class="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded">
@@ -315,11 +315,11 @@ $programas = [
                 </table>
             </div>
 
-            <!-- VISTA DE GRID (Bloques) -->
+            <!-- GRID VIEW (Blocks) -->
             <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
                 <?php foreach ($programas as $index => $programa): ?>
                 
-                <!-- Tarjeta individual del programa -->
+                <!-- Individual program card -->
                 <div 
                     class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
                     data-index="<?php echo $index; ?>"
@@ -332,10 +332,10 @@ $programas = [
                     data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
                 >
                     
-                    <!-- Header de la tarjeta -->
+                    <!-- Card header -->
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <!-- Ícono del programa -->
+                            <!-- Program icon -->
                             <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-graduation-cap text-primary text-lg"></i>
                             </div>
@@ -345,7 +345,7 @@ $programas = [
                             </div>
                         </div>
                         
-                        <!-- Botón de editar directo (modo tarjetas) -->
+                        <!-- Direct edit button (card mode) -->
                         <div>
                             <button onclick="openEditModal(<?php echo $index; ?>)" title="Editar" class="text-muted-foreground hover:text-foreground p-2 bg-muted hover:bg-muted rounded-lg transition-colors flex items-center gap-2">
                                 <i class="far fa-edit"></i>
@@ -354,17 +354,17 @@ $programas = [
                         </div>
                     </div>
 
-                    <!-- Descripción del programa -->
+                    <!-- Program description -->
                     <p class="text-sm text-muted-foreground mb-4 js-descripcion"><?php echo $programa['descripcion']; ?></p>
 
-                    <!-- Información adicional -->
+                    <!-- Additional information -->
                     <div class="space-y-2 mb-4">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-muted-foreground">Instructor:</span>
                             <span class="text-sm font-medium text-foreground">Juan Guillermo Crespo</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <!-- Badge de nivel -->
+                            <!-- Level badge -->
                             <span class="js-nivel">
                             <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
@@ -377,14 +377,14 @@ $programas = [
                             <?php endif; ?>
                             </span>
                             
-                            <!-- Duración -->
+                            <!-- Duration -->
                             <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                 <i class="far fa-clock"></i>
                                 <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
                             </div>
                         </div>
                         
-                        <!-- Cantidad de instructores -->
+                        <!-- Number of instructors -->
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-muted-foreground">Instructor/es</span>
                             <div class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -394,7 +394,7 @@ $programas = [
                         </div>
                     </div>
 
-                    <!-- Badge de estado y toggle -->
+                    <!-- Status badge and toggle -->
                     <div class="flex items-center justify-between pt-4 border-t border-border">
                         <span class="js-estado">
                         <?php if (strtolower($programa['estado']) === 'activo'): ?>
@@ -423,7 +423,7 @@ $programas = [
             </div>
         </div>
 
-        <!-- Modal de edición de programa -->
+        <!-- Program edit modal -->
         <div id="editProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
             <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
@@ -477,7 +477,7 @@ $programas = [
             </div>
         </div>
         
-        <!-- Modal de ver detalles -->
+        <!-- View details modal -->
         <div id="viewProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeViewModal()"></div>
             <div class="relative max-w-md w-full bg-card rounded-lg shadow-lg border border-border p-6">
@@ -522,7 +522,7 @@ $programas = [
             </div>
         </div>
 
-        <!-- Modal Crear Nuevo Programa (UI only) -->
+        <!-- Create New Program Modal (UI only) -->
         <div id="createProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeCreateModal()"></div>
             <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
