@@ -65,7 +65,6 @@ switch ($accion) {
             'correo'          => $data['correo'] ?? $_POST['correo'] ?? null,
             'direccion'       => $data['direccion'] ?? $_POST['direccion'] ?? null,
             'password'        => $data['password'] ?? $_POST['password'] ?? null,
-            'id_programa'     => $data['id_programa'] ?? $_POST['id_programa'] ?? null
         ];
 
         if (in_array(null, $u, true)) {
@@ -75,6 +74,7 @@ switch ($accion) {
 
         $u['nombre_completo'] = colapsarEspacios($u['nombre_completo']);
         if ($u['nombre_completo'] === '' || !validarSoloTexto($u['nombre_completo'])) {
+
             echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
             exit;
         }
@@ -99,60 +99,90 @@ switch ($accion) {
             $u['correo'],
             $u['direccion'],
             $u['password'], 
-            $u['id_programa']
         );
 
         echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
 
+    
     //Update user
     case 'actualizar':
         $data = json_decode(file_get_contents("php://input"), true);
 
+        // Obtener ID desde JSON, POST o GET
         $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
-        $nombre     = $data['nombre_completo'] ?? $_POST['nombre_completo'] ?? null;
-        $tipo_doc   = $data['tipo_documento'] ?? $_POST['tipo_documento'] ?? null;
-        $num_doc    = $data['numero_documento'] ?? $_POST['numero_documento'] ?? null;
-        $telefono   = $data['telefono'] ?? $_POST['telefono'] ?? null;
-        $cargo      = $data['cargo'] ?? $_POST['cargo'] ?? null;
-        $correo     = $data['correo'] ?? $_POST['correo'] ?? null;
-        $direccion  = $data['direccion'] ?? $_POST['direccion'] ?? null;
-        $programa   = $data['id_programa'] ?? $_POST['id_programa'] ?? null;
 
-        if (!$id_usuario || !$nombre || !$tipo_doc || !$num_doc || !$telefono || !$cargo || !$correo || !$direccion) {
-            echo json_encode(['error' => 'Debe enviar todos los campos obligatorios para actualizar']);
+        if (!$id_usuario) {
+            echo json_encode(['error' => 'Debe enviar id_usuario']);
             exit;
         }
 
-        $nombre = colapsarEspacios($nombre);
-        if ($nombre === '' || !validarSoloTexto($nombre)) {
-            echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
-            exit;
-        }
+        // Obtener datos enviados
+        $nombre     = $data['nombre_completo']  ?? null;
+        $tipo_doc   = $data['tipo_documento']   ?? null;
+        $num_doc    = $data['numero_documento'] ?? null;
+        $telefono   = $data['telefono']         ?? null;
+        $cargo      = $data['cargo']            ?? null;
+        $correo     = $data['correo']           ?? null;
+        $direccion  = $data['direccion']        ?? null;
+        $password   = $data['password']         ?? null;
+        $id_programa = $data['id_programa']     ?? null;
 
-        $cargosValidos = ['Coordinador','Instructor','Pasante'];
-        if (!in_array($cargo, $cargosValidos, true)) {
-            echo json_encode(['error' => 'Cargo no válido']);
-            exit;
-        }
-
+        // Obtener datos actuales del usuario
         $usuarioActual = $usuario->obtenerPorId($id_usuario);
         if (!$usuarioActual) {
             echo json_encode(['error' => 'Usuario no encontrado']);
             exit;
         }
 
+        // Conservar valores anteriores si no se enviaron nuevos
+        $nombre     = $nombre     ?? $usuarioActual['nombre_completo'];
+        $tipo_doc   = $tipo_doc   ?? $usuarioActual['tipo_documento'];
+        $num_doc    = $num_doc    ?? $usuarioActual['numero_documento'];
+        $telefono   = $telefono   ?? $usuarioActual['telefono'];
+        $cargo      = $cargo      ?? $usuarioActual['cargo'];
+        $correo     = $correo     ?? $usuarioActual['correo'];
+        $direccion  = $direccion  ?? $usuarioActual['direccion'];
+        $id_programa = $id_programa ?? $usuarioActual['id_programa'];
+
+        // Validar nombre
+        $nombre = colapsarEspacios($nombre);
+        if ($nombre === '' || !validarSoloTexto($nombre)) {
+            echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
+            exit;
+        }
+
+        // Validar cargo
+        $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
+        if (!in_array($cargo, $cargosValidos, true)) {
+            echo json_encode(['error' => 'Cargo no válido']);
+            exit;
+        }
+
+        // Validar correo único
         if ($correo !== $usuarioActual['correo'] && $usuario->obtenerPorCorreo($correo)) {
             echo json_encode(['error' => 'El correo ya está registrado por otro usuario']);
             exit;
         }
 
         echo json_encode(
-            $usuario->actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $programa)
-                ? ['mensaje' => 'Usuario actualizado correctamente']
-                : ['error' => 'No se pudo actualizar el usuario']
+            $usuario->actualizar(
+                $id_usuario, 
+                $nombre, 
+                $tipo_doc, 
+                $num_doc, 
+                $telefono, 
+                $cargo, 
+                $correo,
+                $password, 
+                $direccion, 
+                $id_programa
+            )
+            ? ['mensaje' => 'Usuario actualizado correctamente']
+            : ['error' => 'No se pudo actualizar el usuario']
         );
     break;
+
 
     // Find by document number
     case 'buscar_documento':
@@ -183,6 +213,35 @@ switch ($accion) {
                 ? ['mensaje' => 'Login correcto']
                 : ['error' => 'Credenciales incorrectas']
         );
+    break;
+
+     //Change user status
+    case 'cambiar_estado':
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
+    $estado     = $data['estado']     ?? $_POST['estado']     ?? $_GET['estado']     ?? null;
+
+    if ($id_usuario === null || $estado === null) {
+        echo json_encode(['error' => 'Debe enviar id_usuario y estado (1 o 0)']);
+        exit;
+    }
+
+    if ($estado != 1 && $estado != 0) {
+        echo json_encode(['error' => 'El estado debe ser 1 (activo) o 0 (inactivo)']);
+        exit;
+    }
+
+    if (!$usuario->obtenerPorId($id_usuario)) {
+        echo json_encode(['error' => 'Usuario no encontrado']);
+        exit;
+    }
+
+    echo json_encode(
+        $usuario->cambiarEstado($id_usuario, $estado)
+            ? ['mensaje' => 'Estado del usuario actualizado correctamente']
+            : ['error' => 'No se pudo actualizar el estado']
+    );
     break;
 
     default:

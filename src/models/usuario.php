@@ -47,7 +47,6 @@ class Usuario {
         $stmt->bindParam(':telefono', $telefono);
         $stmt->bindParam(':cargo', $cargo);
         $stmt->bindParam(':correo', $correo);
-
         $stmt->bindParam(':password', $hash); 
         $stmt->bindParam(':direccion', $direccion);
         $stmt->bindParam(':programa', $id_programa); 
@@ -55,8 +54,27 @@ class Usuario {
         return $stmt->execute();
     }
 
-    // Function to update an existing user
-    public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $id_programa = null) {
+    public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $password, $direccion, $id_programa = null) {
+
+    if ($password !== null && $password !== "") {
+        $sql = "UPDATE usuarios SET 
+                nombre_completo = :nombre,
+                tipo_documento = :tipo_doc,
+                numero_documento = :num_doc,
+                telefono = :telefono,
+                cargo = :cargo,
+                correo = :correo,
+                password = :password,
+                direccion = :direccion,
+                id_programa = :programa
+            WHERE id_usuario = :id_usuario";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt->bindParam(':password', $hash);
+
+    } else {
         $sql = "UPDATE usuarios SET 
                 nombre_completo = :nombre,
                 tipo_documento = :tipo_doc,
@@ -68,19 +86,21 @@ class Usuario {
                 id_programa = :programa
             WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
-
-        $stmt->bindParam(':id_usuario', $id_usuario);
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':tipo_doc', $tipo_doc);
-        $stmt->bindParam(':num_doc', $num_doc);
-        $stmt->bindParam(':telefono', $telefono);
-        $stmt->bindParam(':cargo', $cargo);
-        $stmt->bindParam(':correo', $correo);
-        $stmt->bindParam(':direccion', $direccion);
-        $stmt->bindParam(':programa', $id_programa);
-
-        return $stmt->execute();
     }
+
+    $stmt->bindParam(':id_usuario', $id_usuario);
+    $stmt->bindParam(':nombre', $nombre);
+    $stmt->bindParam(':tipo_doc', $tipo_doc);
+    $stmt->bindParam(':num_doc', $num_doc);
+    $stmt->bindParam(':telefono', $telefono);
+    $stmt->bindParam(':cargo', $cargo);
+    $stmt->bindParam(':correo', $correo);
+    $stmt->bindParam(':direccion', $direccion);
+    $stmt->bindParam(':programa', $id_programa);
+
+    return $stmt->execute();
+}
+
 
     // Function to delete a user
     public function eliminar($id) {
