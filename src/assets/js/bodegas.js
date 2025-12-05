@@ -1,231 +1,146 @@
 document.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
 
-    /* ======================================================
-       ========== SWITCH LISTA / GRID ========== 
-    ====================================================== */
-    const btnList = document.querySelector(".bodegas-switch-btn[data-view='list']");
-    const btnGrid = document.querySelector(".bodegas-switch-btn[data-view='grid']");
+    /* ============================================================
+       ========== SWITCH LISTA / GRID ==========
+    ============================================================ */
+    const btnsView = document.querySelectorAll(".bodegas-switch-btn");
     const viewList = document.getElementById("view-list");
     const viewGrid = document.getElementById("view-grid");
 
-    btnList.addEventListener("click", () => {
-        btnList.classList.add("active");
-        btnGrid.classList.remove("active");
-        viewList.classList.remove("hidden");
-        viewGrid.classList.add("hidden");
-        lucide.createIcons();
+    btnsView.forEach(btn => {
+        btn.addEventListener("click", () => {
+            btnsView.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const view = btn.getAttribute("data-view");
+
+            if (view === "list") {
+                viewList.classList.remove("hidden");
+                viewGrid.classList.add("hidden");
+            } else {
+                viewGrid.classList.remove("hidden");
+                viewList.classList.add("hidden");
+            }
+        });
     });
 
-    btnGrid.addEventListener("click", () => {
-        btnGrid.classList.add("active");
-        btnList.classList.remove("active");
-        viewGrid.classList.remove("hidden");
-        viewList.classList.add("hidden");
-        lucide.createIcons();
+    /* ============================================================
+       ========== MENÚ CONTEXTUAL (3 PUNTOS) ==========
+    ============================================================ */
+    const contextMenu = document.getElementById("context-menu");
+    let selectedData = null;
+
+    function openContextMenu(e, data) {
+        selectedData = data;
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.top = `${e.pageY}px`;
+        contextMenu.classList.remove("hidden");
+    }
+
+    function closeContextMenu() {
+        contextMenu.classList.add("hidden");
+    }
+
+    document.querySelectorAll(".bodegas-btn-dots").forEach(btn => {
+        btn.addEventListener("click", e => {
+            e.preventDefault();
+            const data = {
+                id: btn.dataset.id,
+                nombre: btn.dataset.nombre,
+                clasificacion: btn.dataset.clasificacion,
+                ubicacion: btn.dataset.ubicacion,
+                tipo: btn.dataset.tipo,
+                estado: btn.dataset.estado
+            };
+            openContextMenu(e, data);
+        });
     });
 
-    /* ======================================================
-       ========== MENÚ CONTEXTUAL ========== 
-    ====================================================== */
-    const ctxMenu = document.getElementById("context-menu");
-    let currentItemData = null;
+    document.addEventListener("click", e => {
+        if (!contextMenu.contains(e.target) && !e.target.closest(".bodegas-btn-dots")) {
+            closeContextMenu();
+        }
+    });
 
-    function attachDotsHandlers() {
-        document.querySelectorAll(".bodegas-btn-dots").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
+    /* ============================================================
+       ========== ACCIONES DEL MENÚ ==========
+    ============================================================ */
+    const modalDetalle = document.getElementById("modalDetalle");
+    const modalEditar = document.getElementById("modalEditar");
 
-                currentItemData = {
-                    id: btn.dataset.id,
-                    nombre: btn.dataset.nombre,
-                    clasificacion: btn.dataset.clasificacion,
-                    ubicacion: btn.dataset.ubicacion,
-                    tipo: btn.dataset.tipo,
-                    estado: btn.dataset.estado,
-                };
+    contextMenu.querySelector("[data-action='ver']").addEventListener("click", () => {
+        if (!selectedData) return;
 
-                const rect = btn.getBoundingClientRect();
-                ctxMenu.style.top = `${rect.bottom + window.scrollY + 8}px`;
-                ctxMenu.style.left = `${rect.right - 200}px`;
-                ctxMenu.classList.remove("hidden");
+        document.getElementById("detalleId").textContent = selectedData.id;
+        document.getElementById("detalleNombre").textContent = selectedData.nombre;
+        document.getElementById("detalleClasificacion").textContent = selectedData.clasificacion;
+        document.getElementById("detalleTipo").textContent = selectedData.tipo;
+        document.getElementById("detalleUbicacion").textContent = selectedData.ubicacion;
 
-                // Cambiar texto dinámico del botón deshabilitar/habilitar
-                actualizarBotonHabilitar(currentItemData.estado);
+        const est = document.getElementById("detalleEstado");
+        est.textContent = selectedData.estado;
+        est.className = "bodegas-tag-status " + 
+            (selectedData.estado === "Activo" ? "bodegas-tag-status-active" : "bodegas-tag-status-inactive");
 
-                lucide.createIcons();
+        modalDetalle.classList.remove("hidden");
+        closeContextMenu();
+    });
+
+    contextMenu.querySelector("[data-action='editar']").addEventListener("click", () => {
+        if (!selectedData) return;
+
+        document.getElementById("editId").value = selectedData.id;
+        document.getElementById("editNombre").value = selectedData.nombre;
+        document.getElementById("editClasificacion").value = selectedData.clasificacion;
+        document.getElementById("editUbicacion").value = selectedData.ubicacion;
+        document.getElementById("editTipo").value = selectedData.tipo;
+
+        modalEditar.classList.remove("hidden");
+        closeContextMenu();
+    });
+
+    contextMenu.querySelector("[data-action='deshabilitar']").addEventListener("click", () => {
+        if (!selectedData) return;
+
+        alert(`Bodega #${selectedData.id} deshabilitada`);
+        closeContextMenu();
+    });
+
+    /* ============================================================
+       ========== CERRAR MODALES ==========
+    ============================================================ */
+    document.getElementById("cerrarDetalle").onclick = () => modalDetalle.classList.add("hidden");
+    document.getElementById("cerrarEditar").onclick = () => modalEditar.classList.add("hidden");
+    document.getElementById("cancelarEditar").onclick = () => modalEditar.classList.add("hidden");
+
+    /* ============================================================
+       ========== SWITCHES ACTIVA / INACTIVA (LISTA + GRID) ==========
+    ============================================================ */
+
+    function initSwitches() {
+        // SWITCH EN LISTA
+        const listRows = document.querySelectorAll("#view-list .bodegas-row");
+
+        listRows.forEach(row => {
+            const estadoTag = row.querySelector(".bodegas-tag-status");
+            const estadoActual = estadoTag.textContent.trim();
+
+            // No hay switch visual en lista, pero podrías agregarlo si quieres
+        });
+
+        // SWITCH EN GRID (EL IMPORTANTE)
+        const gridSwitches = document.querySelectorAll("#view-grid .bodegas-switch input");
+
+        gridSwitches.forEach(sw => {
+            sw.addEventListener("change", () => {
+                const card = sw.closest(".bodegas-card");
+                const text = card.querySelector(".bodegas-estado-text");
+
+                text.textContent = sw.checked ? "Activa" : "Inactiva";
             });
         });
     }
 
-    attachDotsHandlers();
-
-    document.addEventListener("click", () => {
-        ctxMenu.classList.add("hidden");
-    });
-
-    /* ======================================================
-       ========== FUNCIÓN PARA CAMBIAR TEXTO DES/HAB ========== 
-    ====================================================== */
-    function actualizarBotonHabilitar(estado) {
-        const btnDes = document.querySelector(".bodegas-ctx-btn[data-action='deshabilitar']");
-        if (estado === "Activo") {
-            btnDes.innerHTML = `<i data-lucide="power"></i> Deshabilitar`;
-        } else {
-            btnDes.innerHTML = `<i data-lucide="power"></i> Habilitar`;
-        }
-        lucide.createIcons();
-    }
-
-    /* ======================================================
-       ========== MODAL CREAR BODEGA ========== 
-    ====================================================== */
-    const modalCrear = document.getElementById("modalCrear");
-    const btnNueva = document.getElementById("btnNuevaBodega");
-    const btnCerrarCrear = document.getElementById("cerrarModal");
-    const btnCancelarCrear = document.getElementById("cancelarModal");
-
-    btnNueva.addEventListener("click", () => modalCrear.classList.remove("hidden"));
-    btnCerrarCrear.addEventListener("click", () => modalCrear.classList.add("hidden"));
-    btnCancelarCrear.addEventListener("click", () => modalCrear.classList.add("hidden"));
-
-    modalCrear.addEventListener("click", (e) => {
-        if (e.target === modalCrear) modalCrear.classList.add("hidden");
-    });
-
-    /* ======================================================
-       ========== MODAL DETALLES BODEGA ========== 
-    ====================================================== */
-    const modalDetalle = document.getElementById("modalDetalle");
-    const btnCerrarDetalle = document.getElementById("cerrarDetalle");
-
-    const detalleNombre = document.getElementById("detalleNombre");
-    const detalleId = document.getElementById("detalleId");
-    const detalleClasificacion = document.getElementById("detalleClasificacion");
-    const detalleTipo = document.getElementById("detalleTipo");
-    const detalleUbicacion = document.getElementById("detalleUbicacion");
-    const detalleEstado = document.getElementById("detalleEstado");
-
-    const btnVerDetalles = document.querySelector(".bodegas-ctx-btn[data-action='ver']");
-    const btnEditar = document.querySelector(".bodegas-ctx-btn[data-action='editar']");
-
-    btnVerDetalles.addEventListener("click", () => {
-        if (!currentItemData) return;
-
-        detalleNombre.textContent = currentItemData.nombre;
-        detalleId.textContent = currentItemData.id;
-        detalleClasificacion.textContent = currentItemData.clasificacion;
-        detalleTipo.textContent = currentItemData.tipo;
-        detalleUbicacion.textContent = currentItemData.ubicacion;
-        detalleEstado.textContent = currentItemData.estado;
-
-        detalleEstado.classList.remove("bodegas-tag-status-active", "bodegas-tag-status-inactive");
-        detalleEstado.classList.add(
-            currentItemData.estado === "Activo"
-                ? "bodegas-tag-status-active"
-                : "bodegas-tag-status-inactive"
-        );
-
-        modalDetalle.classList.remove("hidden");
-        ctxMenu.classList.add("hidden");
-    });
-
-    btnCerrarDetalle.addEventListener("click", () => modalDetalle.classList.add("hidden"));
-    modalDetalle.addEventListener("click", (e) => {
-        if (e.target === modalDetalle) modalDetalle.classList.add("hidden");
-    });
-
-    /* ======================================================
-       ========== MODAL EDITAR BODEGA ========== 
-    ====================================================== */
-    const modalEditar = document.getElementById("modalEditar");
-    const btnCerrarEditar = document.getElementById("cerrarEditar");
-    const btnCancelarEditar = document.getElementById("cancelarEditar");
-    const btnGuardarEditar = document.getElementById("guardarEditar");
-
-    const editId = document.getElementById("editId");
-    const editTipo = document.getElementById("editTipo");
-    const editClasificacion = document.getElementById("editClasificacion");
-    const editNombre = document.getElementById("editNombre");
-    const editUbicacion = document.getElementById("editUbicacion");
-
-    btnEditar.addEventListener("click", () => {
-        if (!currentItemData) return;
-
-        editId.value = currentItemData.id;
-        editTipo.value = currentItemData.tipo;
-        editClasificacion.value = currentItemData.clasificacion;
-        editNombre.value = currentItemData.nombre;
-        editUbicacion.value = currentItemData.ubicacion;
-
-        modalEditar.classList.remove("hidden");
-        ctxMenu.classList.add("hidden");
-    });
-
-    btnCerrarEditar.addEventListener("click", () => modalEditar.classList.add("hidden"));
-    btnCancelarEditar.addEventListener("click", () => modalEditar.classList.add("hidden"));
-
-    modalEditar.addEventListener("click", (e) => {
-        if (e.target === modalEditar) modalEditar.classList.add("hidden");
-    });
-
-    btnGuardarEditar.addEventListener("click", () => {
-        modalEditar.classList.add("hidden");
-    });
-
-    /* ======================================================
-       ========== ACTUALIZAR LISTA + GRID (CORREGIDO) ========== 
-    ====================================================== */
-    function actualizarEstado(id, nuevoEstado) {
-        document.querySelectorAll(`.bodegas-btn-dots[data-id='${id}']`).forEach((btn) => {
-            btn.dataset.estado = nuevoEstado;
-
-            // === LISTA ===
-            const fila = btn.closest("tr");
-            if (fila) {
-                const estadoTd = fila.querySelector(".bodegas-tag-status");
-                estadoTd.textContent = nuevoEstado;
-
-                estadoTd.classList.remove("bodegas-tag-status-active", "bodegas-tag-status-inactive");
-
-                estadoTd.classList.add(
-                    nuevoEstado === "Activo" ? "bodegas-tag-status-active" : "bodegas-tag-status-inactive"
-                );
-            }
-
-            // === GRID ===
-            const card = btn.closest(".bodegas-card");
-            if (card) {
-                const textEstado = card.querySelector(".bodegas-estado-text");
-                const switchInput = card.querySelector(".bodegas-switch input");
-
-                if (textEstado) {
-                    textEstado.textContent = nuevoEstado === "Activo" ? "Activa" : "Inactiva";
-                }
-                if (switchInput) {
-                    switchInput.checked = nuevoEstado === "Activo";
-                }
-            }
-        });
-    }
-
-    /* ======================================================
-       ========== DESHABILITAR / HABILITAR ========== 
-    ====================================================== */
-    const btnDeshabilitar = document.querySelector(".bodegas-ctx-btn[data-action='deshabilitar']");
-
-    btnDeshabilitar.addEventListener("click", () => {
-        if (!currentItemData) return;
-
-        const id = currentItemData.id;
-        const estadoActual = currentItemData.estado;
-        const nuevoEstado = estadoActual === "Activo" ? "Inactivo" : "Activo";
-
-        currentItemData.estado = nuevoEstado;
-
-        actualizarEstado(id, nuevoEstado);
-        actualizarBotonHabilitar(nuevoEstado);
-
-        ctxMenu.classList.add("hidden");
-    });
+    initSwitches();
 });
