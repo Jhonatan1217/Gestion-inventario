@@ -33,8 +33,8 @@
           <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
             <div class="flex-1">
               <div class="relative">
-                <!-- Replace search icon SVG with empty image -->
-                <img src="/icon-search.png" alt="Search" class="absolute left-3 top-3 w-5 h-5 text-muted-foreground">
+                <!-- Search icon from lucide -->
+                <svg class="absolute left-3 top-3 w-5 h-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
                 <input type="text" placeholder="Buscar por nombre o código..." class="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary">
               </div>
             </div>
@@ -43,18 +43,18 @@
             <div class="flex items-center gap-2">
               <div class="flex gap-1 border border-border rounded-lg p-1 bg-card">
                 <button id="tableViewBtn" onclick="switchView('table')" class="view-toggle-btn active px-3 py-2 rounded text-sm font-medium transition-colors" title="Vista de tabla">
-                  <!-- Replace table view icon SVG with empty image -->
-                  <img src="/icon-table.png" alt="Table view" class="w-4 h-4">
+                  <!-- Table view icon from lucide -->
+                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="18" x2="16" y2="18"></line></svg>
                 </button>
                 <button id="cardViewBtn" onclick="switchView('card')" class="view-toggle-btn px-3 py-2 rounded text-sm font-medium transition-colors" title="Vista de tarjetas">
-                  <!-- Replace card view icon SVG with empty image -->
-                  <img src="/icon-card.png" alt="Card view" class="w-4 h-4">
+                    <!-- Card view icon from lucide -->
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M4 9h16"></path><path d="M4 15h16"></path></svg>
                 </button>
               </div>
               
               <button onclick="openCreateModal()" class="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-secondary text-primary-foreground font-medium rounded-lg transition-colors whitespace-nowrap">
-                <!-- Replace add icon SVG with empty image -->
-                <img src="/icon-add.png" alt="Add" class="w-5 h-5">
+                <!-- Add/Plus icon from lucide -->
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 Nuevo material
               </button>
             </div>
@@ -104,8 +104,8 @@
                 <p class="text-xs text-muted-foreground">Complete los datos para registrar un nuevo material</p>
             </div>
             <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700">
-                <!-- Replace close icon SVG with empty image -->
-                <img src="/icon-close.png" alt="Close" class="w-5 h-5">
+                <!-- Close/X icon from lucide -->
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         
@@ -208,16 +208,16 @@
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-bold text-foreground">Detalles del Material</h2>
             <button onclick="closeDetailsModal()" class="text-gray-500 hover:text-gray-700">
-                <!-- Replace close icon SVG with empty image -->
-                <img src="/icon-close.png" alt="Close" class="w-5 h-5">
+                <!-- Close/X icon from lucide -->
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         
         <div class="space-y-3" id="detailsContent">
             <div class="flex items-center gap-3 pb-3 border-b border-border">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: rgba(57, 169, 0, 0.1);">
-                    <!-- Replace material icon SVG with empty image -->
-                    <img src="/icon-material.png" alt="Material" class="w-6 h-6 text-primary">
+                    <!-- Package/box icon from lucide -->
+                    <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                 </div>
                 <div>
                     <p class="font-bold text-foreground text-sm" id="detailName">Cemento gris</p>
@@ -267,8 +267,8 @@
                 <p class="text-xs text-muted-foreground">Modifica la información del material</p>
             </div>
             <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
-                <!-- Replace close icon SVG with empty image -->
-                <img src="/icon-close.png" alt="Close" class="w-5 h-5">
+                <!-- Close/X icon from lucide -->
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
 
