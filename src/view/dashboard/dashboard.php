@@ -1,4 +1,7 @@
 <?php
+
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
 // ===============================
 //  Mock data equivalente a mock-data.ts
 //  (puedes luego conectarlo a tu DB)
@@ -117,6 +120,9 @@ $pieGradient = implode(", ", $gradientParts);
     <link rel="stylesheet" href="../../assets/css/globals.css">
 </head>
 <body>
+    <main class="p-6 transition-all duration-300"
+      style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
+
 <div class="space-y-6 animate-fade-in-up">
 <!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -382,6 +388,7 @@ $pieGradient = implode(", ", $gradientParts);
     </div>
 </div>
 </div>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

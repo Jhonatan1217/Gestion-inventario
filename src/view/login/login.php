@@ -39,31 +39,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Ajusta el nombre de tabla/campos según tu BD
-            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
-                    FROM usuarios 
-                    WHERE correo = :correo 
-                    LIMIT 1";
+            try {
+    // AJUSTA los nombres de columnas a lo que tengas realmente en la tabla
+    $sql = "SELECT id_usuario, nombre_completo, correo, password 
+            FROM usuarios 
+            WHERE correo = :correo 
+            LIMIT 1";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Asumo que guardas la contraseña con password_hash()
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Guardar datos mínimos en sesión
-                $_SESSION['usuario_id']     = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                $_SESSION['usuario_rol']    = $user['rol'];
+            if ($user) {
+                $hash = $user['password']; // columna real de tu tabla
 
-                // 🔁 Redirige al dashboard a través del index de la raíz
-                header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
-                exit;
+                $passwordOk = false;
+
+                // 1) Si está hasheada con password_hash()
+                if (password_verify($password, $hash)) {
+                    $passwordOk = true;
+                } else {
+                    // 2) Si está en texto plano (temporal, si tu BD aún no usa hash)
+                    if ($password === $hash) {
+                        $passwordOk = true;
+                    }
+                }
+
+                if ($passwordOk) {
+                    // Guardar datos en sesión
+                    $_SESSION['usuario_id']     = $user['id_usuario'];
+                    $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+                    // $_SESSION['usuario_rol']    = $user['rol']; // ← LO QUITAMOS
+
+                    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
+                    exit;
+                } else {
+                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+                }
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
+
         } catch (PDOException $e) {
-            $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
+            $loginError = "Error BD: " . $e->getMessage();
         }
+              } catch (PDOException $e) {
+            // SOLO PARA DEPURAR: muestra el mensaje real
+            $loginError = "Error BD: " . $e->getMessage();
+        }
+
     }
 }
 ?>
