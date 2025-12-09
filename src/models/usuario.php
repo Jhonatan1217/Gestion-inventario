@@ -1,5 +1,4 @@
 <?php
-// Clase Usuario para manejar operaciones CRUD sobre la tabla 'usuarios'
 class Usuario {
     private $conn;
     private $table = "usuarios";
@@ -8,7 +7,7 @@ class Usuario {
         $this->conn = $db;
     }
 
-    // Funcion para listar todos los usuarios
+    //Function to list all users
     public function listar() {
         $sql = "SELECT * FROM " . $this->table;
         $stmt = $this->conn->prepare($sql);
@@ -16,16 +15,16 @@ class Usuario {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para obtener un usuario por su ID
+    // Function to get a user by their ID
     public function obtenerPorId($id) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id";
+        $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':id_usuario', $id);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para obtener un usuario por correo (para validar unicidad o login después)
+    // Function to get a user by their email (for uniqueness validation or login later)
     public function obtenerPorCorreo($correo) {
         $sql = "SELECT * FROM " . $this->table . " WHERE correo = :correo";
         $stmt = $this->conn->prepare($sql);
@@ -34,35 +33,60 @@ class Usuario {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Funcion para crear un nuevo usuario
-    public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion) {
-        $sql = "INSERT INTO usuarios (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, direccion, estado)
-                VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :direccion, 'activo')";
+    // Function to create a new user
+    public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $password, $id_programa = null) {
+        $sql = "INSERT INTO usuarios (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, password, direccion, estado, id_programa)
+                VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :password, :direccion, 'activo', :programa)";
         $stmt = $this->conn->prepare($sql);
+        
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
         $stmt->bindParam(':nombre', $nombre);
         $stmt->bindParam(':tipo_doc', $tipo_doc);
         $stmt->bindParam(':num_doc', $num_doc);
         $stmt->bindParam(':telefono', $telefono);
         $stmt->bindParam(':cargo', $cargo);
         $stmt->bindParam(':correo', $correo);
+        $stmt->bindParam(':password', $hash); 
         $stmt->bindParam(':direccion', $direccion);
-    
-    return $stmt->execute();
-}
+        $stmt->bindParam(':programa', $id_programa); 
 
-    // Funcion para actualizar un usuario existente
-    public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion) {
-    $sql = "UPDATE usuarios SET 
+        return $stmt->execute();
+    }
+
+    public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $password, $direccion, $id_programa = null) {
+
+    if ($password !== null && $password !== "") {
+        $sql = "UPDATE usuarios SET 
                 nombre_completo = :nombre,
                 tipo_documento = :tipo_doc,
                 numero_documento = :num_doc,
                 telefono = :telefono,
                 cargo = :cargo,
                 correo = :correo,
-                direccion = :direccion
+                password = :password,
+                direccion = :direccion,
+                id_programa = :programa
             WHERE id_usuario = :id_usuario";
 
-    $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare($sql);
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt->bindParam(':password', $hash);
+
+    } else {
+        $sql = "UPDATE usuarios SET 
+                nombre_completo = :nombre,
+                tipo_documento = :tipo_doc,
+                numero_documento = :num_doc,
+                telefono = :telefono,
+                cargo = :cargo,
+                correo = :correo,
+                direccion = :direccion,
+                id_programa = :programa
+            WHERE id_usuario = :id_usuario";
+        $stmt = $this->conn->prepare($sql);
+    }
 
     $stmt->bindParam(':id_usuario', $id_usuario);
     $stmt->bindParam(':nombre', $nombre);
@@ -72,25 +96,25 @@ class Usuario {
     $stmt->bindParam(':cargo', $cargo);
     $stmt->bindParam(':correo', $correo);
     $stmt->bindParam(':direccion', $direccion);
+    $stmt->bindParam(':programa', $id_programa);
 
     return $stmt->execute();
 }
 
-    // Funcion para eliminar un usuario
+
+    // Function to delete a user
     public function eliminar($id) {
         $sql = "DELETE FROM " . $this->table . " WHERE id_usuario = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
-        $stmt->execute();
+        return $stmt->execute(); 
     }
 
-    // Funcion para cambiar el estado de un usuario (activo/inactivo)
-
+    // Function to change the status of a user (active/inactive)
     public function cambiarEstado($id_usuario, $estado) {
         $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
 
-        // Crear variable real para pasar por referencia
         $estadoBD = $estado == 1 ? 'activo' : 'inactivo';
 
         $stmt->bindParam(':estado', $estadoBD);
@@ -99,6 +123,26 @@ class Usuario {
         return $stmt->execute();
     }
 
+    
+    // Function to get a user by their document number
+     
+    public function obtenerPorDocumento($documento) {
+        $sql = "SELECT * FROM " . $this->table . " WHERE numero_documento = :documento";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':documento', $documento);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    
+    // Function to handle user login
+    public function login($correo, $password) {
+        $user = $this->obtenerPorCorreo($correo);
+        if ($user && password_verify($password, $user['password'])) {
+            return $user; 
+        }
+        return false;
+    }
 
 }
 ?>
