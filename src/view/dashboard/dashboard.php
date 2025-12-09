@@ -121,7 +121,7 @@ $pieGradient = implode(", ", $gradientParts);
 </head>
 <body>
     <main class="p-6 transition-all duration-300"
-    style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
+      style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
 
 <div class="space-y-6 animate-fade-in-up">
 <!-- Header -->
