@@ -134,8 +134,7 @@ $programas = [
         </div>
 
         <!-- Main container with borders and shadow -->
-        <div class="bg-card rounded-lg shadow-sm border border-border p-6">
-            
+        <div class="bg-card rounded-lg shadow-sm p-6">
             <!-- Filter bar and actions -->
             <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                 
@@ -190,7 +189,7 @@ $programas = [
             </div>
 
             <!-- TABLE VIEW -->
-            <div id="tableView" class="overflow-x-auto">
+            <div id="tableView" class="overflow-x-auto border border-border rounded-lg">
                 <table class="w-full border-collapse">
                     
                     <!-- Table headers -->
@@ -278,7 +277,7 @@ $programas = [
                                         <?php echo $programa['estado']; ?>
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#ef444426] text-destructive">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">
                                         <?php echo $programa['estado']; ?>
                                     </span>
                                 <?php endif; ?>
@@ -313,109 +312,88 @@ $programas = [
                 </table>
             </div>
 
-            <!-- GRID VIEW (Blocks) -->
-            <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- GRID VIEW -->
+            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+
                 <?php foreach ($programas as $index => $programa): ?>
-                
-                <!-- Individual program card -->
-                <div 
-                    class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
-                    data-index="<?php echo $index; ?>"
-                    data-codigo="<?php echo htmlspecialchars($programa['codigo']); ?>"
-                    data-nombre="<?php echo htmlspecialchars($programa['nombre']); ?>"
-                    data-descripcion="<?php echo htmlspecialchars($programa['descripcion']); ?>"
-                    data-nivel="<?php echo htmlspecialchars($programa['nivel']); ?>"
-                    data-duracion="<?php echo htmlspecialchars($programa['duracion']); ?>"
-                    data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
-                    data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
-                >
-                    
-                    <!-- Card header -->
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <!-- Program icon -->
-                            <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-graduation-cap text-primary text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-foreground js-name"><?php echo $programa['nombre']; ?></h3>
-                                <p class="text-xs text-muted-foreground js-code"><?php echo $programa['codigo']; ?></p>
-                            </div>
+                <div class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
+                    data-index="<?php echo $index; ?>">
+                    <!-- ICONO + TÍTULO -->
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-primary text-lg"></i>
                         </div>
-                        
-                        <!-- Direct edit button (card mode) -->
+
                         <div>
-                            <button onclick="openEditModal(<?php echo $index; ?>)" title="Editar" class="text-muted-foreground hover:text-foreground p-2 bg-muted hover:bg-muted rounded-lg transition-colors flex items-center gap-2">
-                                <i class="far fa-edit"></i>
-                                <span class="sr-only">Editar</span>
-                            </button>
+                            <h3 class="font-semibold text-foreground js-name"><?php echo $programa['nombre']; ?></h3>
+                            <p class="text-sm text-muted-foreground js-descripcion"><?php echo $programa['descripcion']; ?></p>
+                            <p class="text-xs text-muted-foreground js-code"><?php echo $programa['codigo']; ?></p>
                         </div>
                     </div>
 
-                    <!-- Program description -->
-                    <p class="text-sm text-muted-foreground mb-4 js-descripcion"><?php echo $programa['descripcion']; ?></p>
+                    <!-- Instructor -->
+                    <div class="mb-3">
+                        <span class="text-xs text-muted-foreground">Instructor:</span>
+                        <p class="text-sm font-medium text-foreground">Juan Guillermo Crespo</p>
+                    </div>
 
-                    <!-- Additional information -->
-                    <div class="space-y-2 mb-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground">Instructor:</span>
-                            <span class="text-sm font-medium text-foreground">Juan Guillermo Crespo</span>
-                        </div>
+                    <!-- Nivel + Duración -->
+                    <div class="flex items-center justify-between mb-3">
 
-                        <div class="flex items-center justify-between">
-                            <!-- Level badge -->
+                        <!-- Nivel -->
+                        <div class="flex items-center gap-2">
                             <span class="js-nivel">
-                            <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
-                                    <?php echo $programa['nivel']; ?>
+                                <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
+                                        <?php echo $programa['nivel']; ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3b82f626] text-info">
+                                        <?php echo $programa['nivel']; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </span>
+
+                            <!-- Estado (badge igual al de tabla) -->
+                            <?php if (strtolower($programa['estado']) === 'activo'): ?>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success js-estado">
+                                    <?php echo $programa['estado']; ?>
                                 </span>
                             <?php else: ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3b82f626] text-info">
-                                    <?php echo $programa['nivel']; ?>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 js-estado">
+                                    <?php echo $programa['estado']; ?>
                                 </span>
                             <?php endif; ?>
-                            </span>
-                            
-                            <!-- Duration -->
-                            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                <i class="far fa-clock"></i>
-                                <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
-                            </div>
                         </div>
-                        
-                        <!-- Number of instructors -->
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground">Instructor/es</span>
-                            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                <i class="fas fa-users"></i>
-                                <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
-                            </div>
+
+                        <!-- Duración -->
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <i class="far fa-clock"></i>
+                            <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
                         </div>
                     </div>
 
-                    <!-- Status badge and toggle -->
-                    <div class="flex items-center justify-between pt-4 border-t border-border">
-                        <span class="js-estado">
-                        <?php if (strtolower($programa['estado']) === 'activo'): ?>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">
-                                <?php echo $programa['estado']; ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#ef444426] text-destructive">
-                                <?php echo $programa['estado']; ?>
-                            </span>
-                        <?php endif; ?>
-                        </span>
-                        
-                        <!-- Toggle switch -->
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                class="sr-only peer" 
-                                <?php echo strtolower($programa['estado']) === 'activo' ? 'checked' : ''; ?>
-                            >
-                            <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
+
+                    <hr class="border-border mb-3">
+
+                    <!-- Instructores + Toggle -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <i class="fas fa-users"></i>
+                            <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
+                        </div>
+
+                        <div class="flex flex-col items-end">
+                            <label class="relative inline-flex items-center cursor-pointer">
+
+                                <input type="checkbox" class="sr-only peer"
+                                    <?php echo strtolower($programa['estado']) === 'activo' ? 'checked' : ''; ?>>
+
+                                <div class="w-11 h-6 bg-muted rounded-full peer-checked:bg-success transition-all"></div>
+
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
