@@ -78,48 +78,46 @@ $programas = [
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programas de Formación - SENA</title>
-    
-    <!-- Tailwind CSS Configuration -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // SENA theme colors from global.css
-                        background: '#f9fafb',
-                        foreground: '#0f172a',
-                        card: '#ffffff',
-                        'card-foreground': '#0f172a',
-                        popover: '#ffffff',
-                        'popover-foreground': '#0f172a',
-                        primary: '#39A935',
-                        'primary-foreground': '#ffffff',
-                        secondary: '#047857',
-                        'secondary-foreground': '#ffffff',
-                        muted: '#f1f5f9',
-                        'muted-foreground': '#64748b',
-                        accent: '#f1f5f9',
-                        'accent-foreground': '#0f172a',
-                        destructive: '#ef4444',
-                        'destructive-foreground': '#ffffff',
-                        border: '#e2e8f0',
-                        input: '#e2e8f0',
-                        ring: '#39A935',
-                        success: '#22c55e',
-                        warning: '#f59e0b',
-                        info: '#3b82f6',
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Programas de Formación - SENA</title>
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                        background: 'var(--background)',
+                        foreground: 'var(--foreground)',
+                        card: 'var(--card)',
+                        'card-foreground': 'var(--card-foreground)',
+                        popover: 'var(--popover)',
+                        'popover-foreground': 'var(--popover-foreground)',
+                        primary: 'var(--primary)',
+                        'primary-foreground': 'var(--primary-foreground)',
+                        secondary: 'var(--secondary)',
+                        'secondary-foreground': 'var(--secondary-foreground)',
+                        muted: 'var(--muted)',
+                        'muted-foreground': 'var(--muted-foreground)',
+                        accent: 'var(--accent)',
+                        'accent-foreground': 'var(--accent-foreground)',
+                        destructive: 'var(--destructive)',
+                        'destructive-foreground': 'var(--destructive-foreground)',
+                        border: 'var(--border)',
+                        input: 'var(--input)',
+                        ring: 'var(--ring)',
+                        success: 'var(--success)',
+                        warning: 'var(--warning)',
+                        info: 'var(--info)',
+                        }
                     }
                 }
             }
-        }
-    </script>
+</script>
     <!-- Import SENA global.css only, without custom styles.css -->
-    <link rel="stylesheet" href="../../assets/css/global.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>src/assets/css/globals.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-background text-foreground min-h-screen flex flex-col">
@@ -363,6 +361,7 @@ $programas = [
                             <span class="text-xs text-muted-foreground">Instructor:</span>
                             <span class="text-sm font-medium text-foreground">Juan Guillermo Crespo</span>
                         </div>
+
                         <div class="flex items-center justify-between">
                             <!-- Level badge -->
                             <span class="js-nivel">
@@ -572,6 +571,6 @@ $programas = [
             </div>
         </div>
     </main>
-    <script src="../../assets/js/programas.js"></script>
+    <script src="<?= BASE_URL ?>src/assets/js/programas.js"></script>
 </body>
 </html>

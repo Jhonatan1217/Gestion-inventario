@@ -57,7 +57,7 @@ if (!isset($_SESSION[$SESSION_USER_KEY])) {
     exit;
 }
 ?>
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -66,7 +66,7 @@ if (!isset($_SESSION[$SESSION_USER_KEY])) {
     <link rel="stylesheet" href="src/assets/css/globals.css">
     <!-- aquí metes tu CSS/Tailwind si no lo haces en los includes -->
 </head>
-<body class="flex flex-col min-h-screen font-sans bg-white text-gray-900">
+<body class="flex flex-col min-h-screen font-sans bg-white text-gray-900 pl-[260px] transition-all duration-300">
     <header>
         <?php require_once BASE_PATH . '/src/includes/header.php'; ?>
         <?php require_once BASE_PATH . '/src/includes/sidebar.php'; ?>
@@ -75,6 +75,5 @@ if (!isset($_SESSION[$SESSION_USER_KEY])) {
     <main class="flex-grow">
         <?php require_once BASE_PATH . '/src/includes/main.php'; ?>
     </main>
-
 </body>
 </html>
