@@ -31,12 +31,16 @@ if (!$accion) {
 
 switch ($accion) {
 
-    //List users
+    // ==========================
+    // Listar usuarios
+    // ==========================
     case 'listar':
         echo json_encode($usuario->listar());
     break;
 
-    //Get user by id
+    // ==========================
+    // Obtener usuario por ID
+    // ==========================
     case 'obtener':
         $id_usuario = $_GET['id_usuario'] ?? null;
 
@@ -52,7 +56,9 @@ switch ($accion) {
         );
     break;
 
-    //Create user
+    // ==========================
+    // Crear usuario
+    // ==========================
     case 'crear':
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -60,12 +66,15 @@ switch ($accion) {
             'nombre_completo'  => $data['nombre_completo']  ?? $_POST['nombre_completo']  ?? null,
             'tipo_documento'   => $data['tipo_documento']   ?? $_POST['tipo_documento']   ?? null,
             'numero_documento' => $data['numero_documento'] ?? $_POST['numero_documento'] ?? null,
-            'telefono'        => $data['telefono'] ?? $_POST['telefono'] ?? null,
-            'cargo'           => $data['cargo'] ?? $_POST['cargo'] ?? null,
-            'correo'          => $data['correo'] ?? $_POST['correo'] ?? null,
-            'direccion'       => $data['direccion'] ?? $_POST['direccion'] ?? null,
-            'password'        => $data['password'] ?? $_POST['password'] ?? null,
+            'telefono'         => $data['telefono']         ?? $_POST['telefono']         ?? null,
+            'cargo'            => $data['cargo']            ?? $_POST['cargo']            ?? null,
+            'correo'           => $data['correo']           ?? $_POST['correo']           ?? null,
+            'direccion'        => $data['direccion']        ?? $_POST['direccion']        ?? null,
+            'password'         => $data['password']         ?? $_POST['password']         ?? null,
         ];
+
+        // 👉 Estado por defecto: ACTIVO (1)
+        $u['estado'] = 1;
 
         if (in_array(null, $u, true)) {
             echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
@@ -74,23 +83,31 @@ switch ($accion) {
 
         $u['nombre_completo'] = colapsarEspacios($u['nombre_completo']);
         if ($u['nombre_completo'] === '' || !validarSoloTexto($u['nombre_completo'])) {
-
             echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
             exit;
         }
 
-        $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
+        // 👀 Ojo: mismo texto que en el front (Subcoordinador con S mayúscula)
+        $cargosValidos = ['Coordinador','Subcoordinador','Instructor','Pasante','Aprendiz'];
         if (!in_array($u['cargo'], $cargosValidos, true)) {
             echo json_encode(['error' => 'Cargo no válido']);
             exit;
         }
 
+        // 🔒 Validar número de documento único
+        if ($usuario->obtenerPorDocumento($u['numero_documento'])) {
+            echo json_encode(['error' => 'El número de documento ya está registrado']);
+            exit;
+        }
+
+        // Validar correo único
         if ($usuario->obtenerPorCorreo($u['correo'])) {
             echo json_encode(['error' => 'El correo ya está registrado']);
             exit;
         }
 
-        $usuario->crear(
+        // 👉 Aquí YA se envía el estado = 1
+        $ok = $usuario->crear(
             $u['nombre_completo'],
             $u['tipo_documento'],
             $u['numero_documento'],
@@ -98,14 +115,21 @@ switch ($accion) {
             $u['cargo'],
             $u['correo'],
             $u['direccion'],
-            $u['password'], 
+            $u['password'],
+            $u['estado'] // 👈 ACTIVO POR DEFECTO
         );
+
+        if (!$ok) {
+            echo json_encode(['error' => 'No se pudo crear el usuario']);
+            exit;
+        }
 
         echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
 
-    
-    //Update user
+    // ==========================
+    // Actualizar usuario
+    // ==========================
     case 'actualizar':
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -118,15 +142,15 @@ switch ($accion) {
         }
 
         // Obtener datos enviados
-        $nombre     = $data['nombre_completo']  ?? null;
-        $tipo_doc   = $data['tipo_documento']   ?? null;
-        $num_doc    = $data['numero_documento'] ?? null;
-        $telefono   = $data['telefono']         ?? null;
-        $cargo      = $data['cargo']            ?? null;
-        $correo     = $data['correo']           ?? null;
-        $direccion  = $data['direccion']        ?? null;
-        $password   = $data['password']         ?? null;
-        $id_programa = $data['id_programa']     ?? null;
+        $nombre      = $data['nombre_completo']  ?? null;
+        $tipo_doc    = $data['tipo_documento']   ?? null;
+        $num_doc     = $data['numero_documento'] ?? null;
+        $telefono    = $data['telefono']         ?? null;
+        $cargo       = $data['cargo']            ?? null;
+        $correo      = $data['correo']           ?? null;
+        $direccion   = $data['direccion']        ?? null;
+        $password    = $data['password']         ?? null;
+        $id_programa = $data['id_programa']      ?? null;
 
         // Obtener datos actuales del usuario
         $usuarioActual = $usuario->obtenerPorId($id_usuario);
@@ -136,13 +160,13 @@ switch ($accion) {
         }
 
         // Conservar valores anteriores si no se enviaron nuevos
-        $nombre     = $nombre     ?? $usuarioActual['nombre_completo'];
-        $tipo_doc   = $tipo_doc   ?? $usuarioActual['tipo_documento'];
-        $num_doc    = $num_doc    ?? $usuarioActual['numero_documento'];
-        $telefono   = $telefono   ?? $usuarioActual['telefono'];
-        $cargo      = $cargo      ?? $usuarioActual['cargo'];
-        $correo     = $correo     ?? $usuarioActual['correo'];
-        $direccion  = $direccion  ?? $usuarioActual['direccion'];
+        $nombre      = $nombre      ?? $usuarioActual['nombre_completo'];
+        $tipo_doc    = $tipo_doc    ?? $usuarioActual['tipo_documento'];
+        $num_doc     = $num_doc     ?? $usuarioActual['numero_documento'];
+        $telefono    = $telefono    ?? $usuarioActual['telefono'];
+        $cargo       = $cargo       ?? $usuarioActual['cargo'];
+        $correo      = $correo      ?? $usuarioActual['correo'];
+        $direccion   = $direccion   ?? $usuarioActual['direccion'];
         $id_programa = $id_programa ?? $usuarioActual['id_programa'];
 
         // Validar nombre
@@ -152,11 +176,20 @@ switch ($accion) {
             exit;
         }
 
-        // Validar cargo
-        $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
+        // Validar cargo (mismos valores que en crear)
+        $cargosValidos = ['Coordinador','Subcoordinador','Instructor','Pasante','Aprendiz'];
         if (!in_array($cargo, $cargosValidos, true)) {
             echo json_encode(['error' => 'Cargo no válido']);
             exit;
+        }
+
+        // 🔒 Validar número de documento único (si cambió)
+        if ($num_doc !== $usuarioActual['numero_documento']) {
+            $existeDoc = $usuario->obtenerPorDocumento($num_doc);
+            if ($existeDoc && (int)$existeDoc['id_usuario'] !== (int)$id_usuario) {
+                echo json_encode(['error' => 'El número de documento ya está registrado por otro usuario']);
+                exit;
+            }
         }
 
         // Validar correo único
@@ -165,26 +198,29 @@ switch ($accion) {
             exit;
         }
 
+        $ok = $usuario->actualizar(
+            $id_usuario, 
+            $nombre, 
+            $tipo_doc, 
+            $num_doc, 
+            $telefono, 
+            $cargo, 
+            $correo,
+            $password, 
+            $direccion, 
+            $id_programa
+        );
+
         echo json_encode(
-            $usuario->actualizar(
-                $id_usuario, 
-                $nombre, 
-                $tipo_doc, 
-                $num_doc, 
-                $telefono, 
-                $cargo, 
-                $correo,
-                $password, 
-                $direccion, 
-                $id_programa
-            )
+            $ok
             ? ['mensaje' => 'Usuario actualizado correctamente']
             : ['error' => 'No se pudo actualizar el usuario']
         );
     break;
 
-
-    // Find by document number
+    // ==========================
+    // Buscar por número de documento
+    // ==========================
     case 'buscar_documento':
         $doc = $_GET['numero_documento'] ?? null;
         if (!$doc) {
@@ -196,11 +232,13 @@ switch ($accion) {
         );
     break;
 
+    // ==========================
     // Login
+    // ==========================
     case 'login':
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $correo   = $data['correo'] ?? $_POST['correo'] ?? null;
+        $correo   = $data['correo']   ?? $_POST['correo']   ?? null;
         $password = $data['password'] ?? $_POST['password'] ?? null;
 
         if (!$correo || !$password) {
@@ -215,35 +253,40 @@ switch ($accion) {
         );
     break;
 
-     //Change user status
+    // ==========================
+    // Cambiar estado de usuario
+    // ==========================
     case 'cambiar_estado':
-    $data = json_decode(file_get_contents("php://input"), true);
+        $data = json_decode(file_get_contents("php://input"), true);
 
-    $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
-    $estado     = $data['estado']     ?? $_POST['estado']     ?? $_GET['estado']     ?? null;
+        $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
+        $estado     = $data['estado']     ?? $_POST['estado']     ?? $_GET['estado']     ?? null;
 
-    if ($id_usuario === null || $estado === null) {
-        echo json_encode(['error' => 'Debe enviar id_usuario y estado (1 o 0)']);
-        exit;
-    }
+        if ($id_usuario === null || $estado === null) {
+            echo json_encode(['error' => 'Debe enviar id_usuario y estado (1 o 0)']);
+            exit;
+        }
 
-    if ($estado != 1 && $estado != 0) {
-        echo json_encode(['error' => 'El estado debe ser 1 (activo) o 0 (inactivo)']);
-        exit;
-    }
+        if ($estado != 1 && $estado != 0) {
+            echo json_encode(['error' => 'El estado debe ser 1 (activo) o 0 (inactivo)']);
+            exit;
+        }
 
-    if (!$usuario->obtenerPorId($id_usuario)) {
-        echo json_encode(['error' => 'Usuario no encontrado']);
-        exit;
-    }
+        if (!$usuario->obtenerPorId($id_usuario)) {
+            echo json_encode(['error' => 'Usuario no encontrado']);
+            exit;
+        }
 
-    echo json_encode(
-        $usuario->cambiarEstado($id_usuario, $estado)
-            ? ['mensaje' => 'Estado del usuario actualizado correctamente']
-            : ['error' => 'No se pudo actualizar el estado']
-    );
+        echo json_encode(
+            $usuario->cambiarEstado($id_usuario, $estado)
+                ? ['mensaje' => 'Estado del usuario actualizado correctamente']
+                : ['error' => 'No se pudo actualizar el estado']
+        );
     break;
 
+    // ==========================
+    // Acción no válida
+    // ==========================
     default:
         echo json_encode(['error' => 'Acción no válida']);
     break;

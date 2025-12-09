@@ -3,14 +3,31 @@
 // HEADER DASHBOARD – PHP
 // ==========================
 
-// Datos del usuario (de ejemplo)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+// Si no hay usuario logueado, redirige al login (ajusta la ruta según tu estructura)
+if (!isset($_SESSION['usuario_id'])) {
+    // Ejemplo de ruta, cámbiala si tu login está en otro sitio
+    header('Location: src/view/login/login.php');
+    exit;
+}
+
+// Armar nombre completo desde la sesión
+$nombreSesion   = $_SESSION['usuario_nombre']   ?? '';
+$apellidoSesion = $_SESSION['usuario_apellido'] ?? '';
+$nombreCompleto = trim($nombreSesion . ' ' . $apellidoSesion);
+
+// Datos del usuario tomados de la sesión
 $currentUser = [
-    "nombre_completo" => "Ana María López",
-    "cargo"           => "encargado_inventario",
-    // "foto_url"     => "/professional-woman-diverse.png",
-    "foto_url"        => null, // sin foto → iniciales
+    "nombre_completo" => $nombreCompleto !== '' ? $nombreCompleto : "Usuario",
+    "cargo"           => $_SESSION['usuario_cargo'] ?? "encargado_inventario",
+    "foto_url"        => $_SESSION['usuario_foto']  ?? null, // sin foto → iniciales
 ];
 
+// Ejemplo de notificaciones mock (puedes luego reemplazar por datos de BD)
 $mockAlerts = [
     ["material_id" => 1, "material_nombre" => "Cemento gris",       "stock_actual" => 8, "stock_minimo" => 10],
     ["material_id" => 2, "material_nombre" => "Guantes de carnaza", "stock_actual" => 4, "stock_minimo" => 6],
