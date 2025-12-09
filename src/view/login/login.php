@@ -38,13 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = "Por favor ingresa tu correo y contraseña.";
     } else {
         try {
-            // Ajusta el nombre de tabla/campos según tu BD
-            try {
-    // AJUSTA los nombres de columnas a lo que tengas realmente en la tabla
-    $sql = "SELECT id_usuario, nombre_completo, correo, password 
-            FROM usuarios 
-            WHERE correo = :correo 
-            LIMIT 1";
+            // Traemos también el campo cargo
+            $sql = "SELECT id_usuario, nombre_completo, correo, password, cargo
+                    FROM usuarios 
+                    WHERE correo = :correo 
+                    LIMIT 1";
+
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
             $stmt->execute();
@@ -69,7 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Guardar datos en sesión
                     $_SESSION['usuario_id']     = $user['id_usuario'];
                     $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                    // $_SESSION['usuario_rol']    = $user['rol']; // ← LO QUITAMOS
+
+                    // ✅ AQUÍ guardamos el cargo REAL de la columna 'cargo'
+                    $_SESSION['usuario_cargo']  = $user['cargo'];
+
+                    // Si también tienes una columna para foto, podrías hacer:
+                    // $_SESSION['usuario_foto'] = $user['foto_url'] ?? null;
 
                     header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
                     exit;
@@ -79,19 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
-
         } catch (PDOException $e) {
-            $loginError = "Error BD: " . $e->getMessage();
-        }
-              } catch (PDOException $e) {
             // SOLO PARA DEPURAR: muestra el mensaje real
             $loginError = "Error BD: " . $e->getMessage();
         }
-
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
