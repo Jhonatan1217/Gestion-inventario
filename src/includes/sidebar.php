@@ -46,6 +46,7 @@ if (!defined('BASE_URL')) {
   define('BASE_URL', $protocol . $host . $script_dir);
 }
 ?>
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
@@ -86,42 +87,44 @@ if (!defined('BASE_URL')) {
     <nav class="flex flex-col gap-1">
 
       <?php foreach ($navigation as $item): ?>
-        <?php
-          // URL final SIEMPRE pasa por index.php?page=...
-          $itemHref = BASE_URL . 'index.php?page=' . $item['page'];
+  <?php
+    // URL final SIEMPRE pasa por index.php?page=...
+    $itemHref = BASE_URL . 'index.php?page=' . $item['page'];
 
-          // Activo si coincide el parámetro page
-          $isActive = ($currentPage === $item['page']);
+    // ✅ Dashboard siempre activo, los demás solo si coinciden con $currentPage
+    if ($item['page'] === 'dashboard') {
+        $isActive = true;                      // siempre verde
+    } else {
+        $isActive = ($currentPage === $item['page']);  // activo solo si es la página actual
+    }
 
-          $iconName = getLucideIconName($item["icon"]);
-        ?>
+    $iconName = getLucideIconName($item["icon"]);
+  ?>
 
-        <a href="<?php echo $itemHref; ?>"
-          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all
-          <?php echo $isActive
-            ? 'bg-sidebar-accent text-sidebar-primary'
-            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'; ?>"
-        >
+  <a href="<?php echo $itemHref; ?>"
+    class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all
+    <?php echo $isActive
+      ? 'bg-sidebar-accent text-sidebar-primary'
+      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'; ?>"
+  >
+    <i
+      data-lucide="<?php echo htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8'); ?>"
+      class="h-5 w-5 shrink-0 <?php echo $isActive ? 'text-sidebar-primary' : ''; ?>"
+    ></i>
 
-          <!-- Ícono Lucide -->
-          <i
-            data-lucide="<?php echo htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8'); ?>"
-            class="h-5 w-5 shrink-0 <?php echo $isActive ? 'text-sidebar-primary' : ''; ?>"
-          ></i>
+    <?php if (!$collapsed): ?>
+      <span class="flex-1"><?php echo $item["name"]; ?></span>
 
-          <?php if (!$collapsed): ?>
-            <span class="flex-1"><?php echo $item["name"]; ?></span>
+      <?php if (isset($item["badge"])): ?>
+        <span class="h-5 min-w-5 flex items-center justify-center bg-primary text-white text-[11px] rounded-full">
+          <?php echo $item["badge"]; ?>
+        </span>
+      <?php endif; ?>
+    <?php endif; ?>
+  </a>
 
-            <?php if (isset($item["badge"])): ?>
-              <span class="h-5 min-w-5 flex items-center justify-center bg-primary text-white text-[11px] rounded-full">
-                <?php echo $item["badge"]; ?>
-              </span>
-            <?php endif; ?>
-          <?php endif; ?>
+<?php endforeach; ?>
 
-        </a>
-
-      <?php endforeach; ?>
     </nav>
   </div>
 
@@ -144,7 +147,7 @@ if (!defined('BASE_URL')) {
 
       <!-- Botón colapsar -->
       <a
-        href="?coll=<?php echo $collapsed ? "0" : "1"; ?>"
+        href="<?= BASE_URL ?>index.php?page=<?= urlencode($currentPage) ?>&coll=<?= $collapsed ? '0' : '1' ?>"
         class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent"
       >
         <?php if ($collapsed): ?>
@@ -153,6 +156,7 @@ if (!defined('BASE_URL')) {
           <i data-lucide="chevron-left" class="h-5 w-5"></i>
         <?php endif; ?>
       </a>
+
 
     </div>
   </div>
