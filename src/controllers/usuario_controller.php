@@ -59,6 +59,9 @@ switch ($accion) {
     // ==========================
     // Crear usuario
     // ==========================
+        // ==========================
+    // Crear usuario
+    // ==========================
     case 'crear':
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -71,12 +74,23 @@ switch ($accion) {
             'correo'           => $data['correo']           ?? $_POST['correo']           ?? null,
             'direccion'        => $data['direccion']        ?? $_POST['direccion']        ?? null,
             'password'         => $data['password']         ?? $_POST['password']         ?? null,
+            // 👇 nuevo: recibimos id_programa del front (si viene)
+            'id_programa'      => $data['id_programa']      ?? $_POST['id_programa']      ?? null,
         ];
 
-        // 👉 Estado por defecto: ACTIVO (1)
-        $u['estado'] = 1;
+        // 👉 Estado por defecto: ACTIVO (lo manejas como 'activo' en el modelo)
+        $u['estado'] = 1; // puedes dejarlo si lo usas luego para otra cosa
 
-        if (in_array(null, $u, true)) {
+        if (in_array(null, [
+            $u['nombre_completo'],
+            $u['tipo_documento'],
+            $u['numero_documento'],
+            $u['telefono'],
+            $u['cargo'],
+            $u['correo'],
+            $u['direccion'],
+            $u['password'],
+        ], true)) {
             echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
             exit;
         }
@@ -87,7 +101,6 @@ switch ($accion) {
             exit;
         }
 
-        // 👀 Ojo: mismo texto que en el front (Subcoordinador con S mayúscula)
         $cargosValidos = ['Coordinador','Subcoordinador','Instructor','Pasante','Aprendiz'];
         if (!in_array($u['cargo'], $cargosValidos, true)) {
             echo json_encode(['error' => 'Cargo no válido']);
@@ -106,7 +119,20 @@ switch ($accion) {
             exit;
         }
 
-        // 👉 Aquí YA se envía el estado = 1
+        // 👇 LÓGICA PARA PROGRAMA
+        // Si NO es Instructor, ignoramos cualquier id_programa
+        if ($u['cargo'] !== 'Instructor') {
+            $u['id_programa'] = null;
+        }
+
+        // (Opcional) Validación extra en backend: si es Instructor, programa es obligatorio
+        if ($u['cargo'] === 'Instructor' && empty($u['id_programa'])) {
+            echo json_encode(['error' => 'Debe seleccionar un programa de formación para el Instructor.']);
+            exit;
+        }
+
+        // 👉 Aquí YA NO mandamos estado como último parámetro,
+        //     sino el id_programa correcto (o null)
         $ok = $usuario->crear(
             $u['nombre_completo'],
             $u['tipo_documento'],
@@ -116,7 +142,7 @@ switch ($accion) {
             $u['correo'],
             $u['direccion'],
             $u['password'],
-            $u['estado'] // 👈 ACTIVO POR DEFECTO
+            $u['id_programa'] // 👈 AHORA SÍ ES id_programa
         );
 
         if (!$ok) {
@@ -126,6 +152,7 @@ switch ($accion) {
 
         echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
+
 
     // ==========================
     // Actualizar usuario
