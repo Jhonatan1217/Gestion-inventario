@@ -1,3 +1,9 @@
+<?php
+
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +15,8 @@
     <link rel="stylesheet" href="../../assets/css/globals.css">
 </head>
 <body>
+        <main class="p-6 transition-all duration-300"
+    style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
         <h1 class="text-2xl font-bold tracking-tight">Movimientos</h1>
@@ -167,7 +175,5 @@
         </tbody>
     </table>
 </div>
-
-
-
+</main>
 </body>
