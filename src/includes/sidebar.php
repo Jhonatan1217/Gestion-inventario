@@ -133,9 +133,12 @@ if (!defined('BASE_URL')) {
     <div class="flex items-center justify-center gap-2 <?php echo $collapsed ? 'flex-col' : ''; ?>">
 
       <!-- Bell -->
-      <button class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent">
+      <a 
+        href="<?= BASE_URL ?>index.php?page=notificaciones"
+        class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent"
+      >
         <i data-lucide="bell" class="h-5 w-5"></i>
-      </button>
+      </a>
 
       <!-- Logout (icono rojo) -->
       <a 

@@ -1,4 +1,7 @@
 <?php
+
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
 // ===============================
 //  Mock data equivalente a mock-data.ts
 //  (puedes luego conectarlo a tu DB)
@@ -62,13 +65,17 @@ $categoriaDataRaw = [
 
 // Paleta de colores reutilizable (puedes agregar más)
 $palette = [
-    "#4f46e5", // azul
-    "#10b981", // verde
-    "#f59e0b", // amarillo
-    "#ef4444", // rojo
-    "#ec4899", // rosa
-    "#06b6d4", // cyan
+    "#39A900", // Verde principal
+    "#007832", // Verde oscuro
+    "#00304D", // Azul oscuro
+    "#71277A", // Morado
+    "#50E5F9", // Cian
+    "#FDC300", // Amarillo
+    "#F6F6F6", // Gris claro
+    "#FFFFFF", // Blanco
+    "#000000", // Negro
 ];
+
 
 // Construimos $categoriaData con color dinámico
 $categoriaData = [];
@@ -117,6 +124,9 @@ $pieGradient = implode(", ", $gradientParts);
     <link rel="stylesheet" href="../../assets/css/globals.css">
 </head>
 <body>
+    <main class="p-6 transition-all duration-300"
+      style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
+
 <div class="space-y-6 animate-fade-in-up">
 <!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -125,13 +135,13 @@ $pieGradient = implode(", ", $gradientParts);
         <p class="text-muted-foreground">Resumen general del inventario y actividad reciente</p>
     </div>
     <div class="flex gap-2">
-        <a href="/dashboard/solicitudes">
+        <a href="/Gestion-inventario/src/view/solicitudes/solicitudes.php">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted gap-2">
-        <i data-lucide="clock" class="h-4 w-4"></i>
+        <i data-lucide="clock" class="h-5 w-5 "></i>
         Pendientes
         </button>
     </a>
-    <a href="/dashboard/materiales">
+    <a href="/Gestion-inventario/src/view/materiales/materiales.php">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 gap-2">
         <i data-lucide="package" class="h-4 w-4"></i>
         Nuevo Material
@@ -145,17 +155,18 @@ $pieGradient = implode(", ", $gradientParts);
     <div class=" rounded-xl border border-border bg-card p-8 flex flex-col gap-2 ">
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Total Materiales</p>
-        <div class="rounded-full bg-primary/10 p-2 text-primary">
-        </div>
+        <div class="rounded-full p-2 text-primary">
+        <i data-lucide="box" class="h-5 w-5 text-[#39A900]"></i>
+    </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
-        <p class="text-2xl font-bold"><?php echo count($mockMateriales); ?></p>
-        <span class="text-xs text-success flex items-center">+12%</span>
+        <p class="mt-2 text-2xl font-bold"><?php echo count($mockMateriales); ?></p>
+        <span class="text-xs text-success flex items-center">+12%<i data-lucide="trending-up" class="ml-2 h-4 w-4 text-[#39A900]"></i></span>
     </div>
 
-    <p class="text-xs text-muted-foreground"><?php echo $materialesActivos; ?> disponibles</p>
+    <p class="text-xs text-success flex items-center"><?php echo $materialesActivos; ?> disponibles</p>
     <div class="flex items-center gap-1 text-xs text-success">
-        <i data-lucide="trending-up" class="h-3 w-3"></i>
+        
     </div>
     </div>
 
@@ -163,8 +174,8 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Bodegas Activas</p>
-        <div class="rounded-full bg-success/10 p-2 text-success">
-        <i data-lucide="warehouse" class="h-4 w-4"></i>
+        <div class="rounded-full bg-primary/10 p-2 text-primary">
+        <i data-lucide="warehouse" class="h-5 w-5 text-[#39A900]"></i>
         </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
@@ -180,12 +191,12 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Movimientos Hoy</p>
         <div class="rounded-full bg-primary/10 p-2 text-primary">
-        <i data-lucide="arrow-down-up" class="h-4 w-4"></i>
+        <i data-lucide="arrow-down-up" class="h-5 w-5 text-[#39A900]"></i>
         </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
         <p class="mt-2 text-2xl font-bold"><?php echo $movimientosHoy; ?></p>
-        <span class="text-xs text-success flex items-center">+8%</span>
+        <span class="text-xs text-success flex items-center">+8%<i data-lucide="trending-up" class="ml-2 h-4 w-4 text-[#39A900]"></i></span>
     </div>
     <p class="text-xs text-muted-foreground">Entradas y salidas</p>
     </div>
@@ -194,13 +205,15 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="mg-7px text-2x1 font-medium text-muted-foreground">Alertas Stock</p>
-        <div class="rounded-full <?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
-        <i data-lucide="alert-triangle" class="h-4 w-4"></i>
+        <div class="rounded-full bg-primary/10 p-2 text-primary <?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
+        <div class="rounded-full bg-primary/10 p-2 <?php echo count($mockAlerts) > 0 ? 'bg-warning/10' : 'bg-muted'; ?>">
+            <i data-lucide="alert-triangle" class="h-5 w-5 text-[#EF4444]"></i>
+        </div>
         </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
         <p class="mt-2 text-2xl font-bold"><?php echo count($mockAlerts); ?></p>
-        <span class="text-xs text-success flex items-center">+8%</span>
+        <span class="text-xs text-success flex items-center">+8%<i data-lucide="trending-down" class="ml-2 h-4 w-4 text-[#EF4444]"></i></span>
     </div>
     <p class="text-xs text-muted-foreground">Materiales en riesgo</p>
     </div>
@@ -245,7 +258,7 @@ $pieGradient = implode(", ", $gradientParts);
                         <?php foreach ($categoriaData as $item): ?>
                             <div class="flex items-center gap-2">
                                 <span class="h-3 w-3 rounded-full"
-                                      style="background-color: <?php echo $item['color']; ?>;"></span>
+                                    style="background-color: <?php echo $item['color']; ?>;"></span>
                                 <span><?php echo htmlspecialchars($item['name']); ?>:</span>
                                 <span class="font-medium text-muted-foreground">
                                     <?php echo $item['value']; ?>
@@ -266,7 +279,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Alertas de Stock</h2>
-        <a href="/dashboard/materiales">
+        <a href="/Gestion-inventario/src/view/materiales/materiales.php">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
@@ -284,7 +297,7 @@ $pieGradient = implode(", ", $gradientParts);
             <div class="space-y-2">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium"><?php echo htmlspecialchars($alert["material_nombre"]); ?></span>
-                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-medium text-sm">
+                <span class="px-3 py-1 rounded-full bg-[#FDC300] font-medium text-sm">
                 Bajo
                 </span>
 
@@ -307,24 +320,27 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Solicitudes Recientes</h2>
-        <a href="/dashboard/solicitudes">
-        <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
-            Ver todo
-            <i data-lucide="arrow-right" class="h-3 w-3"></i>
-        </button>
-        </a>
+        <a href="?page=movimientos">
+    <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
+        Ver todo
+        <i data-lucide="arrow-right" class="h-3 w-3"></i>
+    </button>
+</a>
+
+
+       
     </div>
     <div class="px-6 pb-4 space-y-4">
         <?php foreach (array_slice($mockSolicitudes, 0, 3) as $solicitud): 
         $estado = $solicitud["estado"];
         if ($estado === "pendiente") {
-            $badgeClasses = "bg-yellow-300 ";
+            $badgeClasses = "bg-[#FDC300] ";
             $icon = "clock";
         } elseif ($estado === "aprobada") {
-            $badgeClasses = "bg-green-300 ";
+            $badgeClasses = "bg-[#39A900] ";
             $icon = "check-circle-2";
         } else {
-            $badgeClasses = "bg-red-300 ";
+            $badgeClasses = "bg-[#EF4444] ";
             $icon = "x-circle";
         }
         ?>
@@ -348,7 +364,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Actividad Reciente</h2>
-        <a href="/dashboard/movimientos">
+        <a href="/Gestion-inventario/src/view/movimientos/movimientos.php">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
@@ -382,115 +398,116 @@ $pieGradient = implode(", ", $gradientParts);
     </div>
 </div>
 </div>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
 <script>
-  // ========= CONSUMO MENSUAL (BARRAS) =========
-  const labelsConsumo = <?php echo json_encode(array_column($consumoData, 'name')); ?>;
-  const valoresConsumo = <?php echo json_encode(array_map('intval', array_column($consumoData, 'consumo'))); ?>;
+// ========= CONSUMO MENSUAL (BARRAS) =========
+const labelsConsumo = <?php echo json_encode(array_column($consumoData, 'name')); ?>;
+const valoresConsumo = <?php echo json_encode(array_map('intval', array_column($consumoData, 'consumo'))); ?>;
 
-  const totalMateriales = valoresConsumo.reduce((acc, val) => acc + val, 0);
-  const maxY = totalMateriales > 0 ? totalMateriales : 10;
+const totalMateriales = valoresConsumo.reduce((acc, val) => acc + val, 0);
+const maxY = totalMateriales > 0 ? totalMateriales : 10;
 
-  const consumoCtx = document.getElementById('consumoChart').getContext('2d');
+const consumoCtx = document.getElementById('consumoChart').getContext('2d');
 
-  const consumoChart = new Chart(consumoCtx, {
+const consumoChart = new Chart(consumoCtx, {
     type: 'bar',
     data: {
-      labels: labelsConsumo,
-      datasets: [{
+    labels: labelsConsumo,
+    datasets: [{
         label: 'Consumo de materiales',
         data: valoresConsumo,
         backgroundColor: 'rgba(148, 163, 184, 0.75)', // gris suave
         borderRadius: 8,
         borderSkipped: false
-      }]
+    }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false, // usa h-56 del contenedor
-      plugins: {
+    responsive: true,
+    maintainAspectRatio: false, // usa h-56 del contenedor
+    plugins: {
         legend: { display: false },
         tooltip: {
-          enabled: true,
-          callbacks: {
+        enabled: true,
+        callbacks: {
             label: function(context) {
-              const valor = context.parsed.y || 0;
-              return valor + ' materiales';
+            const valor = context.parsed.y || 0;
+            return valor + ' materiales';
             }
-          }
         }
-      },
-      scales: {
+        }
+    },
+    scales: {
         x: {
-          grid: { display: false },
-          ticks: { font: { size: 10 } }
+        grid: { display: false },
+        ticks: { font: { size: 10 } }
         },
         y: {
-          beginAtZero: true,
-          suggestedMax: maxY,
-          ticks: {
+        beginAtZero: true,
+        suggestedMax: maxY,
+        ticks: {
             stepSize: Math.max(1, Math.round(maxY / 5)),
             font: { size: 10 }
-          },
-          grid: { color: 'rgba(229, 231, 235, 0.8)' }
+        },
+        grid: { color: 'rgba(229, 231, 235, 0.8)' }
         }
-      }
     }
-  });
+    }
+});
 
     // ========= DISTRIBUCIÓN POR CATEGORÍA (DOUGHNUT) =========
-  const categoriaLabels = <?php echo json_encode(array_column($categoriaData, 'name')); ?>;
-  const categoriaValoresRaw = <?php echo json_encode(array_map('intval', array_column($categoriaData, 'value'))); ?>;
-  const categoriaColoresRaw = <?php echo json_encode(array_column($categoriaData, 'color')); ?>;
+const categoriaLabels = <?php echo json_encode(array_column($categoriaData, 'name')); ?>;
+const categoriaValoresRaw = <?php echo json_encode(array_map('intval', array_column($categoriaData, 'value'))); ?>;
+const categoriaColoresRaw = <?php echo json_encode(array_column($categoriaData, 'color')); ?>;
 
-  const totalCategoriasValor = categoriaValoresRaw.reduce((acc, val) => acc + val, 0);
+const totalCategoriasValor = categoriaValoresRaw.reduce((acc, val) => acc + val, 0);
 
-  let categoriaLabelsFinal = categoriaLabels;
-  let categoriaValoresFinal = categoriaValoresRaw;
-  let categoriaColoresFinal = categoriaColoresRaw;
+let categoriaLabelsFinal = categoriaLabels;
+let categoriaValoresFinal = categoriaValoresRaw;
+let categoriaColoresFinal = categoriaColoresRaw;
 
-  // Si no hay datos (todo 0), mostramos un solo slice "Sin datos"
-  if (totalCategoriasValor === 0) {
+// Si no hay datos (todo 0), mostramos un solo slice "Sin datos"
+if (totalCategoriasValor === 0) {
     categoriaLabelsFinal = ['Sin datos'];
     categoriaValoresFinal = [1];
     categoriaColoresFinal = ['rgba(148, 163, 184, 0.4)']; // gris suave
-  }
+}
 
-  const categoriaCtx = document.getElementById('categoriaChart').getContext('2d');
+const categoriaCtx = document.getElementById('categoriaChart').getContext('2d');
 
-  const categoriaChart = new Chart(categoriaCtx, {
+const categoriaChart = new Chart(categoriaCtx, {
     type: 'doughnut',
     data: {
-      labels: categoriaLabelsFinal,
-      datasets: [{
+    labels: categoriaLabelsFinal,
+    datasets: [{
         data: categoriaValoresFinal,
         backgroundColor: categoriaColoresFinal, // usa tus var(--chart-x) sin problema
         borderWidth: 0
-      }]
+    }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false, // usa h-56 del contenedor
-      cutout: '65%', // agujero central (tipo donut)
-      plugins: {
+    responsive: true,
+    maintainAspectRatio: false, // usa h-56 del contenedor
+    cutout: '65%', // agujero central (tipo donut)
+    plugins: {
         legend: {
-          display: false // ya tienes leyenda a la derecha si la quieres dejar en HTML
+        display: false // ya tienes leyenda a la derecha si la quieres dejar en HTML
         },
         tooltip: {
-          callbacks: {
+        callbacks: {
             label: function(context) {
-              if (totalCategoriasValor === 0) {
+            if (totalCategoriasValor === 0) {
                 return 'Sin datos';
-              }
-              const value = context.parsed;
-              const percent = ((value / totalCategoriasValor) * 100).toFixed(1);
-              return `${context.label}: ${value}% (${percent}%)`;
             }
-          }
+            const value = context.parsed;
+            const percent = ((value / totalCategoriasValor) * 100).toFixed(1);
+            return `${context.label}: ${value}% (${percent}%)`;
+            }
         }
-      }
+        }
     }
-  });
+    }
+});
 </script>
