@@ -3,8 +3,8 @@
 // USER MANAGEMENT – PHP VIEW
 // =====================================
 
-// Read sidebar collapsed state from URL parameter (?coll=1 => collapsed)
-$collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
 ?>
 
 <!DOCTYPE html>
@@ -29,19 +29,17 @@ $collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
   </script>
 </head>
 
-<body
-  class="min-h-screen bg-background text-foreground transition-all duration-300
-    <?php echo $collapsed ? 'lg:pl-[70px]' : 'lg:pl-[260px]'; ?>"
->
+<body class="bg-background p-6">
   <!-- Global dashboard header/sidebar can be included here if available -->
   <!-- <?php include '../partials/dashboard-header.php'; ?> -->
 
-  <main class="page-with-sidebar max-w-7xl mx-auto px-4 py-8">
+  <main class="p-6 transition-all duration-300"
+      style="margin-left: <?= $sidebarWidth ?>;>
     <div class="space-y-6 animate-fade-in-up">
       <!-- ================================== -->
       <!-- PAGE HEADER                         -->
       <!-- ================================== -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-2xl font-bold tracking-tight">Gestión de Usuarios</h1>
           <p class="text-muted-foreground">
@@ -128,7 +126,7 @@ $collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
       <!-- ================================== -->
       <!-- TOP FILTERS (SEARCH + ROLE FILTER) -->
       <!-- ================================== -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between  my-6">
         <!-- Free-text search by user name -->
         <div class="w-full sm:max-w-xs">
           <input

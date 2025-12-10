@@ -32,6 +32,10 @@ switch ($page) {
         $viewFile = BASE_PATH . '/src/view/reportes/reportes.php';  // ajusta al archivo real
         break;
 
+    case 'fichas':
+        $viewFile = BASE_PATH . '/src/view/fichas/fichas.php';  // ajusta al archivo real
+        break;        
+
     // ...agrega aquí más casos según tus carpetas/vistas...
 
     default:
