@@ -297,7 +297,7 @@ $pieGradient = implode(", ", $gradientParts);
             <div class="space-y-2">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium"><?php echo htmlspecialchars($alert["material_nombre"]); ?></span>
-                <span class="px-3 py-1 rounded-full bg-[#FDC300] font-medium text-sm">
+                <span class="px-3 py-1 rounded-full bg-[#FDC30050] font-medium text-sm text-[#FDC300]">
                 Bajo
                 </span>
 
@@ -320,24 +320,24 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Solicitudes Recientes</h2>
-        <a href="/Gestion-inventario/src/view/movimientos/movimientos.php">
-        <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
-            Ver todo
-            <i data-lucide="arrow-right" class="h-3 w-3"></i>
-        </button>
+        <a href="?page=movimientos">
+            <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
+                Ver todo
+                <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </button>
         </a>
     </div>
     <div class="px-6 pb-4 space-y-4">
         <?php foreach (array_slice($mockSolicitudes, 0, 3) as $solicitud): 
         $estado = $solicitud["estado"];
         if ($estado === "pendiente") {
-            $badgeClasses = "bg-[#FDC300] ";
+            $badgeClasses = "bg-[#FDC30040] text-[#FDC300]";
             $icon = "clock";
         } elseif ($estado === "aprobada") {
-            $badgeClasses = "bg-[#39A900] ";
+            $badgeClasses = "bg-[#39A90040] text-[#39A900]";
             $icon = "check-circle-2";
         } else {
-            $badgeClasses = "bg-[#EF4444] ";
+            $badgeClasses = "bg-[#EF444440] text-[#EF4444]";
             $icon = "x-circle";
         }
         ?>
