@@ -44,31 +44,83 @@ $alerts = [
   <title>Alertas Inventario</title>
 
   <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Tus variables -->
-    <link rel="stylesheet" href="../../assets/css/globals.css">
+  <!-- CSS Global -->
+  <link rel="stylesheet" href="../../assets/css/globals.css">
+
+  <!-- Estilos suaves usando SOLO variables -->
+  <style>
+    .kpi-soft-warning {
+      background-color: color-mix(in srgb, var(--warning) 40%, white);
+    }
+    .kpi-soft-critical {
+      background-color: color-mix(in srgb, var(--error) 40%, white);
+    }
+    .kpi-soft-low {
+      background-color: color-mix(in srgb, var(--foreground) 40%, white);
+    }
+    .kpi-soft-all {
+      background-color: color-mix(in srgb, var(--success) 40%, white);
+    }
+
+    .alert-soft-warning {
+      background-color: color-mix(in srgb, var(--warning) 30%, white);
+    }
+    .alert-soft-critical {
+      background-color: color-mix(in srgb, var(--error) 30%, white);
+    }
+    .alert-soft-low {
+      background-color: color-mix(in srgb, var(--foreground) 30%, white);
+    }
+    .alert-soft-all { 
+      background-color: color-mix(in srgb, var(--success) 30%, white);
+    }
+
+    .badge-soft-warning {
+      background-color: color-mix(in srgb, var(--warning) 60%, white);
+      border: 1px solid color-mix(in srgb, var(--warning) 70%, white);
+      color: white !important;
+    }
+
+    .badge-soft-critical {
+      background-color: color-mix(in srgb, var(--error) 60%, white);
+      border: 1px solid color-mix(in srgb, var(--error) 70%, white);
+      color: white !important;
+    }
+
+    .badge-soft-low {
+      background-color: color-mix(in srgb, var(--foreground) 60%, white);
+      border: 1px solid color-mix(in srgb, var(--foreground) 70%, white);
+      color: white !important;
+    }
+
+  </style>
 </head>
+
 <body class="bg-background p-6">
-    <main class="p-6 transition-all duration-300"
-    style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;">
-  <!-- KPIs -->
+
+<main class="p-6 transition-all duration-300"
+      style="margin-left: <?= $sidebarWidth ?>;">
+
+  <!-- TARJETAS KPI -->
   <div class="grid grid-cols-4 gap-4 mb-6">
+
     <?php
     $cards = [
-      ['icon' => 'bell', 'label' => 'Total Notificaciones', 'value' => $stats['total'], 'bg' => 'bg-success'],
-      ['icon' => 'alert-triangle', 'label' => 'Sin Leer', 'value' => $stats['unread'], 'bg' => 'bg-warning'],
-      ['icon' => 'alert-octagon', 'label' => 'Críticas', 'value' => $stats['critical'], 'bg' => 'bg-destructive'],
-      ['icon' => 'box', 'label' => 'Stock Bajo', 'value' => $stats['low'], 'bg' => 'bg-info'],
+      ['icon' => 'bell', 'label' => 'Total Notificaciones', 'value' => $stats['total'], 'soft' => 'kpi-soft-all', 'color' => 'var(--success)'],
+      ['icon' => 'alert-triangle', 'label' => 'Sin Leer', 'value' => $stats['unread'], 'soft' => 'kpi-soft-warning', 'color' => 'var(--warning)'],
+      ['icon' => 'alert-octagon', 'label' => 'Críticas', 'value' => $stats['critical'], 'soft' => 'kpi-soft-critical', 'color' => 'var(--error)'],
+      ['icon' => 'box', 'label' => 'Stock Bajo', 'value' => $stats['low'], 'soft' => 'kpi-soft-low', 'color' => 'var(--foreground)'],
     ];
 
     foreach ($cards as $c): ?>
       <div class="bg-card rounded-xl p-4 shadow flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center <?= $c['bg'] ?>">
-          <i data-lucide="<?= $c['icon'] ?>" class="text-white w-5 h-5"></i>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center <?= $c['soft'] ?>">
+          <i data-lucide="<?= $c['icon'] ?>" class="w-5 h-5" style="color: <?= $c['color'] ?>;"></i>
         </div>
 
         <div>
@@ -77,6 +129,7 @@ $alerts = [
         </div>
       </div>
     <?php endforeach; ?>
+
   </div>
 
   <!-- ALERTAS -->
@@ -89,53 +142,61 @@ $alerts = [
 
     <div class="space-y-4">
 
-      <?php foreach ($alerts as $a): 
+      <?php foreach ($alerts as $a):
+
         $colors = match($a['type']) {
-          'warning' => 'bg-warning bg-opacity-30',
-          'critical' => 'bg-destructive bg-opacity-30',
-          'low' => 'bg-info bg-opacity-25'
+          'warning'  => 'alert-soft-warning',
+          'critical' => 'alert-soft-critical',
+          'low'      => 'alert-soft-low',
         };
 
         $badge = match($a['type']) {
-          'warning' => 'bg-warning text-warning-foreground',
-          'critical' => 'bg-destructive text-destructive-foreground',
-          'low' => 'bg-info text-info-foreground'
+          'warning'  => 'badge-soft-warning',
+          'critical' => 'badge-soft-critical',
+          'low'      => 'badge-soft-low',
         };
 
         $icon = match($a['type']) {
-          'warning' => 'alert-triangle',
+          'warning'  => 'alert-triangle',
           'critical' => 'alert-octagon',
-          'low' => 'box'
+          'low'      => 'box',
+        };
+
+        $label = match($a['type']) {
+          'warning'  => 'Alta',
+          'critical' => 'Crítica',
+          'low'      => 'Baja',
         };
       ?>
 
       <div class="flex items-start justify-between p-4 rounded-lg <?= $colors ?>">
-        <div class="flex gap-3">
 
+        <div class="flex gap-3">
           <div class="mt-1">
             <i data-lucide="<?= $icon ?>" class="w-5 h-5"></i>
           </div>
 
           <div>
             <p class="font-semibold">
-              <?= $a['name'] ?> - <?= $a['status'] ?> (<?= $a['value'] ?>)
+              <?= $a['name'] ?> – <?= $a['status'] ?> (<?= $a['value'] ?>)
             </p>
 
             <p class="text-xs text-muted-foreground">
-              <?= $a['code'] ?> - <?= $a['name'] ?>
+              <?= $a['code'] ?> – <?= $a['name'] ?>
             </p>
 
             <div class="flex items-center gap-3 mt-1">
               <span class="text-xs text-muted-foreground"><?= $a['time'] ?></span>
 
+              <!-- BADGE -->
               <span class="text-xs px-2 py-0.5 rounded <?= $badge ?>">
-                <?= ucfirst($a['type']) ?>
+                <?= $label ?>
               </span>
+
             </div>
           </div>
         </div>
 
-        <!-- Botón eliminar -->
         <button class="text-red-500 hover:text-red-700">
           <i data-lucide="trash-2" class="w-5 h-5"></i>
         </button>
@@ -147,10 +208,10 @@ $alerts = [
     </div>
   </div>
 
-  <!-- Inicializar iconos -->
   <script>
     lucide.createIcons();
   </script>
 
+</main>
 </body>
 </html>

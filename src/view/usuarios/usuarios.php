@@ -3,6 +3,9 @@
 // GESTIÓN DE USUARIOS – VERSIÓN PHP
 // (Diseño basado en tu componente React)
 // =====================================
+
+// 👇 leer el estado del sidebar desde la URL (?coll=1)
+$collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
 ?>
 
 <!DOCTYPE html>
@@ -11,57 +14,25 @@
   <meta charset="UTF-8">
   <title>Gestión de Usuarios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Tus estilos globales (variables, colores, etc.) -->
-  <link rel="stylesheet" href="../../assets/css/globals.css">
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+  <link rel="stylesheet" href="src/assets/css/usuarios/usuarios.css" />
+  <script>
+  const AUTH_USER_ID = <?= $_SESSION['usuario_id']; ?>;
+  </script>
 
-  <style>
-    /* Animación similar a animate-fade-in-up */
-    .animate-fade-in-up {
-      opacity: 0;
-      transform: translateY(8px);
-      animation: fadeInUp 0.4s ease-out forwards;
-    }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Overlay de los modales */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgb(15 23 42 / 0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    /* ===========================
-       AJUSTES MODAL CREAR USUARIO
-       =========================== */
-
-    /* Que el modal no sea tan grande (más parecido al de la segunda imagen) */
-    #modalUsuario > div {
-      max-width: 640px; /* aprox como el diseño original */
-    }
-  </style>
 </head>
-<body class="min-h-screen bg-background text-foreground">
+
+<body
+  class="min-h-screen bg-background text-foreground transition-all duration-300
+    <?php echo $collapsed ? 'lg:pl-[70px]' : 'lg:pl-[260px]'; ?>"
+>
 
   <!-- Si tienes header/sidebar de dashboard, los puedes incluir aquí -->
   <!-- <?php include '../partials/dashboard-header.php'; ?> -->
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
+  <main class="page-with-sidebar max-w-7xl mx-auto px-4 py-8">
     <div class="space-y-6 animate-fade-in-up">
 
       <!-- HEADER -->
@@ -71,19 +42,56 @@
           <p class="text-muted-foreground">Administra los usuarios y sus roles en el sistema</p>
         </div>
 
-        <button
-          id="btnNuevoUsuario"
-          class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
-          type="button"
-        >
-          <!-- Icono Plus -->
-          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-               stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 4v16m8-8H4"/>
-          </svg>
-          Nuevo Usuario
-        </button>
+        <!-- CONTROLES DERECHA: SWITCH VISTA + BOTÓN NUEVO -->
+        <div class="flex items-center gap-3">
+          <!-- Switch de lista / tarjetas -->
+          <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+            <!-- Lista -->
+            <button
+              type="button"
+              id="btnVistaTabla"
+              class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
+            >
+              <!-- Icono lista -->
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+
+            <!-- Tarjetas -->
+            <button
+              type="button"
+              id="btnVistaTarjetas"
+              class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
+            >
+              <!-- Icono grid -->
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+                <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+                <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+                <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Botón nuevo usuario -->
+          <button
+            id="btnNuevoUsuario"
+            class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+            type="button"
+          >
+            <!-- Icono Plus -->
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo Usuario
+          </button>
+        </div>
       </div>
 
       <!-- FILTROS SUPERIORES (Buscar + Filtro rol) -->
@@ -97,25 +105,37 @@
           />
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-sm text-muted-foreground">Filtrar por rol</span>
+          <!-- Ícono de filtro en lugar de texto "Filtrar por rol" --> 
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+
           <select
             id="selectFiltroRol"
-            class="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm"
           >
             <option value="">Todos</option>
+            <!-- CARGOS EXACTOS QUE EXISTEN EN LA BD -->
             <option value="Coordinador">Coordinador</option>
+            <option value="Subcoordinador">Subcoordinador</option>
             <option value="Instructor">Instructor</option>
             <option value="Pasante">Pasante</option>
-            <option value="Encargado Inventario">Encargado Inventario</option>
-            <option value="Encargado Bodega">Encargado Bodega</option>
+            <option value="Aprendiz">Aprendiz</option>
           </select>
         </div>
       </div>
 
-      <!-- TABLA DE USUARIOS (equivalente a DataTable) -->
-      <div class="overflow-hidden rounded-xl border border-border bg-card">
+      <!-- CONTENEDOR VISTA TABLA -->
+      <!-- overflow-visible + relative para que el dropdown no se corte -->
+      <div id="vistaTabla" class="overflow-visible rounded-xl border border-border bg-card relative">
         <table class="min-w-full divide-y divide-border text-sm">
-          <thead class="bg-muted/40">
+          <thead class="bg-gray-100">
             <tr>
               <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Usuario</th>
               <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Documento</th>
@@ -130,6 +150,17 @@
           </tbody>
         </table>
       </div>
+
+      <!-- CONTENEDOR VISTA TARJETAS -->
+      <div id="vistaTarjetas" class="hidden">
+        <div
+          id="cardsContainer"
+          class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <!-- Se llena dinámicamente con JS -->
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -159,7 +190,7 @@
         </button>
       </div>
 
-      <form id="formUsuario" class="space-y-4">
+      <form id="formUsuario" class="space-y-4" novalidate>
         <input type="hidden" id="hiddenUserId" value="">
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -171,7 +202,6 @@
               type="text"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="Ej: Juan Pablo Hernández Castro"
-              required
             />
           </div>
 
@@ -180,13 +210,12 @@
             <label for="tipo_documento" class="text-sm font-medium">Tipo de documento *</label>
             <select
               id="tipo_documento"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
-              required
+              class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga"
             >
-              <option value="CC">Cédula de Ciudadanía</option>
-              <option value="TI">Tarjeta de Identidad</option>
-              <option value="CE">Cédula de Extranjería</option>
-              <option value="PAS">Pasaporte</option>
+              <!-- TIPOS DE DOCUMENTO EXACTOS QUE EXISTEN EN LA BD -->
+              <option value="CC">CC</option>
+              <option value="TI">TI</option>
+              <option value="CE">CE</option>
             </select>
           </div>
 
@@ -198,7 +227,6 @@
               type="text"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="1098765432"
-              required
             />
           </div>
 
@@ -210,7 +238,6 @@
               type="text"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="3101234567"
-              required
             />
           </div>
 
@@ -219,14 +246,25 @@
             <label for="cargo" class="text-sm font-medium">Cargo / Rol *</label>
             <select
               id="cargo"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
-              required
+              class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga"
             >
+              <!-- CARGOS EXACTOS QUE EXISTEN EN LA BD -->
               <option value="Coordinador">Coordinador</option>
+              <option value="Subcoordinador">Subcoordinador</option>
               <option value="Instructor">Instructor</option>
               <option value="Pasante">Pasante</option>
-              <option value="Encargado Inventario">Encargado de Inventario</option>
-              <option value="Encargado Bodega">Encargado de Bodega</option>
+              <option value="Aprendiz">Aprendiz</option>
+            </select>
+          </div>
+
+          <!-- Programa de formación (solo para Instructor) -->
+          <div class="space-y-2 sm:col-span-2 hidden" id="wrapper_programa">
+            <label for="id_programa" class="text-sm font-medium">Programa de formación *</label>
+            <select
+              id="id_programa"
+              class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga"
+            >
+              <option value="">Seleccione un programa</option>
             </select>
           </div>
 
@@ -238,11 +276,10 @@
               type="email"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="usuario@sena.edu.co"
-              required
             />
           </div>
 
-          <!-- Contraseña (full, NUEVO CAMPO) -->
+          <!-- Contraseña (full) -->
           <div class="space-y-2 sm:col-span-2">
             <label for="password" class="text-sm font-medium">Contraseña *</label>
             <input
@@ -250,7 +287,6 @@
               type="password"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="Ingrese una contraseña segura"
-              required
             />
           </div>
 
@@ -262,7 +298,6 @@
               type="text"
               class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
               placeholder="Calle 45 #23-10, Bogotá"
-              required
             />
           </div>
         </div>
@@ -286,9 +321,7 @@
     </div>
   </div>
 
-  <!-- ========================================= -->
-  <!-- MODAL VER DETALLES USUARIO               -->
-  <!-- ========================================= -->
+  <!-- MODAL VER DETALLES USUARIO -->
   <div id="modalVerUsuario" class="modal-overlay">
     <div class="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-lg">
       <div class="flex items-start justify-between gap-4 mb-4">
@@ -313,516 +346,14 @@
     </div>
   </div>
 
-  <!-- ========================================= -->
+  <!-- Contenedor para las alertas tipo Flowbite -->
+  <div
+    id="flowbite-alert-container"
+    class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 w-full max-w-md"
+  ></div>
+
   <!-- JS – LÓGICA EQUIVALENTE A useState React -->
-  <!-- ========================================= -->
-  <script>
-  // =========================
-  // CONFIG: URL DEL CONTROLADOR
-  // =========================
-  const API_URL = "../../controllers/usuario_controller.php"; // 👈 AJUSTA ESTA RUTA
-
-  // ====== Configuración de roles (equivalente a roleLabels / roleBadgeStyles) ======
-  const roleLabels = {
-    "Coordinador": "Coordinador",
-    "Instructor": "Instructor",
-    "Pasante": "Pasante",
-    "Encargado Inventario": "Encargado de Inventario",
-    "Encargado Bodega": "Encargado de Bodega",
-  };
-
-  const roleBadgeStyles = {
-    "Coordinador": "bg-chart-4/10 text-chart-4",
-    "Instructor": "bg-primary/10 text-primary",
-    "Pasante": "bg-chart-3/10 text-chart-3",
-    "Encargado Inventario": "bg-chart-2/10 text-chart-2",
-    "Encargado Bodega": "bg-chart-1/10 text-chart-1",
-  };
-
-  // ====== Mock users como respaldo si falla el backend ======
-  const mockUsers = [
-    {
-      id: "1",
-      nombre_completo: "Ana María Rodríguez",
-      tipo_documento: "CC",
-      numero_documento: "1098765432",
-      telefono: "3101234567",
-      cargo: "Coordinador",
-      correo: "ana.rodriguez@sena.edu.co",
-      direccion: "Calle 10 #12-34, Bogotá",
-      estado: true,
-      created_at: "2025-01-10",
-    },
-    {
-      id: "2",
-      nombre_completo: "Carlos Pérez",
-      tipo_documento: "CC",
-      numero_documento: "1022334455",
-      telefono: "3209876543",
-      cargo: "Instructor",
-      correo: "carlos.perez@sena.edu.co",
-      direccion: "Carrera 7 #45-20, Bogotá",
-      estado: true,
-      created_at: "2025-01-12",
-    },
-    {
-      id: "3",
-      nombre_completo: "Laura Gómez",
-      tipo_documento: "TI",
-      numero_documento: "1002003004",
-      telefono: "3007654321",
-      cargo: "Pasante",
-      correo: "laura.gomez@sena.edu.co",
-      direccion: "Av. Siempre Viva 123",
-      estado: false,
-      created_at: "2025-01-15",
-    },
-  ];
-
-  // Aquí vivirá siempre la lista que se usa para pintar la tabla
-  let users = [...mockUsers];
-  let selectedUser = null;
-
-  // ====== Referencias DOM ======
-  const tbodyUsuarios = document.getElementById("tbodyUsuarios");
-  const inputBuscar = document.getElementById("inputBuscar");
-  const selectFiltroRol = document.getElementById("selectFiltroRol");
-
-  const modalUsuario = document.getElementById("modalUsuario");
-  const btnNuevoUsuario = document.getElementById("btnNuevoUsuario");
-  const btnCerrarModalUsuario = document.getElementById("btnCerrarModalUsuario");
-  const btnCancelarModalUsuario = document.getElementById("btnCancelarModalUsuario");
-
-  const formUsuario = document.getElementById("formUsuario");
-  const hiddenUserId = document.getElementById("hiddenUserId");
-  const modalUsuarioTitulo = document.getElementById("modalUsuarioTitulo");
-  const modalUsuarioDescripcion = document.getElementById("modalUsuarioDescripcion");
-
-  const inputNombreCompleto = document.getElementById("nombre_completo");
-  const inputTipoDocumento = document.getElementById("tipo_documento");
-  const inputNumeroDocumento = document.getElementById("numero_documento");
-  const inputTelefono = document.getElementById("telefono");
-  const inputCargo = document.getElementById("cargo");
-  const inputCorreo = document.getElementById("correo");
-  const inputPassword = document.getElementById("password");
-  const inputDireccion = document.getElementById("direccion");
-
-  // 👇 si tienes un select para programa, usa este id
-  const inputPrograma = document.getElementById("id_programa"); // opcional pero requerido por tu backend
-
-  const modalVerUsuario = document.getElementById("modalVerUsuario");
-  const btnCerrarModalVerUsuario = document.getElementById("btnCerrarModalVerUsuario");
-  const detalleUsuarioContent = document.getElementById("detalleUsuarioContent");
-
-  // ====== Helpers ======
-  function getInitials(nombre) {
-    return nombre
-      .split(" ")
-      .filter(Boolean)
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  }
-
-  function openModalUsuario(editUser = null) {
-    selectedUser = editUser;
-    modalUsuario.classList.add("active");
-
-    if (editUser) {
-      modalUsuarioTitulo.textContent = "Editar Usuario";
-      modalUsuarioDescripcion.textContent = "Modifica la información del usuario";
-      hiddenUserId.value = editUser.id; // id interno = id_usuario en BD
-
-      inputNombreCompleto.value = editUser.nombre_completo;
-      inputTipoDocumento.value = editUser.tipo_documento;
-      inputNumeroDocumento.value = editUser.numero_documento;
-      inputTelefono.value = editUser.telefono;
-      inputCargo.value = editUser.cargo;
-      inputCorreo.value = editUser.correo;
-      inputPassword.value = ""; // no mostramos contraseña existente
-      inputDireccion.value = editUser.direccion;
-      if (inputPrograma && editUser.id_programa) {
-        inputPrograma.value = editUser.id_programa;
-      }
-    } else {
-      modalUsuarioTitulo.textContent = "Crear Nuevo Usuario";
-      modalUsuarioDescripcion.textContent = "Complete los datos para registrar un nuevo usuario";
-      hiddenUserId.value = "";
-      formUsuario.reset();
-      inputTipoDocumento.value = "CC";
-      inputCargo.value = "Instructor";
-    }
-  }
-
-  function closeModalUsuario() {
-    modalUsuario.classList.remove("active");
-    selectedUser = null;
-    hiddenUserId.value = "";
-  }
-
-  function openModalVerUsuario(user) {
-    selectedUser = user;
-    modalVerUsuario.classList.add("active");
-
-    const estadoBadgeClass = user.estado
-      ? "bg-success/10 text-success"
-      : "bg-destructive/10 text-destructive";
-
-    detalleUsuarioContent.innerHTML = `
-      <div class="flex items-center gap-4">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary text-xl">
-          ${getInitials(user.nombre_completo)}
-        </div>
-        <div>
-          <h3 class="font-semibold text-lg">${user.nombre_completo}</h3>
-          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${
-            roleBadgeStyles[user.cargo] || ""
-          }">
-            ${roleLabels[user.cargo] || user.cargo}
-          </span>
-        </div>
-      </div>
-      <div class="grid gap-3 text-sm">
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Documento:</span>
-          <span class="col-span-2">${user.tipo_documento} ${user.numero_documento}</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Teléfono:</span>
-          <span class="col-span-2">${user.telefono}</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Correo:</span>
-          <span class="col-span-2">${user.correo}</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Dirección:</span>
-          <span class="col-span-2">${user.direccion}</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Estado:</span>
-          <span class="col-span-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
-            ${user.estado ? "Activo" : "Inactivo"}
-          </span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Registrado:</span>
-          <span class="col-span-2">${user.created_at || ""}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  function closeModalVerUsuario() {
-    modalVerUsuario.classList.remove("active");
-    selectedUser = null;
-  }
-
-  function toggleStatus(userId) {
-    // De momento solo front. Si quieres persistir en BD, crea un endpoint en PHP.
-    users = users.map((u) =>
-      u.id === userId ? { ...u, estado: !u.estado } : u
-    );
-    renderTable();
-  }
-
-  // =========================
-  // LÓGICA PARA HABLAR CON EL BACKEND
-  // =========================
-  async function cargarUsuarios() {
-    try {
-      const res = await fetch(`${API_URL}?accion=listar`);
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        console.error("Respuesta inesperada al listar usuarios:", data);
-        // Si algo raro pasa, mantenemos los mockUsers
-        users = [...mockUsers];
-      } else {
-        // Adaptamos campos de BD → front (id_usuario → id)
-        users = data.map((u) => ({
-          id: u.id_usuario, // 👈 importante para que todo el front siga igual
-          nombre_completo: u.nombre_completo,
-          tipo_documento: u.tipo_documento,
-          numero_documento: u.numero_documento,
-          telefono: u.telefono,
-          cargo: u.cargo,
-          correo: u.correo,
-          direccion: u.direccion,
-          estado: u.estado == 1 || u.estado === true,
-          created_at: u.created_at || "",
-          id_programa: u.id_programa ?? null,
-        }));
-      }
-
-      renderTable();
-    } catch (error) {
-      console.error("Error al cargar usuarios:", error);
-      // error → usamos mock
-      users = [...mockUsers];
-      renderTable();
-    }
-  }
-
-  async function crearUsuario(payload) {
-    const res = await fetch(`${API_URL}?accion=crear`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    return res.json();
-  }
-
-  async function actualizarUsuario(payload) {
-    const res = await fetch(`${API_URL}?accion=actualizar`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    return res.json();
-  }
-
-  // ====== Render de la tabla ======
-  function renderTable() {
-    const search = inputBuscar.value.trim().toLowerCase();
-    const rol = selectFiltroRol.value;
-
-    const filtered = users.filter((u) => {
-      const matchName = u.nombre_completo.toLowerCase().includes(search);
-      const matchRol = rol ? u.cargo === rol : true;
-      return matchName && matchRol;
-    });
-
-    tbodyUsuarios.innerHTML = "";
-
-    filtered.forEach((user) => {
-      const tr = document.createElement("tr");
-      tr.className = "hover:bg-muted/40";
-
-      const estadoBadgeClass = user.estado
-        ? "bg-success/10 text-success"
-        : "bg-destructive/10 text-destructive";
-
-      tr.innerHTML = `
-        <td class="px-4 py-3 align-middle">
-          <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-sm">
-              ${getInitials(user.nombre_completo)}
-            </div>
-            <div>
-              <p class="font-medium text-sm">${user.nombre_completo}</p>
-              <p class="text-xs text-muted-foreground">${user.correo}</p>
-            </div>
-          </div>
-        </td>
-        <td class="px-4 py-3 align-middle">
-          <span class="text-sm">${user.tipo_documento} ${user.numero_documento}</span>
-        </td>
-        <td class="px-4 py-3 align-middle">
-          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-secondary/10 ${
-            roleBadgeStyles[user.cargo] || ""
-          }">
-            ${roleLabels[user.cargo] || user.cargo}
-          </span>
-        </td>
-        <td class="px-4 py-3 align-middle">
-          <span class="text-sm">${user.telefono}</span>
-        </td>
-        <td class="px-4 py-3 align-middle">
-          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
-            ${user.estado ? "Activo" : "Inactivo"}
-          </span>
-        </td>
-        <td class="px-4 py-3 align-middle text-right">
-          <div class="relative inline-block text-left">
-            <button
-              type="button"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-              data-menu-trigger="${user.id}"
-            >
-              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                   viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 6.75a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-              </svg>
-            </button>
-            <div
-              class="hidden absolute right-0 mt-2 w-48 rounded-md border border-border bg-popover shadow-md z-20"
-              data-menu="${user.id}"
-            >
-              <button
-                type="button"
-                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                data-action="ver"
-                data-id="${user.id}"
-              >
-                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                Ver detalles
-              </button>
-              <button
-                type="button"
-                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                data-action="editar"
-                data-id="${user.id}"
-              >
-                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                Editar
-              </button>
-              <hr class="border-border">
-              <button
-                type="button"
-                class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted"
-                data-action="toggle"
-                data-id="${user.id}"
-              >
-                ${
-                  user.estado
-                    ? `
-                      <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                           viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M16 3l5 5M21 3l-5 5"/>
-                      </svg>
-                      Desactivar
-                    `
-                    : `
-                      <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                           viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4 21v-2a4 4 0 014-4h4m4 0h1a4 4 0 014 4v2M9 7l2 2 4-4"/>
-                      </svg>
-                      Activar
-                    `
-                }
-              </button>
-            </div>
-          </div>
-        </td>
-      `;
-
-      tbodyUsuarios.appendChild(tr);
-    });
-
-    attachMenuEvents();
-  }
-
-  // Manejo de dropdown menú (tres puntitos)
-  function attachMenuEvents() {
-    document.addEventListener(
-      "click",
-      (e) => {
-        if (
-          !e.target.closest("[data-menu-trigger]") &&
-          !e.target.closest("[data-menu]")
-        ) {
-          document
-            .querySelectorAll("[data-menu]")
-            .forEach((el) => el.classList.add("hidden"));
-        }
-      },
-      { once: true }
-    );
-
-    document.querySelectorAll("[data-menu-trigger]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = btn.getAttribute("data-menu-trigger");
-        const menu = document.querySelector(`[data-menu="${id}"]`);
-        if (!menu) return;
-        const isHidden = menu.classList.contains("hidden");
-        document
-          .querySelectorAll("[data-menu]")
-          .forEach((el) => el.classList.add("hidden"));
-        if (isHidden) menu.classList.remove("hidden");
-      });
-    });
-
-    document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
-      btn.onclick = () => {
-        const action = btn.getAttribute("data-action");
-        const id = btn.getAttribute("data-id");
-        const user = users.find((u) => u.id === id);
-        if (!user) return;
-
-        if (action === "ver") {
-          openModalVerUsuario(user);
-        } else if (action === "editar") {
-          openModalUsuario(user);
-        } else if (action === "toggle") {
-          toggleStatus(id);
-        }
-      };
-    });
-  }
-
-  // ====== Eventos globales ======
-  inputBuscar.addEventListener("input", renderTable);
-  selectFiltroRol.addEventListener("change", renderTable);
-
-  btnNuevoUsuario.addEventListener("click", () => openModalUsuario(null));
-  btnCerrarModalUsuario.addEventListener("click", closeModalUsuario);
-  btnCancelarModalUsuario.addEventListener("click", closeModalUsuario);
-
-  btnCerrarModalVerUsuario.addEventListener("click", closeModalVerUsuario);
-
-  // Enviar formulario crear/editar → llama al backend
-  formUsuario.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const payload = {
-      nombre_completo: inputNombreCompleto.value.trim(),
-      tipo_documento: inputTipoDocumento.value,
-      numero_documento: inputNumeroDocumento.value.trim(),
-      telefono: inputTelefono.value.trim(),
-      cargo: inputCargo.value,
-      correo: inputCorreo.value.trim(),
-      password: inputPassword.value.trim(),
-      direccion: inputDireccion.value.trim(),
-      id_programa: inputPrograma ? inputPrograma.value : null,
-    };
-
-    const isEdit = !!hiddenUserId.value;
-
-    if (isEdit) {
-      payload.id_usuario = hiddenUserId.value;
-    }
-
-    try {
-      const data = isEdit
-        ? await actualizarUsuario(payload)
-        : await crearUsuario(payload);
-
-      if (data.error) {
-        alert(data.error); // aquí puedes cambiar por SweetAlert si quieres
-        return;
-      }
-
-      closeModalUsuario();
-      await cargarUsuarios();
-    } catch (error) {
-      console.error("Error al guardar usuario:", error);
-      alert("Ocurrió un error al guardar el usuario.");
-    }
-  });
-
-  // Render inicial: intentamos cargar desde backend; si falla, se quedan los mock
-  cargarUsuarios();
-</script>
+  <script src="src/assets/js/usuarios/usuarios.js"></script>
 
 </body>
 </html>
