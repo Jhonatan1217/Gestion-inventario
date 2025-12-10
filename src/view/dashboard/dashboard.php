@@ -135,13 +135,13 @@ $pieGradient = implode(", ", $gradientParts);
         <p class="text-muted-foreground">Resumen general del inventario y actividad reciente</p>
     </div>
     <div class="flex gap-2">
-        <a href="/Gestion-inventario/src/view/solicitudes/solicitudes.php">
+        <a href="?page=solicitudes">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted gap-2">
         <i data-lucide="clock" class="h-5 w-5 "></i>
         Pendientes
         </button>
     </a>
-    <a href="/Gestion-inventario/src/view/materiales/materiales.php">
+    <a href="?page=materiales">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 gap-2">
         <i data-lucide="package" class="h-4 w-4"></i>
         Nuevo Material
@@ -279,7 +279,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Alertas de Stock</h2>
-        <a href="/Gestion-inventario/src/view/materiales/materiales.php">
+        <a href="?page=materiales">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
@@ -320,7 +320,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Solicitudes Recientes</h2>
-        <a href="?page=movimientos">
+        <a href="?page=solicitudes">
             <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
                 Ver todo
                 <i data-lucide="arrow-right" class="h-3 w-3"></i>
@@ -361,7 +361,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Actividad Reciente</h2>
-        <a href="/Gestion-inventario/src/view/movimientos/movimientos.php">
+        <a href="?page=movimientos">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
