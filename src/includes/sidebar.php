@@ -74,7 +74,7 @@ if (!defined('BASE_URL')) {
     <?php else: ?>
       <div class="flex h-12 w-12 mx-auto items-center justify-center rounded-lg bg-white">
         <img
-          src="../assets/img/logo-sena-negro.png"
+          src="src/assets/img/logo-sena-negro.png"
           alt="Logo SENA"
           class="max-h-10 w-auto object-contain"
         />
