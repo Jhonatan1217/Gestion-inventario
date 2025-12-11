@@ -205,9 +205,8 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="mg-7px text-2x1 font-medium text-muted-foreground">Alertas Stock</p>
-        <div class="rounded-full bg-primary/10 p-2 text-primary bg-[#39A90020] <?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
+        <div class="rounded-full bg-primary/10 p-2 text-primary bg-[#39A90020]"<?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
             <i data-lucide="alert-triangle" class="h-5 w-5 text-[#EF4444]"></i>
-        </div>
         </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
