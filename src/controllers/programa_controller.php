@@ -27,6 +27,35 @@ switch ($accion) {
     case 'listar':
         echo json_encode($programa->listar());
         break;
+    
+    //List instructors by program
+    case 'listar_instructores_programa':
+        $id_programa = $_GET['id_programa'] ?? null;
+
+        if (!$id_programa) {
+            echo json_encode(['error'=>'Debe enviar id_programa']);
+            exit;
+        }
+
+        echo json_encode($programa->listarInstructoresPorPrograma($id_programa));
+        break;
+
+    //Count instructors
+    case 'contar_instructores':
+        echo json_encode($programa->contarInstructores());
+        break;
+
+    //Count instructors by program    
+    case 'contar_instructores_programa':
+        $id_programa = $_GET['id_programa'] ?? null;
+
+        if (!$id_programa) {
+            echo json_encode(['error'=>'Debe enviar id_programa']);
+            exit;
+        }
+
+        echo json_encode($programa->contarInstructoresPorPrograma($id_programa));
+        break;
 
     //Get program by id
     case 'obtener':
