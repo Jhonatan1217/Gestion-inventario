@@ -3,7 +3,7 @@
 // =========================
 const API_URL = "src/controllers/ficha_controller.php"
 const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"
-const INSTRUCTORES_API_URL = "src/controllers/instructor_controller.php"
+const INSTRUCTORES_API_URL = "src/controllers/usuario_controller.php"
 
 // =========================
 // NIVEL CONFIGURATION (label and badge styles)
@@ -17,8 +17,6 @@ const nivelLabels = {
 const nivelBadgeStyles = {
   Tecnólogo: "badge-nivel-tecnologo",
   Técnico: "badge-nivel-tecnico",
-  Auxiliar: "badge-nivel-auxiliar",
-  Operario: "badge-nivel-operario",
 }
 
 // =========================
@@ -74,7 +72,7 @@ function showFlowbiteAlert(type, message) {
     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
          fill="currentColor" viewBox="0 0 20 20">
       <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
-      <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
+      <path d="M11 13H9V9h2zm0 3H9v-2h2zm0 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="#fff"/>
     </svg>
   `
 
@@ -172,7 +170,6 @@ const modalFichaDescripcion = document.getElementById("modalFichaDescripcion")
 
 const inputNumeroFicha = document.getElementById("numero_ficha")
 const inputPrograma = document.getElementById("id_programa")
-const inputNivel = document.getElementById("nivel")
 const inputInstructor = document.getElementById("id_instructor")
 
 const modalVerFicha = document.getElementById("modalVerFicha")
@@ -319,6 +316,7 @@ async function cargarProgramas() {
       programas = data.map((p) => ({
         id_programa: p.id_programa,
         nombre_programa: p.nombre_programa || p.nombre || "",
+        nivel: p.nivel || "Tecnólogo", // Added nivel from programa
       }))
 
       programasMap = {}
@@ -358,10 +356,12 @@ async function cargarInstructores() {
     }
 
     if (Array.isArray(data)) {
-      instructores = data.map((i) => ({
-        id_instructor: i.id_instructor || i.id_usuario,
-        nombre_completo: i.nombre_completo || `${i.nombres || ""} ${i.apellidos || ""}`.trim(),
-      }))
+      instructores = data
+        .filter((i) => i.cargo === "Instructor")
+        .map((i) => ({
+          id_instructor: i.id_usuario,
+          nombre_completo: i.nombre_completo,
+        }))
 
       instructoresMap = {}
       instructores.forEach((i) => {
@@ -390,13 +390,11 @@ function openModalFicha(editFicha = null) {
 
     inputNumeroFicha.value = editFicha.numero_ficha
     inputPrograma.value = editFicha.id_programa || ""
-    inputNivel.value = editFicha.nivel || "Tecnólogo"
     inputInstructor.value = editFicha.id_instructor || ""
 
     originalEditData = {
       numero_ficha: String(editFicha.numero_ficha ?? "").trim(),
       id_programa: editFicha.id_programa ? String(editFicha.id_programa) : "",
-      nivel: editFicha.nivel || "Tecnólogo",
       id_instructor: editFicha.id_instructor ? String(editFicha.id_instructor) : "",
     }
   } else {
@@ -404,7 +402,6 @@ function openModalFicha(editFicha = null) {
     modalFichaDescripcion.textContent = "Complete los datos para registrar una nueva ficha de formación"
     hiddenFichaId.value = ""
     formFicha.reset()
-    inputNivel.value = "Tecnólogo"
     originalEditData = null
   }
 
@@ -433,6 +430,8 @@ function openModalVerFicha(ficha) {
     ? instructoresMap[String(ficha.id_instructor)] || "Sin instructor asignado"
     : "Sin instructor asignado"
 
+  const nivelNombre = ficha.nivel || "N/A"
+
   detalleFichaContent.innerHTML = `
     <div class="flex items-center gap-4">
       <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
@@ -445,7 +444,7 @@ function openModalVerFicha(ficha) {
         <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
           nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
         }">
-          ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+          ${nivelLabels[ficha.nivel] || nivelNombre || "N/A"}
         </span>
       </div>
     </div>
@@ -743,6 +742,7 @@ function renderTable() {
     const instructorNombre = ficha.id_instructor
       ? instructoresMap[String(ficha.id_instructor)] || "Sin asignar"
       : "Sin asignar"
+    const nivelNombre = ficha.nivel || "N/A"
 
     tr.innerHTML = `
       <td class="px-4 py-3 align-middle">
@@ -767,7 +767,7 @@ function renderTable() {
         <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
           nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
         }">
-          ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+          ${nivelLabels[ficha.nivel] || nivelNombre || "N/A"}
         </span>
       </td>
       <td class="px-4 py-3 align-middle">
@@ -866,6 +866,7 @@ function renderTable() {
     const instructorNombre = ficha.id_instructor
       ? instructoresMap[String(ficha.id_instructor)] || "Sin asignar"
       : "Sin asignar"
+    const nivelNombre = ficha.nivel || "N/A"
 
     const card = document.createElement("div")
     card.className = "rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col"
@@ -883,7 +884,7 @@ function renderTable() {
             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
               nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
             }">
-              ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+              ${nivelLabels[ficha.nivel] || nivelNombre || "N/A"}
             </span>
           </div>
         </div>
@@ -1115,7 +1116,6 @@ formFicha.addEventListener("submit", async (e) => {
   const payload = {
     numero_ficha: inputNumeroFicha.value.trim(),
     id_programa: inputPrograma.value || null,
-    nivel: inputNivel.value,
     id_instructor: inputInstructor.value || null,
   }
 
@@ -1148,19 +1148,14 @@ formFicha.addEventListener("submit", async (e) => {
     return
   }
 
-  if (!payload.nivel) {
-    toastError("Debe seleccionar un nivel.")
-    inputNivel.focus()
-    return
-  }
-
   if (!payload.id_instructor) {
     toastError("Debe seleccionar un instructor.")
     inputInstructor.focus()
     return
   }
 
-  if (!VALID_NIVELES.includes(payload.nivel)) {
+  const selectedPrograma = programas.find((p) => String(p.id_programa) === String(payload.id_programa))
+  if (selectedPrograma && !VALID_NIVELES.includes(selectedPrograma.nivel)) {
     toastError("Nivel no válido.")
     return
   }
@@ -1169,7 +1164,6 @@ formFicha.addEventListener("submit", async (e) => {
     const currentData = {
       numero_ficha: payload.numero_ficha,
       id_programa: payload.id_programa ? String(payload.id_programa) : "",
-      nivel: payload.nivel,
       id_instructor: payload.id_instructor ? String(payload.id_instructor) : "",
     }
 

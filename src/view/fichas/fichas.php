@@ -22,7 +22,6 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 
   <!-- Custom styles for the Fichas management module -->
   <link rel="stylesheet" href="src/assets/css/fichas/fichas.css" />
-  <link rel="stylesheet" href="../../assets/css/globals.css">   
 
   <!-- Expose authenticated user ID to JavaScript logic -->
   <script>
@@ -53,7 +52,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             <button
               type="button"
               id="btnVistaTabla"
-              class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground bg-secondary"
+              class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
             >
               <!-- List icon -->
               <svg
@@ -98,7 +97,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           <!-- "Nueva Ficha" primary action - botón verde con icono + -->
           <button
             id="btnNuevaFicha"
-            class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+            class="inline-flex items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 gap-2"
             type="button"
           >
             <!-- Plus icon -->
@@ -137,7 +136,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             id="inputBuscar"
             type="text"
             placeholder="Buscar por número..."
-            class="w-full rounded-md border-0 bg-gray-100 pl-10 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-2"
+            class="w-full rounded-md border-0 bg-gray-100 pl-10 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
@@ -280,32 +279,17 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           />
         </div>
 
-        <!-- Programa y Nivel en una fila -->
-        <div class="grid gap-4 grid-cols-2">
-          <div class="space-y-2">
-            <label for="id_programa" class="text-sm font-medium">
-              Programa*
-            </label>
-            <select
-              id="id_programa"
-              class="w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm input-siga"
-            >
-              <option value="">Seleccione</option>
-            </select>
-          </div>
-
-          <div class="space-y-2">
-            <label for="nivel" class="text-sm font-medium">
-              Nivel*
-            </label>
-            <select
-              id="nivel"
-              class="w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm input-siga"
-            >
-              <option value="Tecnólogo">Tecnólogo</option>
-              <option value="Técnico">Técnico</option>
-            </select>
-          </div>
+        <!-- Programa ocupa toda la fila -->
+        <div class="space-y-2">
+          <label for="id_programa" class="text-sm font-medium">
+            Programa*
+          </label>
+          <select
+            id="id_programa"
+            class="w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm input-siga"
+          >
+            <option value="">Seleccione</option>
+          </select>
         </div>
 
         <!-- Instructor -->
@@ -332,7 +316,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           </button>
           <button
             type="submit"
-            class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90"
+            class="inline-flex items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-emerald-600"
           >
             Guardar Cambios
           </button>
@@ -346,7 +330,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   <!-- ========================================= -->
   <div id="modalVerFicha" class="modal-overlay">
     <!-- Modal de detalles con diseño según imagen -->
-    <div class="relative w-full max-w-md rounded-xl border border-border bg-gradient-to-br from-white p-6 shadow-lg">
+    <div class="relative w-full max-w-md rounded-xl border border-border bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-lg">
       <!-- Modal header -->
       <div class="flex items-start justify-between gap-4 mb-4">
         <h2 class="text-lg font-semibold">Detalles de la Ficha</h2>
