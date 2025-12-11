@@ -13,27 +13,18 @@ class Programa {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    // Function to list instructors by program
     public function listarInstructoresPorPrograma($id_programa) {
-    $stmt = $this->conn->prepare("
-        SELECT DISTINCT 
-            u.id_usuario,
-            u.nombre_completo,
-            u.numero_documento,
-            u.correo,
-            u.telefono,
-            fi.estado AS estado_asignacion,
-            f.numero_ficha
-        FROM usuarios u
-        INNER JOIN fichas_instructores fi ON fi.id_usuario = u.id_usuario
-        INNER JOIN fichas f ON f.id_ficha = fi.id_ficha
-        WHERE u.cargo = 'Instructor'
-        AND f.id_programa = :id_programa
-    ");
-    $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        $stmt = $this->conn->prepare("
+            SELECT u.*
+            FROM usuarios u
+            WHERE u.cargo = 'Instructor'
+            AND u.id_programa = :id_programa
+        ");
+        $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
     // Function to get a program by its ID

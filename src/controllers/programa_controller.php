@@ -33,12 +33,13 @@ switch ($accion) {
         $id_programa = $_GET['id_programa'] ?? null;
 
         if (!$id_programa) {
-            echo json_encode(['error'=>'Debe enviar id_programa']);
+            echo json_encode(['error' => 'Debe enviar id_programa']);
             exit;
         }
 
         echo json_encode($programa->listarInstructoresPorPrograma($id_programa));
         break;
+
 
     //Count instructors
     case 'contar_instructores':

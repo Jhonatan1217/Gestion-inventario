@@ -67,6 +67,8 @@ switch ($accion) {
             'password'        => $data['password'] ?? $_POST['password'] ?? null,
         ];
 
+        $id_programa = $data['id_programa'] ?? $_POST['id_programa'] ?? null;
+
         if (in_array(null, $u, true)) {
             echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
             exit;
@@ -99,11 +101,11 @@ switch ($accion) {
             $u['correo'],
             $u['direccion'],
             $u['password'], 
+            $id_programa
         );
 
         echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
-
     
     //Update user
     case 'actualizar':
