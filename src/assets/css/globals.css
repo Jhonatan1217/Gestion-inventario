@@ -76,6 +76,10 @@
   --info: #50E5F9;
   --info-foreground: #00304D;
 
+    /* Error (rojo puro) */
+  --error: #FF0000;
+  --error-foreground: #FFFFFF;
+
   /* ===========================
      Mapeo de @theme inline
      =========================== */
@@ -112,6 +116,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -183,6 +189,10 @@
 
   --info: #50E5F9;
   --info-foreground: #00304D;
+
+  --error: #FF0000;
+  --error-foreground: #FFFFFF;
+
 }
 
 /* ===========================
@@ -289,6 +299,9 @@ body {
 
 .bg-info { background-color: var(--info); }
 .text-info-foreground { color: var(--info-foreground); }
+
+.bg-error { background-color: var(--error); }
+.text-error-foreground { color: var(--error-foreground); }
 
 /* Radios personalizados, sobreescribiendo los de Tailwind
    para respetar tu --radius */
