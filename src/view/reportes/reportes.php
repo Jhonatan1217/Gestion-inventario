@@ -9,11 +9,12 @@ $consumoPorMes = [
     ['mes' => 'Jun', 'consumo' => 134, 'devoluciones' => 14],
 ];
 
+// 👇 Colores solo para la leyenda (coinciden con los de la dona)
 $consumoPorPrograma = [
-    ['name' => 'Construcción', 'value' => 45, 'color' => 'var(--chart-1)'],
-    ['name' => 'Eléctrico', 'value' => 25, 'color' => 'var(--chart-2)'],
-    ['name' => 'Acabados', 'value' => 20, 'color' => 'var(--chart-3)'],
-    ['name' => 'Otros', 'value' => 10, 'color' => 'var(--chart-4)'],
+    ['name' => 'Construcción', 'value' => 45, 'color' => '#6CC24A'], // lightGreen
+    ['name' => 'Eléctrico',    'value' => 25, 'color' => '#007832'], // secondary
+    ['name' => 'Acabados',     'value' => 20, 'color' => '#002B49'], // navy
+    ['name' => 'Otros',        'value' => 10, 'color' => '#71277A'], // purple
 ];
 
 $materialesMasUsados = [
@@ -105,7 +106,7 @@ function formatCOP($number)
 </head>
 <body class="min-h-screen">
     <!-- SOLO CAMBIO: añadí la clase page-with-sidebar aquí -->
-    <!-- Y AHORA ADEMÁS: lg:pl-64 para dejar espacio al sidebar en escritorio -->
+    <!-- Y AHORA ADEMÁS: lg:pl-[280px] para dejar espacio al sidebar en escritorio -->
     <div class="page-with-sidebar w-full px-6 pt-8 pb-8 lg:pl-[280px]">
 
         <div class="space-y-6 animate-fade-in-up">
@@ -265,9 +266,12 @@ function formatCOP($number)
                                         <div class="space-y-3">
                                             <?php foreach ($consumoPorPrograma as $item): ?>
                                                 <div class="flex items-center gap-3">
+                                                    <!-- bolita -->
                                                     <span class="h-3 w-3 rounded-full"
                                                           style="background-color: <?= $item['color'] ?>"></span>
-                                                    <span class="text-sm text-foreground">
+                                                    <!-- título con el mismo color -->
+                                                    <span class="text-sm font-medium"
+                                                          style="color: <?= $item['color'] ?>">
                                                         <?= htmlspecialchars($item['name']) ?>
                                                     </span>
                                                     <span class="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-foreground">
@@ -383,9 +387,12 @@ function formatCOP($number)
                                 <div class="bg-card border border-border rounded-lg shadow-sm hover:shadow-lg transition-shadow">
                                     <div class="p-6 pb-3">
                                         <div class="flex items-start gap-4">
-                                            <div class="rounded-lg bg-primary/10 p-3">
+                                            <!-- Cuadrito con la tonalidad del verde secundario -->
+                                            <div class="rounded-2xl p-3"
+                                                 style="background-color: rgba(0, 120, 50, 0.08);">
                                                 <?php if ($report['icon'] === 'file-text'): ?>
-                                                    <svg class="w-5 h-5 text-primary"
+                                                    <svg class="w-5 h-5 text-secondary"
+                                                         style="color:#007832;"
                                                          xmlns="http://www.w3.org/2000/svg"
                                                          viewBox="0 0 24 24"
                                                          fill="none"
@@ -400,7 +407,8 @@ function formatCOP($number)
                                                         <path d="M16 17H8"/>
                                                     </svg>
                                                 <?php elseif ($report['icon'] === 'bar-chart-3'): ?>
-                                                    <svg class="w-5 h-5 text-primary"
+                                                    <svg class="w-5 h-5 text-secondary"
+                                                         style="color:#007832;"
                                                          xmlns="http://www.w3.org/2000/svg"
                                                          viewBox="0 0 24 24"
                                                          fill="none"
@@ -413,7 +421,8 @@ function formatCOP($number)
                                                         <line x1="6" x2="6" y1="20" y2="14"/>
                                                     </svg>
                                                 <?php elseif ($report['icon'] === 'pie-chart'): ?>
-                                                    <svg class="w-5 h-5 text-primary"
+                                                    <svg class="w-5 h-5 text-secondary"
+                                                         style="color:#007832;"
                                                          xmlns="http://www.w3.org/2000/svg"
                                                          viewBox="0 0 24 24"
                                                          fill="none"
@@ -425,7 +434,8 @@ function formatCOP($number)
                                                         <path d="M22 12A10 10 0 0 0 12 2v10z"/>
                                                     </svg>
                                                 <?php elseif ($report['icon'] === 'trending-up'): ?>
-                                                    <svg class="w-5 h-5 text-primary"
+                                                    <svg class="w-5 h-5 text-secondary"
+                                                         style="color:#007832;"
                                                          xmlns="http://www.w3.org/2000/svg"
                                                          viewBox="0 0 24 24"
                                                          fill="none"
@@ -437,7 +447,8 @@ function formatCOP($number)
                                                         <polyline points="16 7 22 7 22 13"/>
                                                     </svg>
                                                 <?php elseif ($report['icon'] === 'package'): ?>
-                                                    <svg class="w-5 h-5 text-primary"
+                                                    <svg class="w-5 h-5 text-secondary"
+                                                         style="color:#007832;"
                                                          xmlns="http://www.w3.org/2000/svg"
                                                          viewBox="0 0 24 24"
                                                          fill="none"
@@ -464,8 +475,9 @@ function formatCOP($number)
                                     </div>
                                     <div class="p-6 pt-3">
                                         <div class="flex gap-2">
+                                            <!-- Botón en verde secundario -->
                                             <button onclick="handleGenerateReport('<?= $report['id'] ?>')"
-                                                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
+                                                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition-opacity">
                                                 <svg class="w-4 h-4"
                                                      xmlns="http://www.w3.org/2000/svg"
                                                      viewBox="0 0 24 24"
@@ -580,7 +592,8 @@ function formatCOP($number)
                                     </div>
                                 </div>
                                 <div class="flex justify-end pt-4">
-                                    <button class="inline-flex items-center gap-2 px-6 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity">
+                                    <!-- Botón principal en verde secundario -->
+                                    <button class="inline-flex items-center gap-2 px-6 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition-opacity">
                                         <svg class="w-4 h-4"
                                              xmlns="http://www.w3.org/2000/svg"
                                              viewBox="0 0 24 24"
@@ -678,11 +691,12 @@ function formatCOP($number)
                 labels: consumoPorPrograma.map(d => d.name),
                 datasets: [{
                     data: consumoPorPrograma.map(d => d.value),
+                    // Colores fijos de la dona (NO se cambian)
                     backgroundColor: [
                         chartColors.lightGreen, // Construcción
                         chartColors.secondary,  // Eléctrico
                         chartColors.navy,       // Herramientas
-                        chartColors.purple      // Pinturas
+                        chartColors.purple      // Pinturas / Otros
                     ],
                     borderWidth: 0
                 }]
