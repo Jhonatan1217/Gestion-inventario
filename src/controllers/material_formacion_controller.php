@@ -5,6 +5,17 @@ require_once "../models/material_formacion.php";
 
 class MaterialFormacionController {
 
+    if (isset($_GET["action"]) && $_GET["action"] === "list") {
+
+    header("Content-Type: application/json");
+
+    $materialModel = new MaterialFormacion(); 
+    $materiales = $materialModel->obtenerMateriales(); // tu función del modelo
+
+    echo json_encode($materiales);
+    exit;
+}
+
     private $model;
 
     public function __construct($conn)

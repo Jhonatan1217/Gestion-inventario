@@ -353,7 +353,8 @@ $collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
   ></div>
 
   <!-- JS – LÓGICA EQUIVALENTE A useState React -->
-  <script src="src/assets/js/usuarios/usuarios.js"></script>
+ <script src="src/assets/js/usuarios/usuarios.js"></script>
 
 </body>
 </html>
+ 
