@@ -1,87 +1,478 @@
-// -------------------------------
-// Abrir popup principal (Editar perfil)
-// -------------------------------
-const btnEditarPerfil = document.getElementById("btnEditarPerfil");
-const modalEditarPerfil = document.getElementById("modalEditarPerfil");
-const cerrarEditarPerfil = document.getElementById("cerrarEditarPerfil");
-const cancelarEditarPerfil = document.getElementById("cancelarEditarPerfil");
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.lucide && typeof lucide.createIcons === "function") {
+    lucide.createIcons();
+  }
 
-if (btnEditarPerfil) {
-    btnEditarPerfil.onclick = () => modalEditarPerfil.classList.remove("hidden");
-}
+  const modalPerfilVer          = document.getElementById("modalPerfilVer");
+  const modalPerfilEditar       = document.getElementById("modalPerfilEditar");
+  const modalPassword           = document.getElementById("modalPassword");
 
-if (cerrarEditarPerfil && cancelarEditarPerfil) {
-    cerrarEditarPerfil.onclick = cancelarEditarPerfil.onclick = () =>
-        modalEditarPerfil.classList.add("hidden");
-}
+  const btnVerPerfil            = document.getElementById("btnVerPerfil");
+  const btnEditarPerfil         = document.getElementById("btnEditarPerfil");
 
+  const btnCerrarPerfilVer      = document.getElementById("btnCerrarModalPerfilVer");
+  const btnCerrarPerfilVerFooter= document.getElementById("btnCerrarPerfilVerFooter");
 
+  const btnCerrarPerfilEditar   = document.getElementById("btnCerrarModalPerfilEditar");
+  const btnCancelarPerfilEditar = document.getElementById("btnCancelarPerfilEditar");
 
-// ---------------------------------------------------------
-// Clic en avatar → activar input de carga de foto
-// ---------------------------------------------------------
-const avatarClick = document.getElementById("avatarClick");
-const inputFoto = document.getElementById("inputFoto");
+  const btnAbrirCambiarPass     = document.getElementById("btnAbrirCambiarPassword");
+  const btnCerrarPassword       = document.getElementById("btnCerrarPassword");
+  const btnCancelarPassword     = document.getElementById("btnCancelarPassword");
 
-if (avatarClick && inputFoto) {
-    avatarClick.onclick = () => inputFoto.click();
-}
+  const avatarPerfilEditar      = document.getElementById("avatarPerfilEditar");
+  const btnCambiarFotoEditar    = document.getElementById("btnCambiarFotoEditar");
+  const inputFotoPerfilEditar   = document.getElementById("inputFotoPerfilEditar");
 
+  // =============================
+  // 🔥 Snapshot para detectar cambios en el perfil
+  // =============================
+  let originalPerfilSnapshot = null;
 
+  // =====================================================
+  // ✅ FLOWBITE-STYLE ALERTS (MISMO LOOK, PERO A LA DERECHA)
+  // =====================================================
+  function getOrCreateFlowbiteContainer() {
+    let container = document.getElementById("flowbite-alert-container");
 
-// ---------------------------------------------------------
-// Vista previa automática cuando se selecciona una imagen
-// ---------------------------------------------------------
-if (inputFoto) {
-    inputFoto.addEventListener("change", function () {
-        const archivo = this.files[0];
-        if (!archivo) return;
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "flowbite-alert-container";
+      container.className =
+        "fixed top-6 right-4 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none";
+      document.body.appendChild(container);
+    }
+    return container;
+  }
 
-        if (archivo.size > 2 * 1024 * 1024) {
-            alert("La imagen supera los 2MB.");
-            return;
+  function showFlowbiteAlert(type, message) {
+    const container = getOrCreateFlowbiteContainer();
+    const wrapper = document.createElement("div");
+
+    let borderColor = "border-amber-500";
+    let textColor = "text-amber-900";
+    let titleText = "Advertencia";
+
+    let iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+           fill="currentColor" viewBox="0 0 20 20">
+        <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
+        <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
+      </svg>
+    `;
+
+    if (type === "success") {
+      borderColor = "border-emerald-500";
+      textColor = "text-emerald-900";
+      titleText = "Éxito";
+      iconSVG = `
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+             fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm-1 15-4-4 1.414-1.414L9 12.172l4.586-4.586L15 9z"/>
+        </svg>
+      `;
+    }
+
+    if (type === "info") {
+      borderColor = "border-blue-500";
+      textColor = "text-blue-900";
+      titleText = "Información";
+      iconSVG = `
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+             fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm1 15H9v-5h2Zm0-7H9V6h2Z"/>
+        </svg>
+      `;
+    }
+
+    wrapper.className = `
+      relative flex items-center w-full pointer-events-auto
+      rounded-2xl border-l-4 ${borderColor} bg-white shadow-md
+      px-4 py-3 text-sm ${textColor}
+      opacity-0 -translate-y-2
+      transition-all duration-300 ease-out
+      animate-fade-in-up
+    `;
+
+    wrapper.innerHTML = `
+      <div class="flex-shrink-0 mr-3 text-current">
+        ${iconSVG}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold">${titleText}</p>
+        <p class="mt-0.5 text-sm">${message}</p>
+      </div>
+    `;
+
+    container.appendChild(wrapper);
+
+    requestAnimationFrame(() => {
+      wrapper.classList.remove("opacity-0", "-translate-y-2");
+      wrapper.classList.add("opacity-100", "translate-y-0");
+    });
+
+    setTimeout(() => {
+      wrapper.classList.add("opacity-0", "-translate-y-2");
+      wrapper.classList.remove("opacity-100", "translate-y-0");
+      setTimeout(() => wrapper.remove(), 250);
+    }, 4000);
+  }
+
+  function toastError(message) { showFlowbiteAlert("warning", message); }
+  function toastSuccess(message) { showFlowbiteAlert("success", message); }
+  function toastInfo(message) { showFlowbiteAlert("info", message); }
+
+  // =====================================================
+  // ✅ DROPDOWN MENÚ USUARIO (CLICK TOGGLE, NO HOVER)
+  // =====================================================
+  const btnUserMenu = document.getElementById("btnUserMenu");
+  const userMenuDropdown = document.getElementById("userMenuDropdown");
+
+  const openUserMenu = () => {
+    if (!userMenuDropdown || !btnUserMenu) return;
+    userMenuDropdown.classList.remove("hidden");
+    btnUserMenu.setAttribute("aria-expanded", "true");
+  };
+
+  const closeUserMenu = () => {
+    if (!userMenuDropdown || !btnUserMenu) return;
+    userMenuDropdown.classList.add("hidden");
+    btnUserMenu.setAttribute("aria-expanded", "false");
+  };
+
+  const toggleUserMenu = () => {
+    if (!userMenuDropdown) return;
+    const isOpen = !userMenuDropdown.classList.contains("hidden");
+    if (isOpen) closeUserMenu();
+    else openUserMenu();
+  };
+
+  if (btnUserMenu && userMenuDropdown) {
+    // Click en foto/flecha (botón completo)
+    btnUserMenu.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleUserMenu();
+    });
+
+    // Click dentro del dropdown no cierra
+    userMenuDropdown.addEventListener("click", (e) => e.stopPropagation());
+
+    // Click afuera cierra
+    document.addEventListener("click", () => closeUserMenu());
+  }
+
+  // =====================================================
+  // MODALS (tu base intacta)
+  // =====================================================
+  const openModal = (modal) => {
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  };
+
+  const closeModal = (modal) => {
+    if (!modal) return;
+    modal.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  };
+
+  if (btnVerPerfil) {
+    btnVerPerfil.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeUserMenu(); // ✅ cierra dropdown al abrir modal (no daña base)
+      openModal(modalPerfilVer);
+    });
+  }
+
+  if (btnCerrarPerfilVer) {
+    btnCerrarPerfilVer.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPerfilVer);
+    });
+  }
+
+  if (btnCerrarPerfilVerFooter) {
+    btnCerrarPerfilVerFooter.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPerfilVer);
+    });
+  }
+
+  if (modalPerfilVer) {
+    modalPerfilVer.addEventListener("click", (e) => {
+      if (e.target === modalPerfilVer) closeModal(modalPerfilVer);
+    });
+  }
+
+  if (btnEditarPerfil) {
+    btnEditarPerfil.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeUserMenu(); // ✅ cierra dropdown al abrir modal (no daña base)
+      openModal(modalPerfilEditar);
+
+      const formEditarPerfil = document.getElementById("formEditarPerfil");
+      if (formEditarPerfil) {
+        const fd = new FormData(formEditarPerfil);
+        originalPerfilSnapshot = {};
+        for (const [k, v] of fd.entries()) {
+          if (v instanceof File) continue;
+          originalPerfilSnapshot[k] = String(v ?? "").trim();
+        }
+      }
+    });
+  }
+
+  if (btnCerrarPerfilEditar) {
+    btnCerrarPerfilEditar.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPerfilEditar);
+    });
+  }
+
+  if (btnCancelarPerfilEditar) {
+    btnCancelarPerfilEditar.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPerfilEditar);
+    });
+  }
+
+  if (modalPerfilEditar) {
+    modalPerfilEditar.addEventListener("click", (e) => {
+      if (e.target === modalPerfilEditar) closeModal(modalPerfilEditar);
+    });
+  }
+
+  if (btnAbrirCambiarPass) {
+    btnAbrirCambiarPass.addEventListener("click", (e) => {
+      e.preventDefault();
+      openModal(modalPassword);
+    });
+  }
+
+  if (btnCerrarPassword) {
+    btnCerrarPassword.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPassword);
+    });
+  }
+
+  if (btnCancelarPassword) {
+    btnCancelarPassword.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal(modalPassword);
+    });
+  }
+
+  if (modalPassword) {
+    modalPassword.addEventListener("click", (e) => {
+      if (e.target === modalPassword) closeModal(modalPassword);
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      // ✅ primero cierra dropdown si está abierto
+      if (userMenuDropdown && !userMenuDropdown.classList.contains("hidden")) {
+        closeUserMenu();
+        return;
+      }
+
+      if (modalPassword && !modalPassword.classList.contains("hidden")) {
+        closeModal(modalPassword);
+      } else if (modalPerfilEditar && !modalPerfilEditar.classList.contains("hidden")) {
+        closeModal(modalPerfilEditar);
+      } else if (modalPerfilVer && !modalPerfilVer.classList.contains("hidden")) {
+        closeModal(modalPerfilVer);
+      }
+    }
+  });
+
+  const dispararSelectorFotoEditar = (e) => {
+    e.preventDefault();
+    if (inputFotoPerfilEditar) inputFotoPerfilEditar.click();
+  };
+
+  if (avatarPerfilEditar) avatarPerfilEditar.addEventListener("click", dispararSelectorFotoEditar);
+  if (btnCambiarFotoEditar) btnCambiarFotoEditar.addEventListener("click", dispararSelectorFotoEditar);
+
+  if (inputFotoPerfilEditar && avatarPerfilEditar) {
+    inputFotoPerfilEditar.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const avatarInner = avatarPerfilEditar.querySelector("div.flex");
+        if (!avatarInner) return;
+
+        avatarInner.style.backgroundColor = "transparent";
+
+        const inicialesSpan = avatarInner.querySelector("span");
+        if (inicialesSpan) inicialesSpan.classList.add("hidden");
+
+        let img = avatarInner.querySelector("img");
+        if (!img) {
+          img = document.createElement("img");
+          img.className = "h-full w-full object-cover";
+          avatarInner.appendChild(img);
+        }
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // =============================
+  // 🔥 GUARDAR PERFIL (CON FOTO)
+  // =============================
+  const formEditarPerfil = document.getElementById("formEditarPerfil");
+  if (formEditarPerfil) {
+    formEditarPerfil.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const currentFD = new FormData(formEditarPerfil);
+      const currentSnapshot = {};
+      for (const [k, v] of currentFD.entries()) {
+        if (v instanceof File) continue;
+        currentSnapshot[k] = String(v ?? "").trim();
+      }
+
+      const hayNuevaFoto =
+        !!(inputFotoPerfilEditar && inputFotoPerfilEditar.files && inputFotoPerfilEditar.files[0]);
+
+      const noHayCambiosDeTexto =
+        originalPerfilSnapshot &&
+        JSON.stringify(currentSnapshot) === JSON.stringify(originalPerfilSnapshot);
+
+      if (noHayCambiosDeTexto && !hayNuevaFoto) {
+        toastInfo("No se detectaron cambios. Para actualizar el perfil, modifique al menos un dato antes de guardar.");
+        return;
+      }
+
+      const formData = new FormData(formEditarPerfil);
+
+      if (hayNuevaFoto) {
+        formData.append("foto_perfil", inputFotoPerfilEditar.files[0]);
+      }
+
+      try {
+        const resp = await fetch("src/controllers/usuario_controller.php?accion=actualizar_perfil", {
+          method: "POST",
+          body: formData,
+        });
+
+        const contentType = resp.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          toastError("El servidor no devolvió JSON. Verifique errores PHP o la ruta del controlador.");
+          return;
         }
 
-        const lector = new FileReader();
-        lector.onload = function (e) {
-            avatarClick.style.backgroundImage = `url('${e.target.result}')`;
-            avatarClick.style.backgroundSize = "cover";
-            avatarClick.style.backgroundPosition = "center";
-            avatarClick.textContent = "";
-        };
-        lector.readAsDataURL(archivo);
+        const data = await resp.json();
+
+        if (data.error) {
+          toastError(data.error);
+          return;
+        }
+
+        toastSuccess("Perfil actualizado correctamente.");
+        closeModal(modalPerfilEditar);
+
+        setTimeout(() => window.location.reload(), 700);
+      } catch (error) {
+        console.error("Error actualizando perfil:", error);
+        toastError("Ocurrió un error al actualizar el perfil. Inténtelo nuevamente.");
+      }
     });
-}
+  }
 
+  // =============================
+  // 🔒 CAMBIAR CONTRASEÑA (MODAL)
+  // =============================
+  const formCambiarPassword = document.getElementById("formCambiarPassword");
 
+  function resetPasswordForm() {
+    if (!formCambiarPassword) return;
+    formCambiarPassword.reset();
+  }
 
-// =====================================================
-// MODAL — CAMBIO DE CONTRASEÑA
-// =====================================================
-const modalPassword = document.getElementById("modalPassword");
-const abrirCambioPass = document.getElementById("abrirCambioPass");
-const cerrarPassword = document.getElementById("cerrarPassword");
-const cancelarPassword = document.getElementById("cancelarPassword");
+  if (formCambiarPassword) {
+    formCambiarPassword.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-if (abrirCambioPass) {
-    abrirCambioPass.onclick = () => modalPassword.classList.remove("hidden");
-}
+      const fd = new FormData(formCambiarPassword);
+      const actual = String(fd.get("password_actual") ?? "").trim();
+      const nueva = String(fd.get("password_nueva") ?? "").trim();
+      const confirmar = String(fd.get("password_confirmar") ?? "").trim();
 
-if (cerrarPassword && cancelarPassword) {
-    cerrarPassword.onclick = cancelarPassword.onclick = () =>
-        modalPassword.classList.add("hidden");
-}
+      if (!actual || !nueva || !confirmar) {
+        toastError("Complete todos los campos para cambiar la contraseña.");
+        return;
+      }
 
+      if (nueva.length < 8) {
+        toastError("La nueva contraseña debe tener mínimo 8 caracteres.");
+        return;
+      }
 
+      // ✅ NUEVO: debe tener número y carácter especial
+      const tieneNumero = /[0-9]/.test(nueva);
+      const tieneEspecial = /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/.test(nueva);
 
-// =====================================================
-// Cerrar modales clickeando fuera del contenedor
-// =====================================================
-window.addEventListener("click", function (e) {
-    if (e.target === modalEditarPerfil) {
-        modalEditarPerfil.classList.add("hidden");
-    }
-    if (e.target === modalPassword) {
-        modalPassword.classList.add("hidden");
-    }
+      if (!tieneNumero || !tieneEspecial) {
+        toastError("La nueva contraseña debe incluir al menos un número y un carácter especial.");
+        return;
+      }
+
+      if (nueva !== confirmar) {
+        toastError("La confirmación no coincide con la nueva contraseña.");
+        return;
+      }
+
+      if (actual === nueva) {
+        toastError("La nueva contraseña no puede ser igual a la actual.");
+        return;
+      }
+
+      try {
+        const resp = await fetch("src/controllers/usuario_controller.php?accion=cambiar_password", {
+          method: "POST",
+          body: fd,
+        });
+
+        const contentType = resp.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          toastError("El servidor no devolvió JSON. Verifique errores PHP o la ruta del controlador.");
+          return;
+        }
+
+        const data = await resp.json();
+
+        if (data.error) {
+          toastError(data.error);
+          return;
+        }
+
+        toastSuccess(data.message || "Contraseña actualizada correctamente.");
+        resetPasswordForm();
+        closeModal(modalPassword);
+
+      } catch (error) {
+        console.error("Error cambiando contraseña:", error);
+        toastError("Ocurrió un error al cambiar la contraseña. Inténtelo nuevamente.");
+      }
+    });
+  }
+
+  if (btnCerrarPassword) {
+    btnCerrarPassword.addEventListener("click", () => resetPasswordForm());
+  }
+  if (btnCancelarPassword) {
+    btnCancelarPassword.addEventListener("click", () => resetPasswordForm());
+  }
+  if (modalPassword) {
+    modalPassword.addEventListener("click", (e) => {
+      if (e.target === modalPassword) resetPasswordForm();
+    });
+  }
 });

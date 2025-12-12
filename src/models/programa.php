@@ -14,6 +14,28 @@ class Programa {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function listarInstructoresPorPrograma($id_programa) {
+    $stmt = $this->conn->prepare("
+        SELECT DISTINCT 
+            u.id_usuario,
+            u.nombre_completo,
+            u.numero_documento,
+            u.correo,
+            u.telefono,
+            fi.estado AS estado_asignacion,
+            f.numero_ficha
+        FROM usuarios u
+        INNER JOIN fichas_instructores fi ON fi.id_usuario = u.id_usuario
+        INNER JOIN fichas f ON f.id_ficha = fi.id_ficha
+        WHERE u.cargo = 'Instructor'
+        AND f.id_programa = :id_programa
+    ");
+    $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
     // Function to get a program by its ID
     public function obtenerPorId($id) {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id_programa = :id");
@@ -74,5 +96,32 @@ class Programa {
         $stmt->bindParam(':estado', $estado);
         return $stmt->execute();
     }
+
+    // Function to count instructors
+    public function contarInstructores() {
+        $stmt = $this->conn->prepare("
+            SELECT COUNT(*) AS total_instructores
+            FROM usuarios
+            WHERE cargo = 'Instructor'
+        ");
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Function to count instructors by program
+    public function contarInstructoresPorPrograma($id_programa) {
+        $stmt = $this->conn->prepare("
+            SELECT COUNT(DISTINCT u.id_usuario) AS instructores_por_programa
+            FROM usuarios u
+            INNER JOIN fichas_instructores fi ON fi.id_usuario = u.id_usuario
+            INNER JOIN fichas f ON f.id_ficha = fi.id_ficha
+            WHERE u.cargo = 'Instructor'
+            AND f.id_programa = :id_programa
+        ");
+        $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
 }
 ?>
