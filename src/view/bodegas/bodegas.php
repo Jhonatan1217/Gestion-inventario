@@ -1,5 +1,7 @@
 <?php
-// Datos de ejemplo
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
+
 $bodegas = [
     [1, "Bodega Principal - Eléctrico", "Eléctrico", "Bloque A, Piso 1", "Bodega", "Activo", 1],
     [2, "Bodega Construcción", "Construcción", "Bloque A, Piso 2", "Bodega", "Activo", 3],
@@ -11,945 +13,763 @@ $bodegas = [
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <title>Gestión Bodegas</title>
+  <meta charset="UTF-8" />
+  <title>Gestión Bodegas</title>
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Global tokens (colores, radios, etc.) -->
-    <link rel="stylesheet" href="../../assets/css/globals.css" />
-
-    <!-- ========== ESTILOS ESPECÍFICOS DEL MÓDULO BODEGAS ========== -->
-    <style>
-      /* ========== BUSCADOR ========== */
-      .bodegas-search-box {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-xl);
-        padding: 10px 14px;
-        min-width: 320px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-      }
-
-      .bodegas-search-icon {
-        width: 18px;
-        height: 18px;
-        color: #666;
-      }
-
-      .bodegas-search-input {
-        border: none;
-        outline: none;
-        background: transparent;
-        width: 100%;
-        font-size: 0.9rem;
-      }
-
-      /* ========== SWITCH LISTA / GRID ========== */
-      .bodegas-view-switch {
-        display: inline-flex;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        overflow: hidden;
-        background: var(--card);
-      }
-
-      .bodegas-switch-btn {
-        width: 48px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #4b5563;
-        transition: background 0.15s, color 0.15s;
-      }
-
-      .bodegas-switch-btn.active {
-        background: color-mix(in srgb, var(--primary) 8%, transparent);
-        color: var(--foreground);
-      }
-
-      .bodegas-switch-btn:hover {
-        background: #f3f4f6;
-      }
-
-      /* ========== BOTÓN NUEVA BODEGA ========== */
-      #btnNuevaBodega {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 24px;
-        border-radius: 999px;
-        background: var(--primary);
-        color: var(--primary-foreground);
-        font-weight: 500;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-      }
-
-      #btnNuevaBodega i {
-        width: 18px;
-        height: 18px;
-      }
-
-      /* ========== FILTRO ========== */
-      .bodegas-filter-icon {
-        width: 18px;
-        height: 18px;
-        color: #4b5563;
-      }
-
-      .bodegas-filter-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-        background: var(--card);
-        border-radius: var(--radius-xl);
-        border: 1px solid var(--border);
-        padding: 6px 14px;
-        min-width: 140px;
-      }
-
-      .bodegas-filter-select {
-        width: 100%;
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 0.9rem;
-        color: #4b5563;
-        appearance: none;
-      }
-
-      .bodegas-filter-arrow {
-        position: absolute;
-        right: 10px;
-        width: 16px;
-        height: 16px;
-        color: #6b7280;
-      }
-
-      /* ========== TABLA LISTA ========== */
-      .bodegas-table-wrapper {
-        background: var(--card);
-        border-radius: var(--radius-xl);
-        border: 1px solid var(--border);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        overflow: hidden;
-      }
-
-      .bodegas-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-      }
-
-      .bodegas-table thead {
-        background: #f4f6f9;
-      }
-
-      .bodegas-th {
-        padding: 12px 16px;
-        font-weight: 600;
-        color: #4b5563;
-        text-align: left;
-      }
-
-      .bodegas-td {
-        padding: 12px 16px;
-        border-top: 1px solid var(--border);
-      }
-
-      .bodegas-row:hover {
-        background: #f9fafb;
-      }
-
-      /* Icono bodega pequeño */
-      .bodegas-icon {
-        width: 26px;
-        height: 26px;
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--primary) 12%, transparent);
-        color: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .bodegas-icon svg {
-        width: 14px;
-        height: 14px;
-      }
-
-      /* TAGS */
-      .bodegas-tag-soft {
-        padding: 3px 10px;
-        border-radius: 999px;
-        background: #f3f4f6;
-        font-size: 0.78rem;
-      }
-
-      /* ESTADO */
-      .bodegas-tag-status {
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        font-weight: 500;
-      }
-
-      .bodegas-tag-status-active {
-        background: #d1fae5;
-        color: #166534;
-      }
-
-      .bodegas-tag-status-inactive {
-        background: #fee2e2;
-        color: #b91c1c;
-      }
-
-      /* BOTÓN 3 PUNTOS */
-      .bodegas-btn-dots {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.15s;
-      }
-
-      .bodegas-btn-dots:hover {
-        background: #f3f4f6;
-      }
-
-      /* ========== TARJETAS GRID ========== */
-      .bodegas-card {
-        background: var(--card);
-        border-radius: var(--radius-xl);
-        border: 1px solid var(--border);
-        padding: 16px 18px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .bodegas-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-
-      .bodegas-icon-lg {
-        width: 36px;
-        height: 36px;
-        border-radius: 14px;
-        background: color-mix(in srgb, var(--primary) 18%, transparent);
-        color: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .bodegas-icon-lg svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      .bodegas-card-main {
-        margin-top: 4px;
-      }
-
-      .bodegas-card-title {
-        font-size: 1rem;
-        font-weight: 600;
-      }
-
-      .bodegas-card-id {
-        font-size: 0.8rem;
-        color: #6b7280;
-      }
-
-      .bodegas-card-location {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 6px;
-        font-size: 0.88rem;
-        color: #4b5563;
-      }
-
-      .bodegas-icon-location {
-        width: 16px;
-        height: 16px;
-        color: #6b7280;
-      }
-
-      .bodegas-card-tags {
-        display: flex;
-        gap: 8px;
-        margin-top: 8px;
-      }
-
-      .bodegas-chip {
-        padding: 3px 9px;
-        font-size: 0.78rem;
-        border-radius: 999px;
-      }
-
-      .bodegas-chip-blue {
-        background: #e0edff;
-        color: #1d4ed8;
-      }
-
-      .bodegas-chip-gray {
-        background: #f3f4f6;
-        color: #4b5563;
-      }
-
-      .bodegas-card-divider {
-        margin-top: 10px;
-        margin-bottom: 8px;
-        border: none;
-        border-top: 1px solid var(--border);
-      }
-
-      .bodegas-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .bodegas-materials {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.86rem;
-        color: #4b5563;
-      }
-
-      .bodegas-icon-material {
-        width: 16px;
-        height: 16px;
-        color: #6b7280;
-      }
-
-      .bodegas-estado {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.86rem;
-        font-weight: 500;
-      }
-
-      /* ========== SWITCH (solo en GRID) ========== */
-      .bodegas-switch {
-        position: relative;
-        width: 40px;
-        height: 20px;
-      }
-
-      .bodegas-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .bodegas-slider {
-        position: absolute;
-        inset: 0;
-        background: #d1d5db;
-        border-radius: 999px;
-        transition: 0.25s;
-      }
-
-      .bodegas-slider::before {
-        content: "";
-        position: absolute;
-        height: 16px;
-        width: 16px;
-        left: 2px;
-        top: 2px;
-        background: white;
-        border-radius: 999px;
-        transition: 0.25s;
-      }
-
-      .bodegas-switch input:checked + .bodegas-slider {
-        background: var(--primary);
-      }
-
-      .bodegas-switch input:checked + .bodegas-slider::before {
-        transform: translateX(18px);
-      }
-
-      .bodegas-estado-text {
-        font-size: 0.86rem;
-      }
-
-      /* ========== MENÚ CONTEXTUAL ========== */
-      .bodegas-context-menu {
-        position: absolute;
-        background: var(--card);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-        padding: 6px 0;
-        width: 200px;
-        z-index: 50;
-      }
-
-      .bodegas-context-menu.hidden {
-        display: none;
-      }
-
-      .bodegas-ctx-btn {
-        width: 100%;
-        padding: 8px 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.9rem;
-        color: var(--foreground);
-      }
-
-      .bodegas-ctx-btn i {
-        width: 18px;
-        height: 18px;
-      }
-
-      .bodegas-ctx-btn:hover {
-        background: #f3f4f6;
-      }
-
-      /* ========== MODALES (CREAR + DETALLE + EDITAR) ========== */
-      .bodegas-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.45);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 60;
-      }
-
-      .bodegas-modal.hidden {
-        display: none;
-      }
-
-      .bodegas-modal-content {
-        background: var(--card);
-        border-radius: var(--radius-xl);
-        padding: 24px;
-        width: 440px;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
-      }
-
-      .bodegas-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .bodegas-modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-      }
-
-      .bodegas-modal-subtitle {
-        margin-top: 4px;
-        font-size: 0.9rem;
-        color: var(--muted-foreground);
-      }
-
-      .bodegas-btn-close {
-        padding: 4px;
-        border-radius: 8px;
-      }
-
-      .bodegas-btn-close:hover {
-        background: #f3f3f3;
-      }
-
-      .bodegas-modal-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      .bodegas-modal-input,
-      .bodegas-modal-select {
-        width: 100%;
-        border: 1px solid var(--border);
-        background: var(--card);
-        border-radius: var(--radius-lg);
-        padding: 8px 12px;
-        margin-top: 3px;
-        font-size: 0.9rem;
-      }
-
-      .bodegas-modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 18px;
-      }
-
-      .bodegas-btn-cancelar {
-        padding: 8px 18px;
-        background: #f3f4f6;
-        border-radius: var(--radius-lg);
-      }
-
-      .bodegas-btn-cancelar:hover {
-        background: #e5e7eb;
-      }
-
-      .bodegas-btn-confirm {
-        padding: 8px 22px;
-        border-radius: var(--radius-lg);
-        background: var(--primary);
-        color: var(--primary-foreground);
-        font-weight: 500;
-      }
-
-      /* ===== DETALLE BODEGA ===== */
-      .bodegas-detail-modal {
-        width: 460px;
-      }
-
-      .bodegas-detail-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 16px;
-        margin-bottom: 12px;
-      }
-
-      .bodegas-detail-title h3 {
-        font-size: 1.05rem;
-        font-weight: 600;
-      }
-
-      .bodegas-detail-body {
-        margin-top: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .bodegas-detail-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.92rem;
-      }
-
-      .bodegas-detail-label {
-        min-width: 110px;
-        font-weight: 500;
-      }
-    </style>
-
-    <!-- JS del módulo -->
-    <script src="../../assets/js/bodegas.js" defer></script>
+  <link rel="stylesheet" href="../../assets/css/globals.css" />
+  <script src="../../assets/js/bodegas.js" defer></script>
 </head>
 
-<body class="bg-background text-foreground p-10">
+<body class="bg-gray-50 text-gray-900">
+<main class="p-6 transition-all duration-300"
+  style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;"
+>
 
-    <!-- Título -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold">Gestión Bodegas</h1>
-        <p class="text-sm text-muted-foreground">
-            Administra las bodegas y sub-bodegas del inventario
-        </p>
+  <!-- Título -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold">Gestión Bodegas</h1>
+    <p class="text-sm text-gray-500">
+      Administra las bodegas y sub-bodegas del inventario
+    </p>
+  </div>
+
+  <!-- CONTROLES SUPERIORES -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+
+    <!-- Buscador -->
+    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[360px] bg-gray-100">
+      <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
+      <input
+        type="text"
+        placeholder="Buscar por nombre o ID"
+        class="w-full bg-transparent outline-none text-sm "
+      />
     </div>
 
-    <!-- CONTROLES SUPERIORES -->
-    <div class="flex justify-between items-start mb-6 gap-4">
+    <div class="flex flex-col gap-3 sm:items-end">
 
-        <!-- Buscador -->
-        <div class="bodegas-search-box">
-            <i data-lucide="search" class="bodegas-search-icon"></i>
-            <input
-                type="text"
-                placeholder="Buscar por nombre o ID"
-                class="bodegas-search-input"
-            />
+      <div class="flex items-center gap-3">
+
+        <!-- Switch Lista/Grid -->
+        <div class="inline-flex rounded-full border border-gray-200 bg-white overflow-hidden shadow-sm">
+
+        <!-- Lista -->
+            <button
+            type="button"
+            id="btnVistaTabla"
+            class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
+            >
+            <!-- Icono lista -->
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            </button>
+
+          <!-- Tarjetas -->
+            <button
+            type="button"
+            id="btnVistaTarjetas"
+            class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground">
+            <!-- Icono grid -->
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+                <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+                <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+                <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+            </svg>
+            </button>
         </div>
 
-        <div class="flex flex-col gap-3 items-end">
+        <!-- Nueva Bodega -->
+        <button
+          id="btnNuevaBodega"
+          class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Nueva Bodega
+        </button>
+      </div>
+
+      <!-- Filtro -->
+      <div class="flex items-center gap-2">
+        <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
+
+        <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm min-w-[160px]">
+          <select
+            id="bodegasFilter"
+            class="w-full appearance-none bg-transparent outline-none text-sm text-gray-700 pr-6"
+          >
+            <option value="Todos">Todos</option>
+            <option value="Activo">Activos</option>
+            <option value="Inactivo">Inactivos</option>
+          </select>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= VISTA LISTA ========= -->
+  <div id="view-list">
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold">ID</th>
+            <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+            <th class="px-4 py-3 text-left font-semibold">Clasificación</th>
+            <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
+            <th class="px-4 py-3 text-left font-semibold">Tipo</th>
+            <th class="px-4 py-3 text-left font-semibold">Estado</th>
+            <th class="px-4 py-3 text-left font-semibold">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-200">
+          <?php foreach ($bodegas as $b): ?>
+            <?php $activo = $b[5] === "Activo"; ?>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3">#<?= $b[0] ?></td>
+
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                    <i data-lucide="warehouse" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-medium text-gray-900"><?= htmlspecialchars($b[1]) ?></span>
+                </div>
+              </td>
+
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                  <?= htmlspecialchars($b[2]) ?>
+                </span>
+              </td>
+
+              <td class="px-4 py-3 text-gray-700">
+                <i data-lucide="map-pin" class="w-4 h-4 inline-block text-gray-500 mr-1"></i>
+                <?= htmlspecialchars($b[3]) ?>
+              </td>
+
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
+                  <?= htmlspecialchars($b[4]) ?>
+                </span>
+              </td>
+
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+                  <?= $activo ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' ?>">
+                  <?= htmlspecialchars($b[5]) ?>
+                </span>
+              </td>
+
+              <td class="px-4 py-3">
+                <button
+                  class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
+                  data-id="<?= $b[0] ?>"
+                  data-nombre="<?= htmlspecialchars($b[1]) ?>"
+                  data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
+                  data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
+                  data-tipo="<?= htmlspecialchars($b[4]) ?>"
+                  data-estado="<?= htmlspecialchars($b[5]) ?>"
+                >
+                  <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                </button>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========= VISTA GRID ========= -->
+  <div id="view-grid" class="hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+      <?php foreach ($bodegas as $b):
+        $estadoActivo = $b[5] === "Activo";
+      ?>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col gap-3 relative">
+
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+
+            <button
+              class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
+              data-id="<?= $b[0] ?>"
+              data-nombre="<?= htmlspecialchars($b[1]) ?>"
+              data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
+              data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
+              data-tipo="<?= htmlspecialchars($b[4]) ?>"
+              data-estado="<?= htmlspecialchars($b[5]) ?>"
+            >
+              <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Main -->
+          <div>
+            <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
+            <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
+          </div>
+
+          <!-- Location -->
+          <div class="flex items-center gap-2 text-sm text-gray-700">
+            <i data-lucide="map-pin" class="w-4 h-4 text-gray-500"></i>
+            <span><?= htmlspecialchars($b[3]) ?></span>
+          </div>
+
+          <!-- Tags -->
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700">
+              <?= htmlspecialchars($b[2]) ?>
+            </span>
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">
+              <?= htmlspecialchars($b[4]) ?>
+            </span>
+          </div>
+
+          <hr class="border-gray-200">
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 text-sm text-gray-700">
+              <i data-lucide="package" class="w-4 h-4 text-gray-500"></i>
+              <span><?= $b[6] ?> Materiales</span>
+            </div>
 
             <div class="flex items-center gap-3">
+              <span
+                class="estado-text text-sm font-medium <?= $estadoActivo ? 'text-emerald-700' : 'text-red-700' ?>"
+              >
+                <?= $estadoActivo ? "Activa" : "Inactiva" ?>
+              </span>
 
-                <!-- Switch Lista/Grid -->
-                <div class="bodegas-view-switch">
-                    <button class="bodegas-switch-btn active" data-view="list">
-                        <i data-lucide="list"></i>
-                    </button>
-                    <button class="bodegas-switch-btn" data-view="grid">
-                        <i data-lucide="layout-grid"></i>
-                    </button>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="sr-only peer estado-switch"
+                  data-id="<?= $b[0] ?>"
+                  data-estado="<?= $estadoActivo ? 'Activo' : 'Inactivo' ?>"
+                  <?= $estadoActivo ? "checked" : "" ?>
+                >
+
+                <div class="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-600 transition">
+                  <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 peer-checked:translate-x-5 transition"></div>
                 </div>
-
-                <!-- Nueva Bodega -->
-                <button id="btnNuevaBodega">
-                    <i data-lucide="plus"></i>
-                    Nueva Bodega
-                </button>
+              </label>
             </div>
-
-            <!-- Filtro -->
-            <div class="flex items-center gap-2">
-                <i data-lucide="filter" class="bodegas-filter-icon"></i>
-
-                <div class="bodegas-filter-container">
-                    <select id="bodegasFilter" class="bodegas-filter-select">
-                        <option value="Todos">Todos</option>
-                        <option value="Activo">Activos</option>
-                        <option value="Inactivo">Inactivos</option>
-                    </select>
-                    <i data-lucide="chevron-down" class="bodegas-filter-arrow"></i>
-                </div>
-            </div>
+          </div>
 
         </div>
+      <?php endforeach; ?>
+
+    </div>
+  </div>
+
+  <!-- ========= MENÚ CONTEXTUAL ========= -->
+  <div id="context-menu" class="hidden absolute bg-white border border-gray-200 rounded-xl shadow-lg p-2 w-52 z-50">
+    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="ver">
+      <i data-lucide="eye" class="w-4 h-4"></i> <span>Ver detalles</span>
+    </button>
+    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="editar">
+      <i data-lucide="square-pen" class="w-4 h-4"></i> <span>Editar</span>
+    </button>
+    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="deshabilitar">
+      <i data-lucide="power" class="w-4 h-4"></i> <span>Deshabilitar</span>
+    </button>
+  </div>
+
+  <!-- ========= MODAL CREAR (DISEÑO TIPO MOVIMIENTOS) ========= -->
+<div id="modalCrear" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+  <!-- Fondo clicable para cerrar -->
+  <div class="absolute inset-0" id="backdropCrear"></div>
+
+  <!-- Contenido del modal -->
+  <div class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 sm:p-8">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Crear Nueva Bodega</h2>
+        <p class="text-sm text-gray-500">Complete los datos para registrar una nueva bodega</p>
+      </div>
+
+      <button
+        type="button"
+        id="cerrarModal"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="h-4 w-4"></i>
+      </button>
     </div>
 
-    <!-- ========= VISTA LISTA ========= -->
-    <div id="view-list">
-        <div class="bodegas-table-wrapper">
-            <table class="bodegas-table">
-                <thead>
-                    <tr>
-                        <th class="bodegas-th">ID</th>
-                        <th class="bodegas-th">Nombre</th>
-                        <th class="bodegas-th">Clasificación</th>
-                        <th class="bodegas-th">Ubicación</th>
-                        <th class="bodegas-th">Tipo</th>
-                        <th class="bodegas-th">Estado</th>
-                        <th class="bodegas-th">Acciones</th>
-                    </tr>
-                </thead>
+    <!-- FORM -->
+    <form class="space-y-4">
+      <div class="grid gap-4 sm:grid-cols-2">
 
-                <tbody>
-                    <?php foreach ($bodegas as $b): ?>
-                        <?php $estadoClass = $b[5] === "Activo" ? "bodegas-tag-status-active" : "bodegas-tag-status-inactive"; ?>
-                        <?php $activo = $b[5] === "Activo"; ?>
-
-                        <tr class="bodegas-row">
-                            <td class="bodegas-td">#<?= $b[0] ?></td>
-
-                            <td class="bodegas-td">
-                                <div class="flex items-center gap-2">
-                                    <div class="bodegas-icon">
-                                        <i data-lucide="warehouse"></i>
-                                    </div>
-                                    <?= htmlspecialchars($b[1]) ?>
-                                </div>
-                            </td>
-
-                            <td class="bodegas-td">
-                                <span class="bodegas-tag-soft"><?= htmlspecialchars($b[2]) ?></span>
-                            </td>
-
-                            <td class="bodegas-td">
-                                <i data-lucide="map-pin" class="w-4 h-4 text-foreground/70 inline-block"></i>
-                                <?= htmlspecialchars($b[3]) ?>
-                            </td>
-
-                            <td class="bodegas-td">
-                                <span class="bodegas-tag-soft"><?= htmlspecialchars($b[4]) ?></span>
-                            </td>
-
-                            <td class="bodegas-td">
-                                <span class="bodegas-tag-status <?= $estadoClass ?>">
-                                    <?= htmlspecialchars($b[5]) ?>
-                                </span>
-                            </td>
-
-                            <td class="bodegas-td">
-                                <button
-                                    class="bodegas-btn-dots"
-                                    data-id="<?= $b[0] ?>"
-                                    data-nombre="<?= htmlspecialchars($b[1]) ?>"
-                                    data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
-                                    data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
-                                    data-tipo="<?= htmlspecialchars($b[4]) ?>"
-                                    data-estado="<?= htmlspecialchars($b[5]) ?>"
-                                >
-                                    <i data-lucide="more-horizontal"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <!-- ID -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ID *</label>
+          <input
+            type="text"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            placeholder="C-1">
         </div>
-    </div>
 
-    <!-- ========= VISTA GRID ========= -->
-    <div id="view-grid" class="hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-
-            <?php foreach ($bodegas as $b):
-                $estadoActivo = $b[5] === "Activo";
-            ?>
-                <div class="bodegas-card">
-
-                    <div class="bodegas-card-header">
-                        <div class="bodegas-icon-lg">
-                            <i data-lucide="warehouse"></i>
-                        </div>
-
-                        <button
-                            class="bodegas-btn-dots"
-                            data-id="<?= $b[0] ?>"
-                            data-nombre="<?= htmlspecialchars($b[1]) ?>"
-                            data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
-                            data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
-                            data-tipo="<?= htmlspecialchars($b[4]) ?>"
-                            data-estado="<?= htmlspecialchars($b[5]) ?>"
-                        >
-                            <i data-lucide="more-horizontal"></i>
-                        </button>
-                    </div>
-
-                    <div class="bodegas-card-main">
-                        <h2 class="bodegas-card-title"><?= htmlspecialchars($b[1]) ?></h2>
-                        <p class="bodegas-card-id">ID: <?= $b[0] ?></p>
-                    </div>
-
-                    <div class="bodegas-card-location">
-                        <i data-lucide="map-pin" class="bodegas-icon-location"></i>
-                        <span><?= htmlspecialchars($b[3]) ?></span>
-                    </div>
-
-                    <div class="bodegas-card-tags">
-                        <span class="bodegas-chip bodegas-chip-blue"><?= htmlspecialchars($b[2]) ?></span>
-                        <span class="bodegas-chip bodegas-chip-gray"><?= htmlspecialchars($b[4]) ?></span>
-                    </div>
-
-                    <hr class="bodegas-card-divider">
-
-                    <div class="bodegas-card-footer">
-                        <div class="bodegas-materials">
-                            <i data-lucide="package" class="bodegas-icon-material"></i>
-                            <?= $b[6] ?> Materiales
-                        </div>
-
-                        <div class="bodegas-estado">
-                            <span class="bodegas-estado-text">
-                                <?= $estadoActivo ? "Activa" : "Inactiva" ?>
-                            </span>
-
-                            <label class="bodegas-switch">
-                                <input
-                                    type="checkbox"
-                                    data-id="<?= $b[0] ?>"
-                                    <?= $estadoActivo ? "checked" : "" ?>
-                                >
-                                <span class="bodegas-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                </div>
-            <?php endforeach; ?>
+        <!-- Tipo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+          <select
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            <option>Bodega</option>
+            <option>Sub-Bodega</option>
+          </select>
         </div>
-    </div>
 
-    <!-- ========= MENÚ CONTEXTUAL ========= -->
-    <div id="context-menu" class="bodegas-context-menu hidden">
-        <button class="bodegas-ctx-btn" data-action="ver">
-            <i data-lucide="eye"></i> <span class="bodegas-ctx-text">Ver detalles</span>
+        <!-- Clasificación -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Clasificación *</label>
+          <select
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            <option>Eléctrico</option>
+            <option>Construcción</option>
+            <option>Sanitario</option>
+            <option>Herramientas</option>
+            <option>Ejemplo</option>
+          </select>
+        </div>
+
+        <!-- Ubicación -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
+          <input
+            type="text"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            placeholder="Ej: Bloque A, Piso 1">
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Bodega *</label>
+        <input
+          type="text"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+          placeholder="Ej: Bodega Principal - Eléctrico">
+      </div>
+
+      <!-- Footer botones -->
+      <div class="mt-4 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          id="cancelarModal"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-200">
+          Cancelar
         </button>
-        <button class="bodegas-ctx-btn" data-action="editar">
-            <i data-lucide="square-pen"></i> <span class="bodegas-ctx-text">Editar</span>
+
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary hover:opacity-90">
+          Crear Bodega
         </button>
-        <button class="bodegas-ctx-btn" data-action="deshabilitar">
-            <i data-lucide="power"></i> <span class="bodegas-ctx-text">Deshabilitar</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+  <!-- ========= MODAL EDITAR (DISEÑO TIPO MOVIMIENTOS) ========= -->
+<div id="modalEditar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+  <!-- Fondo clicable para cerrar -->
+  <div class="absolute inset-0" id="backdropEditar"></div>
+
+  <!-- Contenido del modal -->
+  <div class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 sm:p-8">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Editar Bodega</h2>
+        <p class="text-sm text-gray-500">Modifica la información de la bodega</p>
+      </div>
+
+      <button
+        type="button"
+        id="cerrarEditar"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="h-4 w-4"></i>
+      </button>
+    </div>
+
+    <!-- FORM -->
+    <form class="space-y-4">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <!-- ID -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ID *</label>
+          <input
+            id="editId"
+            type="text"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+        </div>
+
+        <!-- Tipo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+          <select
+            id="editTipo"
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            <option>Bodega</option>
+            <option>Sub-Bodega</option>
+          </select>
+        </div>
+
+        <!-- Clasificación -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Clasificación *</label>
+          <select
+            id="editClasificacion"
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            <option>Eléctrico</option>
+            <option>Construcción</option>
+            <option>Sanitario</option>
+            <option>Herramientas</option>
+            <option>Ejemplo</option>
+          </select>
+        </div>
+
+        <!-- Ubicación -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
+          <input
+            id="editUbicacion"
+            type="text"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Bodega *</label>
+        <input
+          id="editNombre"
+          type="text"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+      </div>
+
+      <!-- Footer botones -->
+      <div class="mt-4 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          id="cancelarEditar"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-200">
+          Cancelar
         </button>
-    </div>
 
-    <!-- ========= MODAL CREAR BODEGA ========= -->
-    <div id="modalCrear" class="bodegas-modal hidden">
-        <div class="bodegas-modal-content">
+        <button
+          type="button"
+          id="guardarEditar"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary hover:opacity-90">
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
-            <div class="bodegas-modal-header">
-                <h2 class="bodegas-modal-title">Crear Nueva Bodega</h2>
-                <button id="cerrarModal" class="bodegas-btn-close">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
 
-            <p class="bodegas-modal-subtitle">
-                Complete los datos para registrar una nueva bodega
-            </p>
+  <!-- ========= MODAL DETALLE ========= -->
+  <div id="modalDetalle" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 items-center justify-center bodegas-modal">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold">Detalles de la bodega</h2>
+        <button id="cerrarDetalle" class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
 
-            <form class="bodegas-modal-form">
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="bodegas-modal-label">ID *</label>
-                        <input type="text" class="bodegas-modal-input" placeholder="C-1">
-                    </div>
-
-                    <div>
-                        <label class="bodegas-modal-label">Tipo *</label>
-                        <select class="bodegas-modal-select">
-                            <option>Bodega</option>
-                            <option>Sub-Bodega</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="bodegas-modal-label">Clasificación *</label>
-                        <select class="bodegas-modal-select">
-                            <option>Eléctrico</option>
-                            <option>Construcción</option>
-                            <option>Sanitario</option>
-                            <option>Herramientas</option>
-                            <option>Ejemplo</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <label class="bodegas-modal-label">Nombre de Bodega *</label>
-                    <input type="text" class="bodegas-modal-input" placeholder="Ej: Bodega Principal - Eléctrico">
-                </div>
-
-                <div class="mt-3">
-                    <label class="bodegas-modal-label">Ubicación *</label>
-                    <input type="text" class="bodegas-modal-input" placeholder="Ej: Bloque A, Piso 1">
-                </div>
-
-                <div class="bodegas-modal-footer">
-                    <button type="button" id="cancelarModal" class="bodegas-btn-cancelar">Cancelar</button>
-                    <button type="button" class="bodegas-btn-confirm">Crear Bodega</button>
-                </div>
-
-            </form>
+      <div class="flex items-center gap-3 mt-4">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="warehouse" class="w-5 h-5"></i>
         </div>
-    </div>
-
-    <!-- ========= MODAL EDITAR BODEGA ========= -->
-    <div id="modalEditar" class="bodegas-modal hidden">
-        <div class="bodegas-modal-content">
-
-            <div class="bodegas-modal-header">
-                <h2 class="bodegas-modal-title">Editar Bodega</h2>
-                <button id="cerrarEditar" class="bodegas-btn-close">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-
-            <p class="bodegas-modal-subtitle">
-                Modifica la información de la bodega
-            </p>
-
-            <form class="bodegas-modal-form">
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="bodegas-modal-label">ID *</label>
-                        <input id="editId" type="text" class="bodegas-modal-input">
-                    </div>
-
-                    <div>
-                        <label class="bodegas-modal-label">Tipo *</label>
-                        <select id="editTipo" class="bodegas-modal-select">
-                            <option>Bodega</option>
-                            <option>Sub-Bodega</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="bodegas-modal-label">Clasificación *</label>
-                        <select id="editClasificacion" class="bodegas-modal-select">
-                            <option>Eléctrico</option>
-                            <option>Construcción</option>
-                            <option>Sanitario</option>
-                            <option>Herramientas</option>
-                            <option>Ejemplo</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <label class="bodegas-modal-label">Nombre de Bodega *</label>
-                    <input id="editNombre" type="text" class="bodegas-modal-input">
-                </div>
-
-                <div class="mt-3">
-                    <label class="bodegas-modal-label">Ubicación *</label>
-                    <input id="editUbicacion" type="text" class="bodegas-modal-input">
-                </div>
-
-                <div class="bodegas-modal-footer">
-                    <button type="button" id="cancelarEditar" class="bodegas-btn-cancelar">
-                        Cancelar
-                    </button>
-                    <button type="button" id="guardarEditar" class="bodegas-btn-confirm">
-                        Guardar cambios
-                    </button>
-                </div>
-
-            </form>
+        <div>
+          <h3 id="detalleNombre" class="text-base font-semibold"></h3>
+          <p class="text-xs text-gray-500">ID: <span id="detalleId"></span></p>
         </div>
-    </div>
+      </div>
 
-    <!-- ========= MODAL DETALLES BODEGA ========= -->
-    <div id="modalDetalle" class="bodegas-modal hidden">
-        <div class="bodegas-modal-content bodegas-detail-modal">
-
-            <div class="bodegas-modal-header">
-                <h2 class="bodegas-modal-title">Detalles de la bodega</h2>
-                <button id="cerrarDetalle" class="bodegas-btn-close">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-
-            <div class="bodegas-detail-header">
-                <div class="bodegas-icon-lg">
-                    <i data-lucide="warehouse"></i>
-                </div>
-                <div class="bodegas-detail-title">
-                    <h3 id="detalleNombre" class="bodegas-card-title"></h3>
-                    <p class="bodegas-card-id">ID: <span id="detalleId"></span></p>
-                </div>
-            </div>
-
-            <div class="bodegas-detail-body">
-                <div class="bodegas-detail-row">
-                    <span class="bodegas-detail-label">Clasificación:</span>
-                    <span id="detalleClasificacion" class="bodegas-chip bodegas-chip-blue"></span>
-                </div>
-
-                <div class="bodegas-detail-row">
-                    <span class="bodegas-detail-label">Tipo:</span>
-                    <span id="detalleTipo" class="bodegas-chip bodegas-chip-gray"></span>
-                </div>
-
-                <div class="bodegas-detail-row">
-                    <span class="bodegas-detail-label">Ubicación:</span>
-                    <span id="detalleUbicacion"></span>
-                </div>
-
-                <div class="bodegas-detail-row">
-                    <span class="bodegas-detail-label">Estado:</span>
-                    <span id="detalleEstado" class="bodegas-tag-status bodegas-tag-status-active"></span>
-                </div>
-            </div>
-
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-medium text-gray-700">Clasificación:</span>
+          <span id="detalleClasificacion" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700"></span>
         </div>
+
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-medium text-gray-700">Tipo:</span>
+          <span id="detalleTipo" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700"></span>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-medium text-gray-700">Ubicación:</span>
+          <span id="detalleUbicacion" class="text-gray-700"></span>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+          <span class="font-medium text-gray-700">Estado:</span>
+          <span id="detalleEstado" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-emerald-100 text-emerald-700"></span>
+        </div>
+      </div>
     </div>
+  </div>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Lucide
+  if (window.lucide && typeof lucide.createIcons === "function") {
+    lucide.createIcons();
+  }
+
+  /* ============================================================
+     ========== CAMBIO LISTA / GRID (TARJETAS) ==========
+  ============================================================ */
+  const btnVistaTabla    = document.getElementById("btnVistaTabla");
+  const btnVistaTarjetas = document.getElementById("btnVistaTarjetas");
+  const viewList         = document.getElementById("view-list");
+  const viewGrid         = document.getElementById("view-grid");
+
+  const setActiveBtn = (active, inactive) => {
+    active.classList.add("bg-muted", "text-foreground");
+    active.classList.remove("text-muted-foreground");
+
+    inactive.classList.remove("bg-muted", "text-foreground");
+    inactive.classList.add("text-muted-foreground");
+  };
+
+  const showList = () => {
+    viewList?.classList.remove("hidden");
+    viewGrid?.classList.add("hidden");
+    if (btnVistaTabla && btnVistaTarjetas) setActiveBtn(btnVistaTabla, btnVistaTarjetas);
+  };
+
+  const showGrid = () => {
+    viewGrid?.classList.remove("hidden");
+    viewList?.classList.add("hidden");
+    if (btnVistaTabla && btnVistaTarjetas) setActiveBtn(btnVistaTarjetas, btnVistaTabla);
+
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
+  };
+
+  if (btnVistaTabla && btnVistaTarjetas) {
+    btnVistaTabla.addEventListener("click", showList);
+    btnVistaTarjetas.addEventListener("click", showGrid);
+    showList(); // inicial
+  }
+
+  /* ============================================================
+     ========== MODAL CREAR (NUEVA BODEGA) ==========
+  ============================================================ */
+  const btnNuevaBodega = document.getElementById("btnNuevaBodega");
+  const modalCrear     = document.getElementById("modalCrear");
+  const cerrarModal    = document.getElementById("cerrarModal");
+  const cancelarModal  = document.getElementById("cancelarModal");
+
+  const openModal = (modal) => {
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.body.classList.add("overflow-hidden");
+    if (window.lucide && typeof lucide.createIcons === "function") lucide.createIcons();
+  };
+
+  const closeModal = (modal) => {
+    if (!modal) return;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("overflow-hidden");
+  };
+
+  btnNuevaBodega?.addEventListener("click", () => openModal(modalCrear));
+  cerrarModal?.addEventListener("click", () => closeModal(modalCrear));
+  cancelarModal?.addEventListener("click", () => closeModal(modalCrear));
+
+  // Cerrar modal crear clic fuera
+  modalCrear?.addEventListener("click", (e) => {
+    if (e.target === modalCrear) closeModal(modalCrear);
+  });
+
+  /* ============================================================
+     ========== MENÚ CONTEXTUAL (3 PUNTOS) ==========
+  ============================================================ */
+  const contextMenu  = document.getElementById("context-menu");
+  const modalDetalle = document.getElementById("modalDetalle");
+  const modalEditar  = document.getElementById("modalEditar");
+
+  let selectedData = null;
+
+  function openContextMenu(btn) {
+    if (!contextMenu) return;
+
+    selectedData = {
+      id: btn.dataset.id,
+      nombre: btn.dataset.nombre,
+      clasificacion: btn.dataset.clasificacion,
+      ubicacion: btn.dataset.ubicacion,
+      tipo: btn.dataset.tipo,
+      estado: btn.dataset.estado
+    };
+
+    const r = btn.getBoundingClientRect();
+    const menuWidth = 208; // w-52
+    const x = r.right + window.scrollX - menuWidth;
+    const y = r.bottom + window.scrollY + 8;
+
+    contextMenu.style.left = `${Math.max(8, x)}px`;
+    contextMenu.style.top  = `${y}px`;
+    contextMenu.classList.remove("hidden");
+
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
+  }
+
+  function closeContextMenu() {
+    contextMenu?.classList.add("hidden");
+  }
+
+  // Delegación para lista y grid
+  document.addEventListener("click", (e) => {
+    const btnDots = e.target.closest(".bodegas-btn-dots");
+    if (btnDots) {
+      e.preventDefault();
+      e.stopPropagation();
+      openContextMenu(btnDots);
+      return;
+    }
+
+    if (contextMenu && !contextMenu.contains(e.target)) {
+      closeContextMenu();
+    }
+  });
+
+  /* ============================================================
+     ========== ACCIONES DEL MENÚ ==========
+  ============================================================ */
+  if (contextMenu) {
+    const btnVer  = contextMenu.querySelector("[data-action='ver']");
+    const btnEdit = contextMenu.querySelector("[data-action='editar']");
+    const btnOff  = contextMenu.querySelector("[data-action='deshabilitar']");
+
+    btnVer?.addEventListener("click", () => {
+      if (!selectedData || !modalDetalle) return;
+
+      document.getElementById("detalleId").textContent = selectedData.id;
+      document.getElementById("detalleNombre").textContent = selectedData.nombre;
+      document.getElementById("detalleClasificacion").textContent = selectedData.clasificacion;
+      document.getElementById("detalleTipo").textContent = selectedData.tipo;
+      document.getElementById("detalleUbicacion").textContent = selectedData.ubicacion;
+
+      const est = document.getElementById("detalleEstado");
+      est.textContent = selectedData.estado;
+      est.className =
+        "inline-flex items-center rounded-full px-3 py-1 text-xs " +
+        (selectedData.estado === "Activo"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-red-100 text-red-700");
+
+      openModal(modalDetalle);
+      closeContextMenu();
+    });
+
+    btnEdit?.addEventListener("click", () => {
+      if (!selectedData || !modalEditar) return;
+
+      document.getElementById("editId").value = selectedData.id;
+      document.getElementById("editNombre").value = selectedData.nombre;
+      document.getElementById("editClasificacion").value = selectedData.clasificacion;
+      document.getElementById("editUbicacion").value = selectedData.ubicacion;
+      document.getElementById("editTipo").value = selectedData.tipo;
+
+      openModal(modalEditar);
+      closeContextMenu();
+    });
+
+    btnOff?.addEventListener("click", () => {
+      if (!selectedData) return;
+      alert(`Bodega #${selectedData.id} deshabilitada`);
+      closeContextMenu();
+    });
+  }
+
+  /* ============================================================
+     ========== CERRAR MODALES DETALLE / EDITAR ==========
+  ============================================================ */
+  document.getElementById("cerrarDetalle")?.addEventListener("click", () => closeModal(modalDetalle));
+  document.getElementById("cerrarEditar")?.addEventListener("click", () => closeModal(modalEditar));
+  document.getElementById("cancelarEditar")?.addEventListener("click", () => closeModal(modalEditar));
+
+  modalDetalle?.addEventListener("click", (e) => {
+    if (e.target === modalDetalle) closeModal(modalDetalle);
+  });
+  modalEditar?.addEventListener("click", (e) => {
+    if (e.target === modalEditar) closeModal(modalEditar);
+  });
+
+  /* ============================================================
+     ========== SWITCH ACTIVA / INACTIVA (GRID) ==========
+  ============================================================ */
+  document.addEventListener("change", (e) => {
+    const sw = e.target.closest(".estado-switch");
+    if (!sw) return;
+
+    const card = sw.closest(".bg-white.border.border-gray-200"); // la card actual
+    if (!card) return;
+
+    const estadoNuevo = sw.checked ? "Activo" : "Inactivo";
+    const textoNuevo  = sw.checked ? "Activa" : "Inactiva";
+
+    const estadoText = card.querySelector(".estado-text");
+    if (estadoText) {
+      estadoText.textContent = textoNuevo;
+      estadoText.classList.toggle("text-emerald-700", sw.checked);
+      estadoText.classList.toggle("text-red-700", !sw.checked);
+    }
+
+    // Guardar estado
+    sw.dataset.estado = estadoNuevo;
+
+    // Actualizar data-estado del botón de 3 puntos para que el modal salga bien
+    const dotsBtn = card.querySelector(".bodegas-btn-dots");
+    if (dotsBtn) {
+      dotsBtn.dataset.estado = estadoNuevo;
+    }
+  });
+
+  /* ============================================================
+     ========== ESC PARA CERRAR ==========
+  ============================================================ */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal(modalCrear);
+      closeModal(modalDetalle);
+      closeModal(modalEditar);
+      closeContextMenu();
+    }
+  });
+});
+</script>
+
 
 </body>
 </html>

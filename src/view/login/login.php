@@ -18,9 +18,10 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', $protocol . $host . $script_dir); // ej: .../src/view/login/
 }
 
-// Si ya está logueado, mandarlo al dashboard
+// Si ya está logueado, mandarlo al dashboard (usando el index de la raíz)
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . '../dashboard/index.php');
+    // vamos al index.php de la raíz, con page=dashboard
+    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
     exit;
 }
 
@@ -37,36 +38,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = "Por favor ingresa tu correo y contraseña.";
     } else {
         try {
-            // Ajusta el nombre de tabla/campos según tu BD
-            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
+            // Traemos también el campo cargo
+            $sql = "SELECT id_usuario, nombre_completo, correo, password, cargo
                     FROM usuarios 
                     WHERE correo = :correo 
                     LIMIT 1";
+
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Asumo que guardas la contraseña con password_hash()
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Guardar datos mínimos en sesión
-                $_SESSION['usuario_id']     = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                $_SESSION['usuario_rol']    = $user['rol'];
+            if ($user) {
+                $hash = $user['password']; // columna real de tu tabla
 
-                // 🔁 Redirige al dashboard (una carpeta arriba de /login/)
-                header('Location: ' . BASE_URL . '../dashboard/index.php');
-                exit;
+                $passwordOk = false;
+
+                // 1) Si está hasheada con password_hash()
+                if (password_verify($password, $hash)) {
+                    $passwordOk = true;
+                } else {
+                    // 2) Si está en texto plano (temporal, si tu BD aún no usa hash)
+                    if ($password === $hash) {
+                        $passwordOk = true;
+                    }
+                }
+
+                if ($passwordOk) {
+                    // Guardar datos en sesión
+                    $_SESSION['usuario_id']     = $user['id_usuario'];
+                    $_SESSION['usuario_nombre'] = $user['nombre_completo'];
+
+                    // ✅ AQUÍ guardamos el cargo REAL de la columna 'cargo'
+                    $_SESSION['usuario_cargo']  = $user['cargo'];
+
+                    // Si también tienes una columna para foto, podrías hacer:
+                    // $_SESSION['usuario_foto'] = $user['foto_url'] ?? null;
+
+                    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
+                    exit;
+                } else {
+                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+                }
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
         } catch (PDOException $e) {
-            $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
+            // SOLO PARA DEPURAR: muestra el mensaje real
+            $loginError = "Error BD: " . $e->getMessage();
         }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -209,7 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       btn.disabled = true;
       loader.classList.remove("hidden");
       text.textContent = "Iniciando sesión...";
-      // No hacemos preventDefault ni redirección en JS:
       // PHP se encarga de validar y redirigir.
     });
   </script>
