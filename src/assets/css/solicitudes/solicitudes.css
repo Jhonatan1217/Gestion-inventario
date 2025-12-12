@@ -1,0 +1,27 @@
+/* Tarjetas de conteo */
+.card-solicitud-status {
+  @apply bg-card border border-border p-6 rounded-2xl shadow-sm;
+}
+
+/* Botones de filtro */
+.filtro-btn {
+  @apply px-4 py-2 rounded-xl text-sm border border-border bg-card text-muted-foreground;
+}
+
+.filtro-btn.active {
+  @apply bg-primary text-white border-primary;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/40 flex justify-center items-center opacity-0 pointer-events-none transition;
+}
+
+.modal-overlay.active {
+  @apply opacity-100 pointer-events-auto;
+}
+
+/* Modal Container */
+.modal-container {
+  @apply bg-card p-6 rounded-2xl shadow-lg w-full;
+}

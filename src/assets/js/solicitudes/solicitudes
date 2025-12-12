@@ -1,0 +1,145 @@
+/* =========================================================
+   DATOS SIMULADOS (solo front-end)
+========================================================= */
+let solicitudes = [
+  {
+    id: 4,
+    instructor: "Juan Pablo Hernandez Castro",
+    ficha: "2896365",
+    fecha: "2023-11-27",
+    estado: "Pendiente",
+    materiales: [
+      { nombre: "Cemento Gris", cantidad: 15 },
+      { nombre: "Arena de Río", cantidad: 3 }
+    ],
+    observaciones: "Práctica de cimentación semana 48"
+  },
+  {
+    id: 1,
+    instructor: "Juan Pepe Castro Patiño",
+    ficha: "2896365",
+    fecha: "2023-11-27",
+    estado: "Aprobada",
+    materiales: [
+      { nombre: "Cemento Rojo", cantidad: 10 },
+      { nombre: "Arena de Río", cantidad: 8 }
+    ],
+    observaciones: "Práctica cimentación semana 24"
+  },
+  {
+    id: 3,
+    instructor: "Pepito Perez Ozuna",
+    ficha: "6969696",
+    fecha: "2023-11-15",
+    estado: "Rechazada",
+    materiales: [
+      { nombre: "Cemento Gris", cantidad: 15 },
+      { nombre: "Ladrillos pios", cantidad: 3 }
+    ],
+    observaciones: "Para mi casita XD"
+  }
+];
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+const contenedor = document.getElementById("contenedorSolicitudes");
+const filtros = document.querySelectorAll(".filtro-btn");
+const modal = document.getElementById("modalSolicitud");
+const btnNueva = document.getElementById("btnNuevaSolicitud");
+const cerrarModal = document.getElementById("cerrarModal");
+const cancelarModal = document.getElementById("btnCancelarModal");
+
+/* =========================================================
+   MOSTRAR SOLICITUDES
+========================================================= */
+function renderSolicitudes(filtro = "todas") {
+
+  contenedor.innerHTML = "";
+
+  let filtradas = solicitudes.filter(s =>
+    filtro === "todas" ? true : s.estado === filtro
+  );
+
+  // Conteo
+  document.getElementById("countPendientes").textContent =
+    solicitudes.filter(s => s.estado === "Pendiente").length;
+  document.getElementById("countAprobadas").textContent =
+    solicitudes.filter(s => s.estado === "Aprobada").length;
+  document.getElementById("countRechazadas").textContent =
+    solicitudes.filter(s => s.estado === "Rechazada").length;
+
+  filtradas.forEach(sol => {
+    const card = document.createElement("div");
+    card.className = "bg-card border border-border rounded-2xl p-4 shadow-sm";
+
+    card.innerHTML = `
+      <div class="flex justify-between items-start">
+        <h3 class="font-semibold">Solicitud #${sol.id}</h3>
+        <span class="px-3 py-1 rounded-full text-xs ${
+          sol.estado === "Pendiente"
+            ? "bg-yellow-100 text-yellow-700"
+            : sol.estado === "Aprobada"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
+        }">
+          ${sol.estado}
+        </span>
+      </div>
+
+      <p class="text-sm text-muted-foreground mt-1">
+        Instructor: <strong>${sol.instructor}</strong> · Ficha ${sol.ficha}
+      </p>
+
+      <p class="text-sm mt-2 font-semibold">Materiales solicitados:</p>
+      ${sol.materiales
+        .map(
+          m =>
+            `<p class="text-sm ml-2">• ${m.nombre} (${m.cantidad})</p>`
+        )
+        .join("")}
+
+      <p class="text-sm mt-2 text-muted-foreground">
+        Observaciones: ${sol.observaciones}
+      </p>
+
+      ${
+        sol.estado === "Pendiente"
+          ? `
+      <div class="flex gap-2 mt-3">
+        <button class="bg-green-600 text-white px-3 py-1 rounded">Aprobar</button>
+        <button class="bg-red-600 text-white px-3 py-1 rounded">Rechazar</button>
+      </div>
+      `
+          : ""
+      }
+    `;
+
+    contenedor.appendChild(card);
+  });
+
+  lucide.createIcons();
+}
+
+/* =========================================================
+   FILTROS
+========================================================= */
+filtros.forEach(btn => {
+  btn.onclick = () => {
+    document.querySelector(".filtro-btn.active").classList.remove("active");
+    btn.classList.add("active");
+    renderSolicitudes(btn.dataset.filter);
+  };
+});
+
+/* =========================================================
+   MODAL
+========================================================= */
+btnNueva.onclick = () => modal.classList.add("active");
+cerrarModal.onclick = () => modal.classList.remove("active");
+cancelarModal.onclick = () => modal.classList.remove("active");
+
+/* =========================================================
+   INICIO
+========================================================= */
+renderSolicitudes();
