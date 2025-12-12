@@ -119,7 +119,7 @@ try {
                     <!-- View buttons (table/grid) -->
                     <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
 
-                    <!-- Vista Tabla -->
+                    <!-- Table View -->
                     <button
                         type="button"
                         id="viewTableBtn"
@@ -135,7 +135,7 @@ try {
                         </svg>
                     </button>
 
-                    <!-- Vista Tarjetas -->
+                    <!-- Card View -->
                     <button
                         type="button"
                         id="viewGridBtn"
@@ -319,7 +319,7 @@ try {
                     <!-- ICONO + TÍTULO + EDIT -->
                     <div class="flex justify-between items-start mb-3">
 
-                        <!-- ICONO + INFORMACIÓN -->
+                        <!-- Info + Icon -->
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                                 <i class="fas fa-graduation-cap text-primary text-lg"></i>
@@ -339,7 +339,7 @@ try {
                         </button>
                     </div>
 
-                    <!-- Nivel + Duración -->
+                    <!-- Level + Duration -->
                     <div class="flex items-center justify-between mb-3">
 
                         <!-- Nivel -->
@@ -356,7 +356,7 @@ try {
                                 <?php endif; ?>
                             </span>
 
-                            <!-- Estado (badge igual al de tabla) -->
+                            <!-- State (badge igual same at the table) -->
                             <?php if ($isActive): ?>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success js-estado">
                                     Activo
@@ -368,7 +368,7 @@ try {
                             <?php endif; ?>
                         </div>
 
-                        <!-- Duración -->
+                        <!-- Duration -->
                         <div class="flex items-center gap-2 text-sm text-muted-foreground">
                             <i class="far fa-clock"></i>
                             <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
@@ -376,7 +376,7 @@ try {
                     </div>
 
                     <hr class="border-border mb-3">
-                    <!-- Instructores + Toggle -->
+                    <!-- Instructors + Toggle -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 text-sm text-muted-foreground">
                             <i class="fas fa-users"></i>

@@ -123,7 +123,7 @@ function closeCreateModal() {
   modal.classList.remove("flex")
 }
 
-// *************************************************** CREACION PROGRAMAS *********************************************************
+// ************************************** Programs Creation ***********************************************
 
 document.addEventListener("DOMContentLoaded", () => {
   const pathParts = window.location.pathname.split("/")
@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // *************************************************** ACTUALIZACIÓN PROGRAMAS *********************************************************
+  // ************************************** Programs Update ***********************************************
 
   // Edit Program Form
   const editForm = document.getElementById("editProgramForm")
@@ -198,15 +198,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return
       }
 
-      // Normaliza nivel
+      // Normalize level
       const nivelSelect = document.getElementById("edit_nivel").value
       const nivelNormalized = nivelSelect === "Técnico" || nivelSelect === "Tecnico" ? "Tecnico" : "Tecnologo"
 
-      // Duración
+      // Duration
       const duracionText = document.getElementById("edit_duracion").value
       const duracionHoras = Number.parseInt(duracionText.replace(/[^\d]/g, ""))
 
-      // Estado actual desde el dataset (soporta '1'/'0' o 'Activo'/'Inactivo')
+      // Actual State from the dataset (supports '1'/'0' or 'Active'/'Inactive')
       const estadoAttrEdit = String(row.dataset.estado ?? '').trim()
       const estadoValue = (estadoAttrEdit === '1' || estadoAttrEdit === '0')
         ? Number(estadoAttrEdit)
@@ -251,13 +251,13 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Botones de alternar estado (usa data-action="toggle-estado")
+  // State toggle buttons (use data-action="toggle-state")
   document.querySelectorAll('[id^="actionMenu"] button[data-action="toggle-estado"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const row = e.target.closest('tr') || e.target.closest('div[data-index]')
       const idPrograma = row.dataset.idPrograma
 
-      // Estado actual: soporta '1'/'0' o 'Activo'/'Inactivo'
+      // Current state: supports '1'/'0' or 'Active'/'Inactive'
       const estadoAttr = String(row.dataset.estado ?? '').trim()
       const estadoActual = (estadoAttr === '1' || estadoAttr === '0')
         ? Number(estadoAttr)
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Checkboxes en vista grid
+  // Checkboxes in grid view
   document.querySelectorAll('#gridView input[type="checkbox"]').forEach(chk => {
     chk.addEventListener('change', async (e) => {
       const card = e.target.closest('div[data-index]')
