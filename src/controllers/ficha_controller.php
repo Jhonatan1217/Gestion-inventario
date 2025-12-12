@@ -13,12 +13,12 @@ class FichaController {
         $this->model = new FichaModel($conn);
     }
 
-    /* Listar fichas */
+    /* List fichas */
     public function listar() {
         echo json_encode($this->model->listar());
     }
 
-    /* Obtener ficha por ID */
+    /* Get ficha by ID */
     public function obtener($id) {
         if (!$id) {
             echo json_encode(['error' => 'id_ficha requerido']);
@@ -29,7 +29,7 @@ class FichaController {
         echo json_encode($data ?: ['error' => 'Ficha no encontrada']);
     }
 
-    /* Crear ficha */
+    /* Create ficha */
     public function crear() {
         $input = json_decode(file_get_contents("php://input"), true);
 
@@ -46,7 +46,7 @@ class FichaController {
         ]);
     }
 
-    /* Actualizar ficha */
+    /* Update ficha */
     public function actualizar() {
         $input = json_decode(file_get_contents("php://input"), true);
 
@@ -63,35 +63,34 @@ class FichaController {
         ]);
     }
 
-    /* Activar ficha */
-    public function activar($id) {
+    /* Change ficha state */
+    public function cambiarEstado($id, $accion) {
         if (!$id) {
             echo json_encode(['error' => 'id_ficha requerido']);
             return;
         }
 
-        $ok = $this->model->activar($id);
+        // Convertir acción en estado válido
+        $map = [
+            "activar"    => "Activa",
+            "finalizar"  => "Finalizada",
+            "cancelar"   => "Cancelada"
+        ];
 
-        echo json_encode([
-            'success' => $ok,
-            'message' => $ok ? "Ficha activada" : "Error al activar ficha"
-        ]);
-    }
-
-    /* Inactivar ficha */
-    public function inactivar($id) {
-        if (!$id) {
-            echo json_encode(['error' => 'id_ficha requerido']);
+        if (!isset($map[$accion])) {
+            echo json_encode(['error' => 'Acción inválida']);
             return;
         }
 
-        $ok = $this->model->inactivar($id);
+        $estado = $map[$accion];
+        $ok = $this->model->cambiarEstado($id, $estado);
 
         echo json_encode([
             'success' => $ok,
-            'message' => $ok ? "Ficha inactivada" : "Error al inactivar ficha"
+            'message' => $ok ? "Ficha actualizada a estado: $estado" : "Error al cambiar estado"
         ]);
     }
+
 }
 
 /* Router */
@@ -119,12 +118,17 @@ switch ($accion) {
         break;
 
     case "activar":
-        $controller->activar($id);
+        $controller->cambiarEstado($id, "activar");
         break;
 
-    case "inactivar":
-        $controller->inactivar($id);
+    case "finalizar":
+        $controller->cambiarEstado($id, "finalizar");
         break;
+
+    case "cancelar":
+        $controller->cambiarEstado($id, "cancelar");
+        break;
+
 
     default:
         echo json_encode(["error" => "Acción no válida"]);
