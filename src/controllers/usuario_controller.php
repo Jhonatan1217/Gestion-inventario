@@ -78,8 +78,17 @@ switch ($accion) {
             'id_programa'      => $data['id_programa']      ?? $_POST['id_programa']      ?? null,
         ];
 
+<<<<<<< HEAD
         // 👉 Estado por defecto: ACTIVO (lo manejas como 'activo' en el modelo)
         $u['estado'] = 1; // puedes dejarlo si lo usas luego para otra cosa
+=======
+        $id_programa = $data['id_programa'] ?? $_POST['id_programa'] ?? null;
+
+        if (in_array(null, $u, true)) {
+            echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
+            exit;
+        }
+>>>>>>> 67f24b8d9f19e4a6895bcd34d403d2226b7c84c5
 
         if (in_array(null, [
             $u['nombre_completo'],
@@ -89,6 +98,7 @@ switch ($accion) {
             $u['cargo'],
             $u['correo'],
             $u['direccion'],
+<<<<<<< HEAD
             $u['password'],
         ], true)) {
             echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
@@ -143,6 +153,10 @@ switch ($accion) {
             $u['direccion'],
             $u['password'],
             $u['id_programa'] // 👈 AHORA SÍ ES id_programa
+=======
+            $u['password'], 
+            $id_programa
+>>>>>>> 67f24b8d9f19e4a6895bcd34d403d2226b7c84c5
         );
 
         if (!$ok) {
@@ -152,11 +166,16 @@ switch ($accion) {
 
         echo json_encode(['mensaje' => 'Usuario creado correctamente']);
     break;
+<<<<<<< HEAD
 
 
     // ==========================
     // Actualizar usuario
     // ==========================
+=======
+    
+    //Update user
+>>>>>>> 67f24b8d9f19e4a6895bcd34d403d2226b7c84c5
     case 'actualizar':
         $data = json_decode(file_get_contents("php://input"), true);
 

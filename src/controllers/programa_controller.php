@@ -27,7 +27,6 @@ switch ($accion) {
     case 'listar':
         $programasList = $programa->listar();
 
-        // Recorremos cada programa y contamos los instructores reales
         foreach ($programasList as &$p) {
             $instructores = $programa->listarInstructoresPorPrograma($p['id_programa']);
             $p['instructores'] = count($instructores);
