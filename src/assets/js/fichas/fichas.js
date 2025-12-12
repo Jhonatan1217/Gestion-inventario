@@ -3,7 +3,6 @@
 // =========================
 const API_URL = "src/controllers/ficha_controller.php"
 const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"
-const INSTRUCTORES_API_URL = "src/controllers/usuario_controller.php"
 
 // =========================
 // NIVEL CONFIGURATION (label and badge styles)
@@ -71,13 +70,13 @@ function showFlowbiteAlert(type, message) {
     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
          fill="currentColor" viewBox="0 0 20 20">
       <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
-      <path d="M11 13H9V9h2zm0 3H9v-2h2zm0 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="#fff"/>
+      <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
     </svg>
-  `
+  `;
 
   if (type === "success") {
     borderColor = "border-emerald-500"
-    textColor = "text-emerald-900"
+    textColor = "text-primary-900"
     titleText = "Éxito"
     iconSVG = `
       <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
@@ -168,14 +167,12 @@ const modalFichaTitulo = document.getElementById("modalFichaTitulo")
 const modalFichaDescripcion = document.getElementById("modalFichaDescripcion")
 
 // Inputs del formulario de Fichas
-const inputIdFicha = document.getElementById("id_ficha");
 const inputNumeroFicha = document.getElementById("numero_ficha");
 const inputPrograma = document.getElementById("id_programa");
 const inputJornada = document.getElementById("jornada");
 const inputModalidad = document.getElementById("modalidad");
 const inputFechaInicio = document.getElementById("fecha_inicio");
 const inputFechaFin = document.getElementById("fecha_fin");
-const inputEstado = document.getElementById("estado");
 
 const modalVerFicha = document.getElementById("modalVerFicha")
 const btnCerrarModalVerFicha = document.getElementById("btnCerrarModalVerFicha")
@@ -271,6 +268,7 @@ function renderOpcionesPrograma() {
     const opt = document.createElement("option")
     opt.value = p.id_programa
     opt.textContent = p.nombre_programa || p.nombre || ""
+    opt.dataset.nivel = p.nivel || "Tecnólogo"
     inputPrograma.appendChild(opt)
   })
 }
@@ -280,21 +278,12 @@ async function cargarProgramas() {
 
   try {
     const res = await fetch(`${PROGRAMAS_API_URL}?accion=listar`)
-    const text = await res.text()
-
-    let data
-    try {
-      const start = text.indexOf("[")
-      const end = text.lastIndexOf("]")
-      if (start !== -1 && end !== -1 && end > start) {
-        data = JSON.parse(text.slice(start, end + 1))
-      } else {
-        data = []
-      }
-    } catch (e) {
-      data = []
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     }
-
+    
+    const data = await res.json()
+    
     if (Array.isArray(data)) {
       programas = data.map((p) => ({
         id_programa: p.id_programa,
@@ -308,11 +297,13 @@ async function cargarProgramas() {
       })
     } else {
       programas = []
+      console.error("La respuesta de programas no es un array:", data)
     }
 
     renderOpcionesPrograma()
   } catch (error) {
     console.error("Error al cargar programas:", error)
+    toastError("Error al cargar los programas")
     programas = []
     renderOpcionesPrograma()
   }
@@ -350,7 +341,14 @@ function openModalFicha(editFicha = null) {
     modalFichaDescripcion.textContent = "Complete los datos para registrar una nueva ficha de formación"
     hiddenFichaId.value = ""
 
-    formFicha.reset()
+    // Limpiar el formulario
+    inputNumeroFicha.value = ""
+    inputPrograma.value = ""
+    inputJornada.value = ""
+    inputModalidad.value = ""
+    inputFechaInicio.value = ""
+    inputFechaFin.value = ""
+    
     originalEditData = null
   }
 
@@ -376,10 +374,8 @@ function openModalVerFicha(ficha) {
 
   detalleFichaContent.innerHTML = `
     <div class="flex items-center gap-4">
-      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-badge-secondary text-badge-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-kanban-icon lucide-folder-kanban"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M8 10v4"/><path d="M12 10v2"/><path d="M16 10v6"/></svg>
       </div>
       <div>
         <h3 class="font-semibold text-xl">${ficha.numero_ficha}</h3>
@@ -415,6 +411,10 @@ function openModalVerFicha(ficha) {
         <span class="text-muted-foreground min-w-[80px]">Fecha Fin:</span>
         <span class="font-medium">${ficha.fecha_fin || "No especificado"}</span>
       </div>
+      <div class="flex items-start gap-3">
+        <span class="text-muted-foreground min-w-[80px]">Estado:</span>
+        <span class="font-medium">${ficha.estado || "Activa"}</span>
+      </div>
     </div>
   `
 }
@@ -428,48 +428,42 @@ function closeModalVerFicha() {
 // BACKEND COMMUNICATION LOGIC
 // =========================
 
-async function callApi(url, payload) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-
-  const text = await res.text()
-
+async function callApi(url, payload = null) {
   try {
-    const start = text.indexOf("{")
-    const end = text.lastIndexOf("}")
-    if (start !== -1 && end !== -1 && end > start) {
-      const jsonString = text.slice(start, end + 1)
-      return JSON.parse(jsonString)
+    const options = {
+      method: payload ? "POST" : "GET",
+      headers: { "Content-Type": "application/json" },
     }
-    return { error: "Respuesta no válida del servidor: " + text }
-  } catch (e) {
-    return { error: "Respuesta no válida del servidor: " + text }
+    
+    if (payload) {
+      options.body = JSON.stringify(payload)
+    }
+    
+    const res = await fetch(url, options)
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    }
+    
+    const data = await res.json()
+    return data
+  } catch (error) {
+    console.error("Error en callApi:", error)
+    return { error: error.message || "Error de conexión" }
   }
 }
 
 async function cargarFichas() {
   try {
-    const res = await fetch(`${API_URL}?accion=listar`)
-    const text = await res.text()
-
-    let data
-    try {
-      const start = text.indexOf("[")
-      const end = text.lastIndexOf("]")
-      if (start !== -1 && end !== -1 && end > start) {
-        data = JSON.parse(text.slice(start, end + 1))
-      } else {
-        data = []
-      }
-    } catch (e) {
-      data = []
+    const data = await callApi(`${API_URL}?accion=listar`)
+    
+    if (data.error) {
+      throw new Error(data.error) 
     }
-
+    
     if (!Array.isArray(data)) {
       fichas = []
+      console.error("La respuesta de fichas no es un array:", data)
     } else {
       fichas = data.map((f) => ({
         id: f.id_ficha,
@@ -480,12 +474,14 @@ async function cargarFichas() {
         fecha_inicio: f.fecha_inicio || null,
         fecha_fin: f.fecha_fin || null,
         nivel: f.nivel || "Tecnólogo",
+        estado: f.estado || "Activa",
       }))
     }
 
     renderTable()
   } catch (error) {
     console.error("Error al cargar fichas:", error)
+    toastError("Error al cargar las fichas")
     fichas = []
     renderTable()
   }
@@ -497,6 +493,78 @@ function crearFicha(payload) {
 
 function actualizarFicha(payload) {
   return callApi(`${API_URL}?accion=actualizar`, payload)
+}
+
+// =========================
+// FUNCIONES PARA CAMBIAR ESTADO
+// =========================
+
+async function cambiarEstadoFicha(id, accion) {
+    if (!id) {
+        toastError("ID de ficha no válido");
+        return;
+    }
+
+    // Validar acciones permitidas según tu controlador
+    const accionesPermitidas = ['activar', 'finalizar', 'cancelar'];
+    if (!accionesPermitidas.includes(accion)) {
+        toastError("Acción no válida");
+        return;
+    }
+    try {
+        // Llamar al endpoint correspondiente según la acción
+        const res = await fetch(`${API_URL}?accion=${accion}&id_ficha=${id}`, {
+            method: "GET" // Tu controlador usa GET con parámetros en la URL
+        });
+
+        const text = await res.text();
+        
+        // Parsear la respuesta
+        let data;
+        try {
+            const start = text.indexOf("{");
+            const end = text.lastIndexOf("}");
+            if (start !== -1 && end !== -1 && end > start) {
+                data = JSON.parse(text.slice(start, end + 1));
+            } else {
+                throw new Error("Respuesta no válida");
+            }
+        } catch (e) {
+            data = { error: "Respuesta no válida del servidor" };
+        }
+
+        if (data.error) {
+            toastError(data.error);
+        } else if (data.success) {
+            // Mensajes según la acción
+            const mensajesExito = {
+                'activar': 'Ficha activada correctamente',
+                'finalizar': 'Ficha finalizada correctamente',
+                'cancelar': 'Ficha cancelada correctamente'
+            };
+            
+            toastSuccess(data.message || mensajesExito[accion]);
+            await cargarFichas(); // Recargar la lista
+        } else {
+            toastError(data.message || `Error al ${accion} la ficha`);
+        }
+    } catch (error) {
+        console.error(`Error al ${accion} ficha:`, error);
+        toastError(`Error al ${accion} la ficha`);
+    }
+}
+
+// Funciones específicas para compatibilidad
+async function activarFicha(id) {
+    await cambiarEstadoFicha(id, 'activar');
+}
+
+async function finalizarFicha(id) {
+    await cambiarEstadoFicha(id, 'finalizar');
+}
+
+async function cancelarFicha(id) {
+    await cambiarEstadoFicha(id, 'cancelar');
 }
 
 // =========================
@@ -581,10 +649,12 @@ function renderPaginationControls(container, totalItems, pageSize, currentPage, 
 
 function renderTable() {
   const search = inputBuscar.value.trim().toLowerCase()
+  const filtroEstado = selectFiltroEstado.value
 
   const filtered = fichas.filter((f) => {
     const matchNumero = String(f.numero_ficha).toLowerCase().includes(search)
-    return matchNumero
+    const matchEstado = !filtroEstado || f.estado === filtroEstado
+    return matchNumero && matchEstado
   })
 
   const totalItems = filtered.length
@@ -649,13 +719,57 @@ function renderTable() {
 
     const nivelNombre = ficha.nivel || "N/A";
 
+    // Determinar qué acciones mostrar según el estado
+    let accionesHTML = '';
+    if (ficha.estado === 'Activa') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
+                data-action="finalizar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Finalizar
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                data-action="cancelar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+            </button>
+        `;
+    } else if (ficha.estado === 'Finalizada' || ficha.estado === 'Cancelada') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-green-600 hover:bg-green-50"
+                data-action="activar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Activar
+            </button>
+        `;
+    }
+
     tr.innerHTML = `
       <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-badge-secondary text-badge-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-kanban-icon lucide-folder-kanban"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M8 10v4"/><path d="M12 10v2"/><path d="M16 10v6"/></svg>
           </div>
           <span class="font-medium text-sm">${ficha.numero_ficha}</span>
         </div>
@@ -663,9 +777,7 @@ function renderTable() {
 
       <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-2">
-          <svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap-icon lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
           <span class="text-sm">${programaNombre}</span>
         </div>
       </td>
@@ -683,7 +795,14 @@ function renderTable() {
       </td>
 
       <td class="px-4 py-3 align-middle">
-        <span class="text-sm">${ficha.modalidad || "No especificado"}</span>
+        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+          ficha.estado === 'Activa' ? 'badge-estado-activo' :
+          ficha.estado === 'Finalizada' ? 'badge-estado-inactivo' :
+          ficha.estado === 'Cancelada' ? 'badge-estado-inactivo' :
+          'bg-gray-100 text-gray-800'
+        }">
+          ${ficha.estado || 'Activa'}
+        </span>
       </td>
 
       <td class="px-4 py-3 align-middle text-right">
@@ -733,6 +852,8 @@ function renderTable() {
               </svg>
               Editar
             </button>
+            
+            ${accionesHTML}
           </div>
         </div>
       </td>
@@ -749,6 +870,52 @@ function renderTable() {
         : "Sin asignar";
 
     const nivelNombre = ficha.nivel || "N/A";
+
+    // Determinar qué acciones mostrar según el estado (para tarjetas)
+    let accionesHTML = '';
+    if (ficha.estado === 'Activa') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted"
+                data-action="finalizar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Finalizar
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-red-600 hover:bg-red-50"
+                data-action="cancelar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+            </button>
+        `;
+    } else if (ficha.estado === 'Finalizada' || ficha.estado === 'Cancelada') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-green-600 hover:bg-green-50"
+                data-action="activar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Activar
+            </button>
+        `;
+    }
 
     const card = document.createElement("div");
     card.className = "rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col";
@@ -767,6 +934,14 @@ function renderTable() {
               nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
             }">
               ${nivelLabels[ficha.nivel] || nivelNombre}
+            </span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mt-1 ${
+              ficha.estado === 'Activa' ? 'bg-green-100 text-green-800' :
+              ficha.estado === 'Finalizada' ? 'bg-blue-100 text-blue-800' :
+              ficha.estado === 'Cancelada' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }">
+              ${ficha.estado || 'Activa'}
             </span>
           </div>
         </div>
@@ -815,6 +990,7 @@ function renderTable() {
               </svg>
               Editar
             </button>
+            ${accionesHTML}
           </div>
         </div>
       </div>
@@ -851,6 +1027,7 @@ function renderTable() {
   });
 
   attachMenuEvents()
+  attachActionEvents()
 
   const tablaVisible = !vistaTabla.classList.contains("hidden")
 
@@ -911,26 +1088,35 @@ function attachMenuEvents() {
       }
     })
   })
+}
 
+function attachActionEvents() {
   document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation()
 
       const action = btn.getAttribute("data-action")
       const id = btn.getAttribute("data-id")
-      const ficha = fichas.find((f) => String(f.id) === String(id))
-      if (!ficha) return
+      
+      if (!id || !action) return
 
-      if (action === "ver") {
-        openModalVerFicha(ficha)
-      } else if (action === "editar") {
-        openModalFicha(ficha)
-      }
-
+      // Cerrar el menú
       const menu = btn.closest("[data-menu]")
       if (menu) {
         menu.classList.add("hidden")
         menu.classList.remove("show")
+      }
+
+      // Manejar diferentes acciones
+      if (action === "ver") {
+        const ficha = fichas.find((f) => String(f.id) === String(id))
+        if (ficha) openModalVerFicha(ficha)
+      } else if (action === "editar") {
+        const ficha = fichas.find((f) => String(f.id) === String(id))
+        if (ficha) openModalFicha(ficha)
+      } else if (['activar', 'finalizar', 'cancelar'].includes(action)) {
+        // Usar la nueva función unificada
+        await cambiarEstadoFicha(id, action)
       }
     })
   })
@@ -941,6 +1127,12 @@ function attachMenuEvents() {
 // =========================
 
 inputBuscar.addEventListener("input", () => {
+  currentPageTable = 1
+  currentPageCards = 1
+  renderTable()
+})
+
+selectFiltroEstado.addEventListener("change", () => {
   currentPageTable = 1
   currentPageCards = 1
   renderTable()
@@ -971,6 +1163,7 @@ formFicha.addEventListener("submit", async (e) => {
         modalidad: inputModalidad.value || null,
         fecha_inicio: inputFechaInicio.value || null,
         fecha_fin: inputFechaFin.value || null,
+        estado: "Activa" // Siempre se crea como Activa
     };
 
     const numeroRegex = /^[0-9]+$/;
@@ -1024,43 +1217,6 @@ formFicha.addEventListener("submit", async (e) => {
         return;
     }
 
-    // Obtener nivel del programa seleccionado
-    const selectedPrograma = programas.find((p) => String(p.id_programa) === String(payload.id_programa));
-
-    if (!selectedPrograma) {
-        toastError("Programa no válido.");
-        inputPrograma.focus();
-        return;
-    }
-
-    if (!VALID_NIVELES.includes(selectedPrograma.nivel)) {
-        toastError("Nivel no válido.");
-        inputPrograma.focus();
-        return;
-    }
-
-    // Asignar nivel al payload
-    payload.nivel = selectedPrograma.nivel;
-
-    // --- COMPARACIÓN DE CAMBIOS EN MODO EDICIÓN ---
-    if (isEdit && originalEditData) {
-        const currentData = {
-            numero_ficha: payload.numero_ficha,
-            id_programa: String(payload.id_programa),
-            jornada: String(payload.jornada),
-            modalidad: String(payload.modalidad),
-            fecha_inicio: payload.fecha_inicio,
-            fecha_fin: payload.fecha_fin,
-        };
-
-        const noHayCambios = JSON.stringify(currentData) === JSON.stringify(originalEditData);
-
-        if (noHayCambios) {
-            toastInfo("Para actualizar el registro es necesario modificar al menos un dato de la ficha.");
-            // No retornamos aquí para permitir que el usuario vea el mensaje pero continúe si quiere
-        }
-    }
-
     // Agregar ID si es edición
     if (isEdit) {
         payload.id_ficha = hiddenFichaId.value;
@@ -1074,7 +1230,12 @@ formFicha.addEventListener("submit", async (e) => {
             return;
         }
 
-        toastSuccess(data.mensaje || (isEdit ? "Ficha actualizada correctamente." : "Ficha creada correctamente."));
+        if (!data.success) {
+            toastError(data.message || "Error al procesar la solicitud.");
+            return;
+        }
+
+        toastSuccess(data.message || (isEdit ? "Ficha actualizada correctamente." : "Ficha creada correctamente."));
 
         closeModalFicha();
         await cargarFichas();
@@ -1099,9 +1260,15 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-// ================================
-// INITIAL LOAD
-// ================================
-cargarFichas()
-cargarProgramas()
-setVistaTabla()
+/*INITIAL LOAD*/
+
+async function inicializar() {
+  await Promise.all([
+      cargarProgramas(),  // Cargar programas primero
+      cargarFichas()      // Cargar fichas en paralelo
+  ]);
+  setVistaTabla();        // Renderizar después de que ambos hayan cargado
+}
+
+// Iniciar
+inicializar();

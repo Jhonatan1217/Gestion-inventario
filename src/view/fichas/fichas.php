@@ -72,7 +72,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 
           <!-- Nueva ficha -->
           <button id="btnNuevaFicha"
-            class="inline-flex items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 gap-2">
+            class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-white shadow-sm gap-2">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 4v16m8-8H4" />
@@ -98,23 +98,29 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           <input id="inputBuscar" type="text"
             placeholder="Buscar por número..."
             class="w-full rounded-md border-0 bg-gray-100 pl-10 pr-3 py-2 text-sm
-                   placeholder:text-muted-foreground focus:ring-2 focus:ring-emerald-500" />
+                   placeholder:text-muted-foreground focus:ring-2 focus:ring-primary" />
         </div>
 
         <!-- Estado filter -->
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between my-6">
+    <!-- ... (búsqueda) ... -->
+    
+        <!-- Estado filter actualizado para 3 estados -->
         <div class="flex items-center gap-2">
-          <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24">
-            <path d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
-                  stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <select id="selectFiltroEstado"
-            class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm">
-            <option value="">Todos</option>
-            <option value="1">Activa</option>
-            <option value="0">Inactiva</option>
-          </select>
+            <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24">
+                <path d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
+                      stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <select id="selectFiltroEstado"
+                class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm">
+                <option value="">Todos</option>
+                <option value="Activa">Activa</option>
+                <option value="Finalizada">Finalizada</option>
+                <option value="Cancelada">Cancelada</option>
+            </select>
         </div>
+      </div>
 
       </div>
 
@@ -128,7 +134,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
               <th class="px-4 py-3 text-left text-xs text-muted-foreground">Programa</th>
               <th class="px-4 py-3 text-left text-xs text-muted-foreground">Nivel</th>
               <th class="px-4 py-3 text-left text-xs text-muted-foreground">Jornada</th>
-              <th class="px-4 py-3 text-left text-xs text-muted-foreground">Modalidad</th>
+              <th class="px-4 py-3 text-left text-xs text-muted-foreground">Estado</th>
               <th class="px-4 py-3 text-right text-xs text-muted-foreground">Acciones</th>
             </tr>
           </thead>
@@ -227,17 +233,6 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           </div>
         </div>
 
-        
-
-        <!-- Instructor -->
-        <!-- <div class="space-y-2">
-          <label for="id_instructor" class="text-sm font-medium">Instructor*</label>
-          <select id="id_instructor"
-                  class="w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm input-siga">
-            <option value="">Seleccione un instructor</option>
-          </select>
-        </div> -->
-
         <!-- FOOTER -->
         <div class="flex justify-end gap-2 pt-4">
           <button id="btnCancelarModalFicha" type="button"
@@ -246,7 +241,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           </button>
 
           <button type="submit"
-            class="inline-flex items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm text-white shadow hover:bg-emerald-600">
+            class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm text-white shadow">
             Guardar Cambios
           </button>
         </div>
@@ -258,7 +253,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 
   <!-- MODAL VER DETALLES -->
   <div id="modalVerFicha" class="modal-overlay">
-    <div class="relative w-full max-w-md rounded-xl border border-border bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-lg">
+    <div class="relative w-full max-w-md rounded-xl border border-border bg-card from-white p-6 shadow-lg">
 
       <div class="flex items-start justify-between mb-4">
         <h2 class="text-lg font-semibold">Detalles de la Ficha</h2>
