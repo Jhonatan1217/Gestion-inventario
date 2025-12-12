@@ -389,6 +389,7 @@ $host       = $_SERVER['HTTP_HOST'];
 $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
 define('BASE_URL', $protocol . $host . $script_dir);
 
+
 // =============================
 // LÓGICA DE PÁGINA ACTUAL
 // =============================
