@@ -499,6 +499,16 @@ select.no-arrow { background-image: none; padding-right: 0.75rem; }
 }
 
 
+/* Modo solo lectura para el modal de perfil */
+.modal-readonly input,
+.modal-readonly select {
+  pointer-events: none;
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+
+
 /* Animación moderna estilo shadcn/iOS */
 @keyframes modalModernFade {
   from {
