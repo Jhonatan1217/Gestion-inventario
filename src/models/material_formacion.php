@@ -49,8 +49,8 @@ class MaterialFormacionModel {
         }
 
         $sql = "INSERT INTO material_formacion 
-                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario)
-                VALUES (?, ?, ?, ?, ?)";
+                (nombre, descripcion, unidad_medida, clasificacion, codigo_inventario, estado)
+                VALUES (?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
 
@@ -59,7 +59,8 @@ class MaterialFormacionModel {
             $data['descripcion'] ?? null,
             $data['unidad_medida'],
             $data['clasificacion'],
-            $codigo
+            $codigo,
+            $data['estado'] ?? 'Disponible'
         ]);
     }
 

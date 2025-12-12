@@ -1,16 +1,283 @@
-/* materiales.js — integrado con backend (mantiene todas las funciones UI) */
+/* materiales.js — Integración con backend PHP */
 
-/* ============ CONFIG / API ============ */
-const API_URL = "http://localhost/Gestion-inventario/src/controllers/material_formacion_controller.php";
-
-let materialsData = []; // ahora poblado desde el backend
+/* =========================
+   Variables globales
+   ========================= */
+let materialsData = []
+let filteredData = []
 let currentPage = 1
 let currentCardPage = 1
 const itemsPerPage = 10
-const cardsPerPage = 10
-const disabledMaterials = new Set()
+const cardsPerPage = 9
 let currentView = "table"
 
+// API endpoints
+const API_URL = window.location.origin + "/Gestion-inventario/src/controllers/material_formacion_controller.php"
+
+/* =========================
+   API Functions
+   ========================= */
+async function fetchMaterials() {
+  try {
+    const response = await fetch(`${API_URL}?accion=listar`)
+    if (!response.ok) throw new Error("Error al cargar materiales")
+    const data = await response.json()
+    materialsData = data.map((material) => ({
+      id: Number.parseInt(material.id_material),
+      name: material.nombre,
+      description: material.descripcion,
+      clasificacion: material.clasificacion,
+      codigo: material.codigo_inventario,
+      unit: material.unidad_medida,
+      enabled: material.estado === "Disponible",
+    }))
+    filteredData = [...materialsData]
+    if (currentView === "table") {
+      renderTable()
+    } else {
+      renderCards()
+    }
+  } catch (error) {
+    console.error("Error:", error)
+    showAlert("Error al cargar los materiales", "error")
+  }
+}
+
+async function createMaterialAPI(materialData) {
+  try {
+    const response = await fetch(`${API_URL}?accion=crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre: materialData.nombre,
+        descripcion: materialData.descripcion,
+        clasificacion: materialData.clasificacion,
+        codigo_inventario: materialData.codigo_inventario,
+        unidad_medida: materialData.unidad_medida,
+      }),
+    })
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error("Error:", error)
+    return { success: false, message: "Error de conexión" }
+  }
+}
+
+async function updateMaterialAPI(id, materialData) {
+  try {
+    const response = await fetch(`${API_URL}?accion=actualizar&id=${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre: materialData.nombre,
+        descripcion: materialData.descripcion,
+        clasificacion: materialData.clasificacion,
+        codigo_inventario: materialData.codigo_inventario,
+        unidad_medida: materialData.unidad_medida,
+        estado: materialData.estado,
+      }),
+    })
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error("Error:", error)
+    return { success: false, message: "Error de conexión" }
+  }
+}
+
+async function toggleMaterialStatusAPI(id) {
+  try {
+    const response = await fetch(`${API_URL}?accion=toggleEstado&id=${id}`, {
+      method: "GET",
+    })
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error("Error:", error)
+    return { success: false, message: "Error de conexión" }
+  }
+}
+
+/* =========================
+  Helper Functions
+  ========================= */
+
+function getOrCreateFlowbiteContainer() {
+  let container = document.getElementById("flowbite-alert-container")
+
+  if (!container) {
+    container = document.createElement("div")
+    container.id = "flowbite-alert-container"
+    container.className =
+      "fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none"
+    document.body.appendChild(container)
+  }
+
+  return container
+}
+
+function showFlowbiteAlert(type, message) {
+  const container = getOrCreateFlowbiteContainer()
+  const wrapper = document.createElement("div")
+
+  let borderColor = "border-amber-500"
+  let textColor = "text-amber-900"
+  let titleText = "Advertencia"
+
+  let iconSVG = `
+    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
+      <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
+    </svg>
+  `
+
+  if (type === "success") {
+    borderColor = "border-emerald-500"
+    textColor = "text-emerald-900"
+    titleText = "Éxito"
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm-1 15-4-4 1.414-1.414L9 12.172l4.586-4.586L15 9z"/>
+      </svg>
+    `
+  }
+
+  if (type === "error") {
+    borderColor = "border-red-500"
+    textColor = "text-red-900"
+    titleText = "Error"
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293-2.293 1.414 1.414L11.414 10l2.293 2.293z"/>
+      </svg>
+    `
+  }
+
+  if (type === "info") {
+    borderColor = "border-blue-500"
+    textColor = "text-blue-900"
+    titleText = "Información"
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm1 15H9v-5h2Zm0-7H9V6h2Z"/>
+      </svg>
+    `
+  }
+
+  wrapper.className = `
+    relative flex items-center w-full mx-auto pointer-events-auto
+    rounded-2xl border-l-4 ${borderColor} bg-white shadow-md
+    px-4 py-3 text-sm ${textColor}
+    opacity-0 -translate-y-2
+    transition-all duration-300 ease-out
+    animate-fade-in-up
+  `
+
+  wrapper.innerHTML = `
+    <div class="flex-shrink-0 mr-3 text-current">
+      ${iconSVG}
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold">${titleText}</p>
+      <p class="mt-0.5 text-sm">${message}</p>
+    </div>
+  `
+
+  container.appendChild(wrapper)
+
+  requestAnimationFrame(() => {
+    wrapper.classList.remove("opacity-0", "-translate-y-2")
+    wrapper.classList.add("opacity-100", "translate-y-0")
+  })
+
+  setTimeout(() => {
+    wrapper.classList.add("opacity-0", "-translate-y-2")
+    wrapper.classList.remove("opacity-100", "translate-y-0")
+    setTimeout(() => wrapper.remove(), 250)
+  }, 4000)
+}
+
+function showAlert(message, type = "success") {
+  showFlowbiteAlert(type, message)
+}
+
+function validateMaterialPayload(data, { isEdit = false, id = null } = {}) {
+  const nameRegex = /^[A-Za-zÁÉÍÓÚÜÑñáéíóúüñ\s\-.]{3,80}$/
+  const codeRegex = /^[A-Za-z0-9_-]{3,30}$/
+
+  if (!data.nombre) {
+    showAlert("El nombre es obligatorio", "error")
+    document.getElementById(isEdit ? "editNombre" : "nombre")?.focus()
+    return false
+  }
+
+  if (!nameRegex.test(data.nombre)) {
+    showAlert("El nombre solo puede tener letras/números y 3-80 caracteres", "error")
+    document.getElementById(isEdit ? "editNombre" : "nombre")?.focus()
+    return false
+  }
+
+  if (!data.descripcion || data.descripcion.length < 5) {
+    showAlert("La descripción debe tener al menos 5 caracteres", "error")
+    document.getElementById(isEdit ? "editDescripcion" : "descripcion")?.focus()
+    return false
+  }
+
+  if (!data.clasificacion) {
+    showAlert("Seleccione la clasificación", "error")
+    document.getElementById(isEdit ? "editClasificacion" : "clasificacion")?.focus()
+    return false
+  }
+
+  if (!data.unidad_medida) {
+    showAlert("Seleccione la unidad de medida", "error")
+    document.getElementById(isEdit ? "editUnidad" : "unidad")?.focus()
+    return false
+  }
+
+  if (data.clasificacion === "Inventariado") {
+    if (!data.codigo_inventario) {
+      showAlert("El código es obligatorio para inventariados", "error")
+      document.getElementById(isEdit ? "editCodigo" : "codigo")?.focus()
+      return false
+    }
+    if (!codeRegex.test(data.codigo_inventario)) {
+      showAlert("Código inválido: 3-30 caracteres alfanuméricos, guion o guion bajo", "error")
+      document.getElementById(isEdit ? "editCodigo" : "codigo")?.focus()
+      return false
+    }
+  }
+
+  const nombreDuplicado = materialsData.some(
+    (m) => m.name.trim().toLowerCase() === data.nombre.trim().toLowerCase() && (!isEdit || m.id !== id),
+  )
+
+  if (nombreDuplicado) {
+    showAlert("Ya existe un material con ese nombre", "error")
+    return false
+  }
+
+  if (data.codigo_inventario) {
+    const codigoDuplicado = materialsData.some(
+      (m) => m.codigo && m.codigo.toLowerCase() === data.codigo_inventario.toLowerCase() && (!isEdit || m.id !== id),
+    )
+    if (codigoDuplicado) {
+      showAlert("Ya existe un material con ese código", "error")
+      return false
+    }
+  }
+
+  return true
+}
+
+function getDataToRender() {
+  return filteredData
+}
+
+/* =========================
+   Íconos SVG
+   ========================= */
 const icons = {
   eye: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
   edit: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
@@ -19,245 +286,82 @@ const icons = {
   menu: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>',
   package:
     '<svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>',
-  clock:
-    '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
-}
-
-function isActiveStatus(val) {
-  if (!val) return true
-  const v = val.toString().trim().toLowerCase()
-  return v === 'activo' || v === 'disponible'
-}
-
-/* =========================
-   Helpers: normalizar data
-   ========================= */
-function normalizeMaterial(m) {
-  // Backend fields: id_material, nombre, descripcion, unidad_medida, clasificacion, codigo_inventario, estado
-  // Split clasificacion "Categoria / Tipo" en category y type si aplica
-  let category = m.categoria ?? ''
-  let type = m.tipo ?? ''
-  if (!category || !type) {
-    const cls = m.clasificacion ?? ''
-    if (cls && cls.includes('/')) {
-      const parts = cls.split('/').map(s => s.trim())
-      category = category || parts[0] || ''
-      type = type || parts[1] || ''
-    } else if (cls) {
-      // si viene solo un valor, úsalo como categoría
-      category = category || cls
-    }
-  }
-
-  // Extraer posibles piezas desde descripcion compuesta para edición
-  const desc = m.descripcion ?? m.description ?? ''
-  let minStock = m.stock_minimo ?? 0
-  let warehouse = m.bodega ?? 'Bodega Principal'
-  let stockActual = m.stock_total ?? m.stock_actual ?? 0
-  let observacion = ''
-  if (desc) {
-    const obsMatch = desc.match(/\bOBS:\s*([^|]+)\b/i)
-    const bodMatch = desc.match(/\bBODEGA:\s*([^|]+)\b/i)
-    const minMatch = desc.match(/\bSTOCK_MIN:\s*([^|]+)\b/i)
-    const actMatch = desc.match(/\bSTOCK_ACT:\s*([^|]+)\b/i)
-    if (obsMatch) observacion = obsMatch[1].trim()
-    if (bodMatch) warehouse = bodMatch[1].trim()
-    if (minMatch) {
-      const num = parseInt(minMatch[1].trim(), 10)
-      if (!isNaN(num)) minStock = num
-    }
-    if (actMatch) {
-      const numA = parseInt(actMatch[1].trim(), 10)
-      if (!isNaN(numA)) stockActual = numA
-    }
-  }
-
-  const unitKey = (() => {
-    const keys = Object.keys(m || {})
-    for (const k of keys) {
-      const kl = k.toLowerCase()
-      if (kl.includes('unidad') || kl.includes('unit')) return k
-    }
-    return null
-  })()
-
-  const unitVal = unitKey ? m[unitKey] : (m.unidad_medida ?? m.unidad ?? m.unit)
-
-  return {
-    id_material: m.id_material ?? m.id ?? null,
-    code: m.codigo_inventario ?? `MAT-${m.id_material ?? m.id ?? Math.random().toString(36).slice(2,8)}`,
-    name: m.nombre ?? m.name ?? '',
-    category,
-    type,
-    unit: (unitVal ?? '').toString().trim(),
-    // stock/minStock/warehouse: derivar de descripcion o campos directos
-    stock: stockActual,
-    minStock,
-    warehouse,
-    description: desc,
-    observacion,
-    estado: m.estado ?? 'Activo'
-  }
-}
-
-// Asegura que un select tenga la opción indicada; si no existe, la crea y la selecciona
-function ensureSelectOption(selectEl, value) {
-  if (!selectEl) return
-  const val = (value ?? '').toString().trim()
-  if (val === '') return
-  const exists = Array.from(selectEl.options).some(opt => (opt.value || opt.text).trim() === val)
-  if (!exists) {
-    const opt = document.createElement('option')
-    opt.value = val
-    opt.text = val
-    selectEl.appendChild(opt)
-  }
-  selectEl.value = val
-}
-
-/* ================
-   FETCH / BACKEND
-   ================ */
-async function loadMaterials() {
-  try {
-    const res = await fetch(`${API_URL}?accion=listar`, { cache: "no-store" })
-    if (!res.ok) throw new Error("Error al obtener materiales")
-    const raw = await res.json()
-    // normalizar todos los registros
-    materialsData = raw.map(normalizeMaterial)
-    // sincronizar disabledMaterials con estado del backend (si tienen campo estado)
-    disabledMaterials.clear()
-    materialsData.forEach(m => {
-      if (!isActiveStatus(m.estado)) {
-        disabledMaterials.add(m.code)
-      }
-    })
-    // render con los datos reales
-    if (currentView === "table") renderTable()
-    else renderCards()
-    hydrateUnitSelects()
-  } catch (err) {
-    console.error(err)
-    showAlert("No se pudo cargar la lista de materiales.", "error")
-    // igual renderizamos con lo que tengamos (por compatibilidad)
-    renderTable()
-  }
-}
-
-function hydrateUnitSelects() {
-  try {
-    const units = Array.from(new Set(materialsData.map(m => (m.unit || '').toString().trim()).filter(Boolean)))
-    const createSel = document.getElementById('unidad')
-    if (createSel) {
-      units.forEach(u => {
-        const exists = Array.from(createSel.options).some(opt => (opt.value || opt.text).trim() === u)
-        if (!exists) {
-          const opt = document.createElement('option')
-          opt.value = u
-          opt.text = u
-          createSel.appendChild(opt)
-        }
-      })
-    }
-  } catch {}
-}
-
-async function fetchMaterialByCode(code) {
-  // Intenta buscar en materialsData primero
-  const found = materialsData.find(m => m.code === code)
-  if (found) return found
-
-  // Si no existe, usamos endpoint buscar para intentar obtenerlo por codigo
-  try {
-    const res = await fetch(`${API_URL}?accion=buscar&term=${encodeURIComponent(code)}`)
-    if (!res.ok) throw new Error("Error buscando material")
-    const raw = await res.json()
-    if (!Array.isArray(raw) || raw.length === 0) return null
-    const m = normalizeMaterial(raw[0])
-    // opcional: cachearlo localmente
-    materialsData.push(m)
-    return m
-  } catch (err) {
-    console.error(err)
-    return null
-  }
+  email:
+    '<svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 6l8 6 8-6"/></svg>',
+  ruler:
+    '<svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="10" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/></svg>',
 }
 
 /* =================================================
-   RENDER TABLE / CARDS (sin cambios visuales)
+   RENDER TABLE / CARDS
    ================================================= */
 function renderTable() {
+  const dataToRender = getDataToRender()
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  const paginatedData = materialsData.slice(start, end)
+  const paginatedData = dataToRender.slice(start, end)
 
   const tableBody = document.getElementById("tableBody")
-  if (!tableBody) return
   tableBody.innerHTML = ""
 
   paginatedData.forEach((material) => {
-    const isDisabled = disabledMaterials.has(material.code)
-    const statusClass = isDisabled ? "bg-gray-300 text-gray-600" : "bg-success text-success-foreground"
-    const statusText = isDisabled ? "Deshabilitado" : "Disponible"
-    const rowClass = isDisabled ? "disabled-row" : ""
+    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
+    const statusText = material.enabled ? "Disponible" : "Agotado"
+    const rowClass = !material.enabled ? "disabled-row" : ""
+    const codigoDisplay = material.codigo || "-"
 
     const row = document.createElement("tr")
     row.className = `hover:bg-muted transition-colors ${rowClass}`
-    row.dataset.materialCode = material.code
+    row.dataset.materialId = material.id
 
     row.innerHTML = `
-            <td class="px-4 py-3 text-sm font-medium">${material.code}</td>
-            <td class="px-4 py-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
-                        ${icons.package}
-                    </div>
-                    <div>
-                        <p class="font-medium">${material.name}</p>
-                        <p class="text-xs text-muted-foreground">${material.category}</p>
-                    </div>
-                </div>
-            </td>
-            <td class="px-4 py-3">
-                <div class="flex items-center gap-2">
-                    <span class="font-medium">${material.stock}</span>
-                    <div class="w-16 h-2 bg-muted rounded-full overflow-hidden">
-                        <div class="h-full" style="width: ${(material.stock / (Math.max(material.minStock,1) * 2)) * 100}%; background-color: var(--primary);" class="rounded-full"></div>
-                    </div>
-                    <span class="text-xs text-muted-foreground">Mín ${material.minStock}</span>
-                </div>
-            </td>
-            <td class="px-4 py-3 text-sm">${material.unit}</td>
-            <td class="px-4 py-3 text-sm">${material.warehouse}</td>
-            <td class="px-4 py-3">
-                <span class="inline-flex items-center gap-1 px-3 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${isDisabled ? "inactive" : "active"}">
-                    <span class="w-2 h-2 ${isDisabled ? "bg-red-700" : "bg-success-foreground"} rounded-full opacity-70"></span>
-                    ${statusText}
-                </span>
-            </td>
-            <td class="px-4 py-3 text-right">
-                <div class="relative">
-                    <button class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted card-menu-btn" onclick="toggleMenu(event)">
-                        ${icons.menu}
-                    </button>
-                    
-                    <div class="hidden absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50 dropdown-menu">
-                        <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground rounded-t-lg text-sm" onclick="openDetailsModal('${material.code}', '${material.name}')">
-                            ${icons.eye}
-                            Ver detalle
-                        </button>
-                        <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground text-sm" onclick="openEditModal('${material.code}', '${material.name}')">
-                            ${icons.edit}
-                            Editar
-                        </button>
-                        <button class="w-full px-4 py-2 text-left transition-colors flex items-center gap-2 text-sm rounded-b-lg toggle-status-table-btn" data-code="${material.code}" onclick="toggleMaterialStatus('${material.code}', event)" style="color: ${isDisabled ? "#16a34a" : "#dc2626"}; background-color: ${isDisabled ? "#dcfce7" : "#fee2e2"}; border-radius: 0 0 0.5rem 0.5rem;">
-                            ${icons.trash}
-                            <span class="toggle-text">${isDisabled ? "Habilitar" : "Deshabilitar"}</span>
-                        </button>
-                    </div>
-                </div>
-            </td>
-        `
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
+            ${icons.package}
+          </div>
+          <div>
+            <p class="font-medium">${material.name}</p>
+          </div>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-sm max-w-xs truncate" title="${material.description}">${material.description}</td>
+      <td class="px-4 py-3">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+          ${material.clasificacion}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-sm font-medium">${codigoDisplay}</td>
+      <td class="px-4 py-3 text-sm">${material.unit}</td>
+      <td class="px-4 py-3">
+        <span class="inline-flex items-center gap-1 px-3 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${!material.enabled ? "inactive" : "active"}">
+          <span class="w-2 h-2 ${!material.enabled ? "bg-red-700" : "bg-green-500"} rounded-full"></span>
+          ${statusText}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-right">
+        <div class="relative">
+          <button class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted card-menu-btn" onclick="toggleMenu(event)">
+            ${icons.menu}
+          </button>
+          
+          <div class="hidden absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50 dropdown-menu">
+            <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground rounded-t-lg text-sm" onclick="openDetailsModal(${material.id})">
+              ${icons.eye}
+              Ver detalle
+            </button>
+            <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground text-sm" onclick="openEditModal(${material.id})">
+              ${icons.edit}
+              Editar
+            </button>
+            <button class="w-full px-4 py-2 text-left transition-colors flex items-center gap-2 text-sm rounded-b-lg toggle-status-table-btn" data-id="${material.id}" onclick="toggleMaterialStatus(${material.id}, event)" style="color: ${!material.enabled ? "#16a34a" : "#dc2626"}; background-color: ${!material.enabled ? "#dcfce7" : "#fee2e2"}; border-radius: 0 0 0.5rem 0.5rem;">
+              ${icons.trash}
+              <span class="toggle-text">${!material.enabled ? "Activar" : "Desactivar"}</span>
+            </button>
+          </div>
+        </div>
+      </td>
+    `
 
     tableBody.appendChild(row)
   })
@@ -266,80 +370,118 @@ function renderTable() {
 }
 
 function renderCards() {
+  const dataToRender = getDataToRender()
   const start = (currentCardPage - 1) * cardsPerPage
   const end = start + cardsPerPage
-  const paginatedData = materialsData.slice(start, end)
+  const paginatedData = dataToRender.slice(start, end)
 
   const cardsContainer = document.getElementById("cardsContainer")
-  if (!cardsContainer) return
   cardsContainer.innerHTML = ""
 
   paginatedData.forEach((material) => {
-    const isDisabled = disabledMaterials.has(material.code)
-    const statusClass = isDisabled ? "bg-gray-300 text-gray-600" : "bg-success text-success-foreground"
-    const statusText = isDisabled ? "Deshabilitado" : "Disponible"
+    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
+    const statusText = material.enabled ? "Disponible" : "Agotado"
+    const codigoDisplay = material.codigo || "Sin código"
 
     const card = document.createElement("div")
-    card.className = `bg-card border border-border rounded-lg p-4 hover:shadow-lg transition-all relative ${
-      isDisabled ? "disabled-card" : ""
+    card.className = `rounded-2xl border border-border bg-card p-3 shadow-sm flex flex-col gap-2 ${
+      !material.enabled ? "disabled" : ""
     }`
-    card.dataset.materialCode = material.code
+    card.dataset.materialId = material.id
 
     card.innerHTML = `
-            <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
-                        ${icons.package}
-                    </div>
-                    <div>
-                        <p class="font-semibold text-sm">${material.name}</p>
-                        <p class="text-xs text-muted-foreground">${material.code}</p>
-                    </div>
-                </div>
-                <div class="relative">
-                    <button class="text-muted-foreground hover:text-foreground p-2 hover:bg-muted rounded-full transition-colors card-menu-btn" onclick="toggleCardMenu(event)">
-                        ${icons.menu}
-                    </button>
-                    
-                    <div class="hidden absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50 dropdown-menu">
-                        <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground rounded-t-lg text-sm" onclick="event.stopPropagation(); openDetailsModal('${material.code}', '${material.name}')">
-                            ${icons.eye}
-                            Ver detalle
-                        </button>
-                        <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground text-sm" onclick="event.stopPropagation(); openEditModal('${material.code}', '${material.name}')">
-                            ${icons.edit}
-                            Editar
-                        </button>
-                        <button class="w-full px-4 py-2 text-left transition-colors flex items-center gap-2 text-sm rounded-b-lg toggle-status-card-btn" data-code="${material.code}" onclick="event.stopPropagation(); toggleMaterialStatus('${material.code}', event)" style="color: ${isDisabled ? "#16a34a" : "#dc2626"}; background-color: ${isDisabled ? "#dcfce7" : "#fee2e2"}; border-radius: 0 0 0.5rem 0.5rem;">
-                            ${icons.trash}
-                            <span class="toggle-text">${isDisabled ? "Habilitar" : "Deshabilitar"}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="flex h-10 w-10 items-center justify-center rounded-full material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
+            ${icons.package}
+          </div>
+          <div class="space-y-0.5">
+            <p class="font-semibold text-xs sm:text-sm leading-snug">${material.name}</p>
+            <p class="text-[11px] sm:text-xs text-muted-foreground">${codigoDisplay}</p>
+          </div>
+        </div>
 
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-muted-foreground">Categoría:</span>
-                    <span class="font-medium">${material.category}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-muted-foreground">Stock:</span>
-                    <span class="font-medium">${material.stock} ${material.unit}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-muted-foreground">Bodega:</span>
-                    <span class="font-medium">${material.warehouse}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-muted-foreground">Estado:</span>
-                    <span class="inline-flex items-center gap-1 px-3 py-1 ${statusClass} text-xs font-medium rounded-full">
-                        <span class="w-2 h-2 ${isDisabled ? "bg-red-700" : "bg-success-foreground"} rounded-full opacity-70"></span>
-                        ${statusText}
-                    </span>
-                </div>
-            </div>
-        `
+        <div class="relative inline-block text-left">
+          <button
+            type="button"
+            class="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-muted text-slate-800"
+            data-menu-trigger="${material.id}"
+            onclick="toggleCardMenu(event)"
+          >
+            <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="5" cy="12" r="1.5"></circle>
+              <circle cx="12" cy="12" r="1.5"></circle>
+              <circle cx="19" cy="12" r="1.5"></circle>
+            </svg>
+          </button>
+          <div
+            class="dropdown-menu hidden absolute right-0 mt-2 w-40 rounded-xl border border-border bg-popover shadow-md py-1"
+            data-menu="${material.id}"
+          >
+            <button
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted"
+              onclick="event.stopPropagation(); openDetailsModal(${material.id})"
+            >
+              ${icons.eye}
+              Ver detalles
+            </button>
+            <button
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted"
+              onclick="event.stopPropagation(); openEditModal(${material.id})"
+            >
+              ${icons.edit}
+              Editar
+            </button>
+            <hr class="border-border my-1">
+            <button
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted toggle-status-card-btn"
+              data-id="${material.id}"
+              onclick="event.stopPropagation(); toggleMaterialStatus(${material.id}, event)"
+            >
+              ${icons.trash}
+              ${material.enabled ? "Desactivar" : "Activar"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-1 text-[11px] sm:text-xs text-muted-foreground">
+        <div class="flex items-center gap-2">
+          ${icons.email}
+          <span>${material.description}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          ${icons.ruler}
+          <span>${material.unit}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-1">
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+            ${material.clasificacion}
+          </span>
+          <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusClass}">
+            ${statusText}
+          </span>
+        </div>
+      </div>
+
+      <hr class="border-border my-1" />
+
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="switch-siga ${material.enabled ? "on" : "off"}"
+          onclick="toggleMaterialStatus(${material.id}, event)"
+        >
+          <span class="thumb" style="transform: translateX(${material.enabled ? "18px" : "0px"});"></span>
+        </button>
+      </div>
+    `
 
     cardsContainer.appendChild(card)
   })
@@ -347,592 +489,350 @@ function renderCards() {
   renderCardPagination()
 }
 
-/* ===========================================
-   Funciones de paginación y vista (sin cambios)
-   =========================================== */
+/* =========================
+   PAGINATION
+   ========================= */
 function renderPagination() {
-  const totalPages = Math.max(1, Math.ceil(materialsData.length / itemsPerPage))
-  const paginationElement = document.getElementById("pagination")
-  if (!paginationElement) return
-  paginationElement.innerHTML = ""
+  const dataToRender = getDataToRender()
+  const totalPages = Math.ceil(dataToRender.length / itemsPerPage)
+  const paginationContainer = document.getElementById("pagination")
+  paginationContainer.innerHTML = ""
 
-  const prevButton = document.createElement("button")
-  prevButton.textContent = "← Anterior"
-  prevButton.disabled = currentPage === 1
-  prevButton.className = "pagination-btn"
-  prevButton.onclick = () => {
+  if (totalPages <= 1) return
+
+  const prevBtn = document.createElement("button")
+  prevBtn.textContent = "Anterior"
+  prevBtn.disabled = currentPage === 1
+  prevBtn.onclick = () => {
     if (currentPage > 1) {
       currentPage--
       renderTable()
-      window.scrollTo(0, 0)
     }
   }
-  paginationElement.appendChild(prevButton)
-
-  const spacer1 = document.createElement("span")
-  spacer1.textContent = "|"
-  spacer1.style.color = "var(--muted-foreground)"
-  paginationElement.appendChild(spacer1)
+  paginationContainer.appendChild(prevBtn)
 
   for (let i = 1; i <= totalPages; i++) {
-    const pageButton = document.createElement("button")
-    pageButton.textContent = i
-    pageButton.className = currentPage === i ? "active" : ""
-    pageButton.onclick = () => {
+    const pageBtn = document.createElement("button")
+    pageBtn.textContent = i
+    if (i === currentPage) pageBtn.classList.add("active")
+    pageBtn.onclick = () => {
       currentPage = i
       renderTable()
-      window.scrollTo(0, 0)
     }
-    paginationElement.appendChild(pageButton)
+    paginationContainer.appendChild(pageBtn)
   }
 
-  const spacer2 = document.createElement("span")
-  spacer2.textContent = "|"
-  spacer2.style.color = "var(--muted-foreground)"
-  paginationElement.appendChild(spacer2)
-
-  const nextButton = document.createElement("button")
-  nextButton.textContent = "Siguiente →"
-  nextButton.disabled = currentPage === totalPages
-  nextButton.className = "pagination-btn"
-  nextButton.onclick = () => {
+  const nextBtn = document.createElement("button")
+  nextBtn.textContent = "Siguiente"
+  nextBtn.disabled = currentPage === totalPages
+  nextBtn.onclick = () => {
     if (currentPage < totalPages) {
       currentPage++
       renderTable()
-      window.scrollTo(0, 0)
     }
   }
-  paginationElement.appendChild(nextButton)
+  paginationContainer.appendChild(nextBtn)
 }
 
 function renderCardPagination() {
-  const pagination = document.getElementById("cardPagination")
-  if (!pagination) return
-  pagination.innerHTML = ""
+  const dataToRender = getDataToRender()
+  const totalPages = Math.ceil(dataToRender.length / cardsPerPage)
+  const paginationContainer = document.getElementById("cardPagination")
+  paginationContainer.innerHTML = ""
 
-  const totalPages = Math.max(1, Math.ceil(materialsData.length / cardsPerPage))
+  if (totalPages <= 1) return
 
-  const prevButton = document.createElement("button")
-  prevButton.textContent = "← Anterior"
-  prevButton.disabled = currentCardPage === 1
-  prevButton.className = "pagination-btn"
-  prevButton.onclick = () => {
+  const prevBtn = document.createElement("button")
+  prevBtn.textContent = "Anterior"
+  prevBtn.disabled = currentCardPage === 1
+  prevBtn.onclick = () => {
     if (currentCardPage > 1) {
       currentCardPage--
       renderCards()
-      window.scrollTo(0, 0)
     }
   }
-  pagination.appendChild(prevButton)
-
-  const spacer1 = document.createElement("span")
-  spacer1.textContent = "|"
-  spacer1.style.color = "var(--muted-foreground)"
-  pagination.appendChild(spacer1)
+  paginationContainer.appendChild(prevBtn)
 
   for (let i = 1; i <= totalPages; i++) {
-    const pageButton = document.createElement("button")
-    pageButton.textContent = i
-    pageButton.className = currentCardPage === i ? "active" : ""
-    pageButton.onclick = () => {
+    const pageBtn = document.createElement("button")
+    pageBtn.textContent = i
+    if (i === currentCardPage) pageBtn.classList.add("active")
+    pageBtn.onclick = () => {
       currentCardPage = i
       renderCards()
-      window.scrollTo(0, 0)
     }
-    pagination.appendChild(pageButton)
+    paginationContainer.appendChild(pageBtn)
   }
 
-  const spacer2 = document.createElement("span")
-  spacer2.textContent = "|"
-  spacer2.style.color = "var(--muted-foreground)"
-  pagination.appendChild(spacer2)
-
-  const nextButton = document.createElement("button")
-  nextButton.textContent = "Siguiente →"
-  nextButton.disabled = currentCardPage === totalPages
-  nextButton.className = "pagination-btn"
-  nextButton.onclick = () => {
+  const nextBtn = document.createElement("button")
+  nextBtn.textContent = "Siguiente"
+  nextBtn.disabled = currentCardPage === totalPages
+  nextBtn.onclick = () => {
     if (currentCardPage < totalPages) {
       currentCardPage++
       renderCards()
-      window.scrollTo(0, 0)
     }
   }
-  pagination.appendChild(nextButton)
+  paginationContainer.appendChild(nextBtn)
 }
 
-function switchView(view) {
-  currentView = view
-  currentPage = 1
-  currentCardPage = 1
-
-  const tableView = document.getElementById("tableView")
-  const cardView = document.getElementById("cardView")
-  const tableViewBtn = document.getElementById("tableViewBtn")
-  const cardViewBtn = document.getElementById("cardViewBtn")
-
-  if (view === "table") {
-    tableView.classList.remove("hidden")
-    cardView.classList.add("hidden")
-    tableViewBtn.classList.add("active")
-    cardViewBtn.classList.remove("active")
-    renderTable()
-  } else {
-    tableView.classList.add("hidden")
-    cardView.classList.remove("hidden")
-    tableViewBtn.classList.remove("active")
-    cardViewBtn.classList.add("active")
-    renderCards()
-  }
-}
-
-/* ====================================================
-   Funciones de apertura / cierre de modales (corregidas)
-   - Usan la clase CSS .modal-overlay.active para mostrar
-   - Mantienen compatibilidad si el HTML tuviera 'hidden'
-   ==================================================== */
+/* =========================
+   MODALS
+   ========================= */
 function openCreateModal() {
-  const modal = document.getElementById("createModal")
-  if (!modal) return
-  modal.classList.add("active")
+  document.getElementById("createModal").classList.add("active")
 }
 
 function closeCreateModal() {
-  const modal = document.getElementById("createModal")
-  if (!modal) return
-  modal.classList.remove("active")
+  document.getElementById("createModal").classList.remove("active")
+  document.getElementById("nombre").value = ""
+  document.getElementById("descripcion").value = ""
+  document.getElementById("clasificacion").value = ""
+  document.getElementById("codigo").value = ""
+  document.getElementById("unidad").value = ""
+  document.getElementById("codigoContainer").style.display = "none"
 }
 
-async function openDetailsModal(code, name) {
-  // Busca el material por code; si no está en cache intenta obtenerlo del backend
-  const material = await fetchMaterialByCode(code)
+function openDetailsModal(id) {
+  const material = materialsData.find((m) => m.id === id)
   if (!material) return
 
-  const isDisabled = disabledMaterials.has(material.code)
-
   document.getElementById("detailName").textContent = material.name
-  document.getElementById("detailCode").textContent = material.code
-  document.getElementById("detailCategory").textContent = material.category
-  document.getElementById("detailType").textContent = material.type
-  document.getElementById("detailStock").textContent = `${material.stock} ${material.unit}`
-  document.getElementById("detailMinStock").textContent = `${material.minStock} ${material.unit}`
-  document.getElementById("detailWarehouse").textContent = material.warehouse
+  document.getElementById("detailCode").textContent = material.codigo || "Sin código"
+  document.getElementById("detailDescription").textContent = material.description
+  document.getElementById("detailClasificacion").textContent = material.clasificacion
+  document.getElementById("detailUnidad").textContent = material.unit
+  document.getElementById("detailStatus").textContent = material.enabled ? "Disponible" : "Agotado"
+  document.getElementById("detailStatus").className = material.enabled
+    ? "inline-block px-2 py-1 rounded text-xs font-medium bg-success text-success-foreground"
+    : "inline-block px-2 py-1 rounded text-xs font-medium bg-gray-300 text-gray-600"
 
-  const statusBadge = document.getElementById("detailStatus")
-  statusBadge.textContent = isDisabled ? "Deshabilitado" : "Disponible"
-  statusBadge.className = isDisabled
-    ? "inline-block px-2 py-1 rounded text-xs font-medium bg-gray-300 text-gray-600"
-    : "inline-block px-2 py-1 rounded text-xs font-medium bg-success text-success-foreground"
-
-  const modal = document.getElementById("detailsModal")
-  if (!modal) return
-  modal.classList.add("active")
+  document.getElementById("detailsModal").classList.add("active")
 }
 
 function closeDetailsModal() {
-  const modal = document.getElementById("detailsModal")
-  if (!modal) return
-  modal.classList.remove("active")
+  document.getElementById("detailsModal").classList.remove("active")
 }
 
-async function openEditModal(code, name) {
-  const material = await fetchMaterialByCode(code)
+function openEditModal(id) {
+  const material = materialsData.find((m) => m.id === id)
   if (!material) return
 
-  // Rellenar campos de edición (nota: el campo editCodigo estaba disabled en la vista)
-  document.getElementById("editCodigo").value = material.id_material ?? material.code
+  document.getElementById("editId").value = material.id
   document.getElementById("editNombre").value = material.name
-  document.getElementById("editDescripcion").value = material.description || ""
-  ensureSelectOption(document.getElementById("editCategoria"), material.category)
-  ensureSelectOption(document.getElementById("editTipo"), material.type)
-  ensureSelectOption(document.getElementById("editUnidad"), material.unit)
-  document.getElementById("editStockActual").value = material.stock
-  document.getElementById("editStockMinimo").value = material.minStock
-  ensureSelectOption(document.getElementById("editBodega"), material.warehouse)
-  // usar la observación extraída, no toda la descripción compuesta
-  document.getElementById("editObservacion").value = material.observacion || ""
+  document.getElementById("editDescripcion").value = material.description
+  document.getElementById("editClasificacion").value = material.clasificacion
+  document.getElementById("editCodigo").value = material.codigo || ""
+  document.getElementById("editUnidad").value = material.unit
 
-  const modal = document.getElementById("editModal")
-  if (!modal) return
-  modal.classList.add("active")
+  toggleEditCodigoField()
+  document.getElementById("editModal").classList.add("active")
 }
 
 function closeEditModal() {
-  const modal = document.getElementById("editModal")
-  if (!modal) return
-  modal.classList.remove("active")
+  document.getElementById("editModal").classList.remove("active")
 }
 
-/* ====================================================
-   Toggle status / switch (sin cambios funcionales)
-   Ahora sincroniza con el backend (estado)
-   ==================================================== */
-async function toggleMaterialStatus(materialCode, event) {
-  event.preventDefault()
-  event.stopPropagation()
+function toggleCodigoField() {
+  const clasificacion = document.getElementById("clasificacion").value
+  const codigoContainer = document.getElementById("codigoContainer")
+  const codigoInput = document.getElementById("codigo")
 
-  // buscar material y determinar id
-  const material = materialsData.find(m => m.code === materialCode)
-  if (!material) {
-    showAlert("Material no encontrado para cambiar estado.", "error")
-    return
-  }
-
-  const newEstado = (material.estado && material.estado.toLowerCase() !== "activo") ? "Activo" : "Inactivo"
-
-  try {
-    // En tu controlador 'actualizar' espera id y cuerpo JSON
-    const id = material.id_material
-    const payload = {
-      nombre: material.name,
-      descripcion: material.description,
-      unidad_medida: material.unit,
-      // enviar campos para que el modelo reconstituya clasificacion y descripcion
-      categoria: material.category,
-      tipo: material.type,
-      bodega: material.warehouse,
-      stock_minimo: material.minStock,
-      codigo_inventario: material.code,
-      estado: newEstado
-    }
-
-    const res = await fetch(`${API_URL}?accion=actualizar&id=${encodeURIComponent(id)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-
-    const json = await res.json()
-    showAlert(json.message, json.status)
-
-    if (json.status === "success") {
-      // actualizar cache local
-      material.estado = newEstado
-      if (newEstado.toLowerCase() !== "activo") disabledMaterials.add(material.code)
-      else disabledMaterials.delete(material.code)
-      if (currentView === "table") renderTable()
-      else renderCards()
-    }
-
-  } catch (err) {
-    console.error(err)
-    showAlert("No se pudo cambiar el estado del material.", "error")
-  }
-
-  // esconder el menú contenedor de la acción (compatibilidad con clases)
-  const menu = event.target.closest(".dropdown-menu")
-  if (menu) {
-    menu.classList.remove("show")
-    menu.classList.add("hidden")
-  }
-}
-
-async function toggleMaterialStatusSwitch(materialCode, switchElement) {
-  // Si usas switches, esta función también sincroniza con backend
-  const isChecked = switchElement.checked
-  const material = materialsData.find(m => m.code === materialCode)
-  if (!material) return
-  const newEstado = isChecked ? "Activo" : "Inactivo"
-
-  try {
-    const id = material.id_material
-    const payload = {
-      nombre: material.name,
-      descripcion: material.description,
-      unidad_medida: material.unit,
-      categoria: material.category,
-      tipo: material.type,
-      bodega: material.warehouse,
-      stock_minimo: material.minStock,
-      codigo_inventario: material.code,
-      estado: newEstado
-    }
-
-    const res = await fetch(`${API_URL}?accion=actualizar&id=${encodeURIComponent(id)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-
-    const json = await res.json()
-    showAlert(json.message, json.status)
-
-    if (json.status === "success") {
-      material.estado = newEstado
-      if (newEstado.toLowerCase() !== "activo") disabledMaterials.add(material.code)
-      else disabledMaterials.delete(material.code)
-      if (currentView === "table") renderTable()
-      else renderCards()
-    }
-
-  } catch (err) {
-    console.error(err)
-    showAlert("No se pudo cambiar el estado del material.", "error")
-  }
-}
-
-/* ====================================================
-   Dropdown toggles corregidos (usa .show para CSS)
-   - toggleMenu para tablas
-   - toggleCardMenu para tarjetas
-   ==================================================== */
-function toggleMenu(event) {
-  event.preventDefault()
-  event.stopPropagation()
-  const button = event.currentTarget || event.target
-  const menu = button.nextElementSibling
-  if (!menu) return
-
-  // cerrar otros menús
-  document.querySelectorAll(".dropdown-menu").forEach((m) => {
-    if (m !== menu) {
-      m.classList.remove("show")
-      m.classList.add("hidden")
-    }
-  })
-
-  const isVisible = menu.classList.contains("show")
-  if (isVisible) {
-    menu.classList.remove("show")
-    menu.classList.add("hidden")
+  if (clasificacion === "Inventariado") {
+    codigoContainer.style.display = "block"
+    codigoInput.required = true
   } else {
-    menu.classList.add("show")
-    menu.classList.remove("hidden")
+    codigoContainer.style.display = "none"
+    codigoInput.required = false
+    codigoInput.value = ""
   }
 }
 
-function toggleCardMenu(event) {
-  event.preventDefault()
-  event.stopPropagation()
-  const button = event.currentTarget || event.target
-  const menu = button.nextElementSibling
-  if (!menu) return
+function toggleEditCodigoField() {
+  const clasificacion = document.getElementById("editClasificacion").value
+  const codigoContainer = document.getElementById("editCodigoContainer")
+  const codigoInput = document.getElementById("editCodigo")
 
-  // cerrar otros menús
-  document.querySelectorAll(".dropdown-menu").forEach((m) => {
-    if (m !== menu) {
-      m.classList.remove("show")
-      m.classList.add("hidden")
-    }
-  })
-
-  const isVisible = menu.classList.contains("show")
-  if (isVisible) {
-    menu.classList.remove("show")
-    menu.classList.add("hidden")
+  if (clasificacion === "Inventariado") {
+    codigoContainer.style.display = "block"
+    codigoInput.required = true
   } else {
-    menu.classList.add("show")
-    menu.classList.remove("hidden")
+    codigoContainer.style.display = "none"
+    codigoInput.required = false
+    codigoInput.value = ""
   }
 }
 
-/* ====================================================
-   Comportamiento global: clic fuera cierra dropdowns,
-   clic en overlay cierra modal (mantiene animación)
-   ==================================================== */
-document.addEventListener("click", (e) => {
-  // si el click no fue en un botón de menú ni dentro de un dropdown, cerramos todos
-  if (!e.target.closest(".card-menu-btn") && !e.target.closest(".dropdown-menu")) {
-    document.querySelectorAll(".dropdown-menu").forEach((m) => {
-      m.classList.remove("show")
-      m.classList.add("hidden")
-    })
-  }
-})
-
-// cerrar modales clicando sobre el overlay (no sobre el contenido)
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("#createModal, #editModal, #detailsModal").forEach((modalOverlay) => {
-    modalOverlay.addEventListener("click", (e) => {
-      // Solo cerrar si se hace click directamente en el overlay, no en el contenido
-      if (e.target === modalOverlay) {
-        if (modalOverlay.id === "createModal") closeCreateModal()
-        else if (modalOverlay.id === "editModal") closeEditModal()
-        else if (modalOverlay.id === "detailsModal") closeDetailsModal()
-      }
-    })
-  })
-
-  // Bind de formularios: Crear y Editar (mantiene onsubmit="event.preventDefault();" en HTML)
-  const createForm = document.querySelector("#createModal form")
-  if (createForm) {
-    createForm.addEventListener("submit", (e) => {
-      e.preventDefault()
-      createMaterial()
-    })
-  }
-
-  const editForm = document.querySelector("#editModal form")
-  if (editForm) {
-    editForm.addEventListener("submit", (e) => {
-      e.preventDefault()
-      updateMaterial()
-    })
-  }
-
-  // Bind input buscar  
-  const searchInput = document.getElementById("inputBuscar")
-  if (searchInput) {
-    let searchTimeout = null
-    searchInput.addEventListener("input", (e) => {
-      const term = e.target.value.trim()
-      clearTimeout(searchTimeout)
-      searchTimeout = setTimeout(() => {
-        if (term === "") loadMaterials()
-        else searchMaterials(term)
-      }, 250)
-    })
-  }
-
-  // Render inicial -> cargar desde backend
-  loadMaterials().then(() => {
-    hydrateUnitSelects()
-  })
-})
-
-/* ============================
-   CRUD desde JS -> BACKEND
-   ============================ */
+/* =========================
+   CRUD OPERATIONS
+   ========================= */
 async function createMaterial() {
-  try {
-    const data = {
-      nombre: document.getElementById("nombre").value,
-      // campos básicos
-      descripcion: document.getElementById("descripcion").value,
-      unidad_medida: document.getElementById("unidad").value,
-      codigo_inventario: document.getElementById("codigo").value,
-      // campos usados por el modelo para componer clasificacion y descripcion
-      categoria: document.getElementById("categoria").value,
-      tipo: document.getElementById("tipo").value,
-      bodega: document.getElementById("bodega").value,
-      stock_minimo: parseInt(document.getElementById("stock_minimo").value, 10) || 0,
-      stock_actual: parseInt(document.getElementById("stock_actual").value, 10) || 0,
-      observacion: document.getElementById("observacion").value,
-      // controller/model espera crear() -> puede setear estado por defecto en backend
-    }
+  const materialData = {
+    nombre: document.getElementById("nombre").value.trim(),
+    descripcion: document.getElementById("descripcion").value.trim(),
+    clasificacion: document.getElementById("clasificacion").value,
+    codigo_inventario: document.getElementById("codigo").value.trim() || null,
+    unidad_medida: document.getElementById("unidad").value,
+  }
 
-    const res = await fetch(`${API_URL}?accion=crear`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    })
+  if (!validateMaterialPayload(materialData)) return
 
-    const json = await res.json()
-    showAlert(json.message, json.status)
+  const result = await createMaterialAPI(materialData)
 
-    if (json.status === "success") {
-      closeCreateModal()
-      await loadMaterials()
-    }
-  } catch (err) {
-    console.error(err)
-    showAlert("No se pudo crear el material.", "error")
+  if (result.success) {
+    showAlert(result.message || "Material creado exitosamente", "success")
+    closeCreateModal()
+    await fetchMaterials()
+  } else {
+    showAlert(result.message || "Error al crear el material", "error")
   }
 }
 
 async function updateMaterial() {
-  try {
-    // editCodigo en tu vista está disabled; contiene id o código
-    const idOrCode = document.getElementById("editCodigo").value
-    // preferir id si es numérico
-    const id = isNaN(Number(idOrCode)) ? null : Number(idOrCode)
+  const id = Number.parseInt(document.getElementById("editId").value)
+  const materialData = {
+    nombre: document.getElementById("editNombre").value.trim(),
+    descripcion: document.getElementById("editDescripcion").value.trim(),
+    clasificacion: document.getElementById("editClasificacion").value,
+    codigo_inventario: document.getElementById("editCodigo").value.trim() || null,
+    unidad_medida: document.getElementById("editUnidad").value,
+    estado: materialsData.find((m) => m.id === id)?.enabled ? "Disponible" : "Agotado",
+  }
 
-    // extrayendo valores del modal
-    const payload = {
-      nombre: document.getElementById("editNombre").value,
-      descripcion: document.getElementById("editDescripcion").value,
-      unidad_medida: document.getElementById("editUnidad").value,
-      // enviar campos de composición esperados por el modelo
-      categoria: document.getElementById("editCategoria").value,
-      tipo: document.getElementById("editTipo").value,
-      bodega: document.getElementById("editBodega").value,
-      stock_minimo: parseInt(document.getElementById("editStockMinimo").value, 10) || 0,
-      stock_actual: parseInt(document.getElementById("editStockActual").value, 10) || 0,
-      observacion: document.getElementById("editObservacion").value,
-      codigo_inventario: document.getElementById("editCodigo").value,
-      // no forzar estado aquí; el cambio de estado se maneja por acciones específicas
-    }
+  if (!validateMaterialPayload(materialData, { isEdit: true, id })) return
 
-    const targetId = id ?? (function(){
-      // intentar localizar por codigo en cache
-      const m = materialsData.find(x => x.code === idOrCode)
-      return m ? m.id_material : null
-    })()
+  const result = await updateMaterialAPI(id, materialData)
 
-    if (!targetId) {
-      showAlert("No se pudo identificar el material a actualizar.", "error")
-      return
-    }
+  if (result.success) {
+    showAlert(result.message || "Material actualizado exitosamente", "success")
+    closeEditModal()
+    await fetchMaterials()
+  } else {
+    showAlert(result.message || "Error al actualizar el material", "error")
+  }
+}
 
-    const res = await fetch(`${API_URL}?accion=actualizar&id=${encodeURIComponent(targetId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+async function toggleMaterialStatus(id, event) {
+  event?.stopPropagation()
+
+  const result = await toggleMaterialStatusAPI(id)
+
+  if (result.success) {
+    showAlert(result.message || "Estado actualizado", "success")
+    await fetchMaterials()
+  } else {
+    showAlert(result.message || "Error al cambiar el estado", "error")
+  }
+}
+
+/* =========================
+   MENU TOGGLES
+   ========================= */
+function toggleMenu(event) {
+  event.stopPropagation()
+  const button = event.currentTarget
+  const dropdown = button.nextElementSibling
+
+  document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+    if (menu !== dropdown) menu.classList.add("hidden")
+  })
+
+  dropdown.classList.toggle("hidden")
+  if (!dropdown.classList.contains("hidden")) {
+    dropdown.classList.add("show")
+  } else {
+    dropdown.classList.remove("show")
+  }
+}
+
+function toggleCardMenu(event) {
+  event.stopPropagation()
+  const button = event.currentTarget
+  const menuId = button.getAttribute("data-menu-trigger")
+  const dropdown = document.querySelector(`[data-menu="${menuId}"]`)
+
+  document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+    if (menu !== dropdown) menu.classList.add("hidden")
+  })
+
+  if (dropdown) {
+    dropdown.classList.toggle("hidden")
+  }
+}
+
+document.addEventListener("click", (event) => {
+  if (
+    !event.target.closest(".dropdown-menu") &&
+    !event.target.closest("button[data-menu-trigger]") &&
+    !event.target.closest(".card-menu-btn")
+  ) {
+    document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+      menu.classList.add("hidden")
+      menu.classList.remove("show")
     })
+  }
+})
 
-    const json = await res.json()
-    showAlert(json.message, json.status)
+/* =========================
+   VIEW TOGGLE
+   ========================= */
+function switchToTableView() {
+  currentView = "table"
+  document.getElementById("tableView").classList.remove("hidden")
+  document.getElementById("cardView").classList.add("hidden")
+  document.getElementById("tableViewBtn").classList.add("bg-muted", "text-foreground")
+  document.getElementById("tableViewBtn").classList.remove("text-muted-foreground")
+  document.getElementById("cardViewBtn").classList.remove("bg-muted", "text-foreground")
+  document.getElementById("cardViewBtn").classList.add("text-muted-foreground")
+  renderTable()
+}
 
-    if (json.status === "success") {
-      closeEditModal()
-      await loadMaterials()
-    }
+function switchToCardView() {
+  currentView = "card"
+  document.getElementById("tableView").classList.add("hidden")
+  document.getElementById("cardView").classList.remove("hidden")
+  document.getElementById("cardViewBtn").classList.add("bg-muted", "text-foreground")
+  document.getElementById("cardViewBtn").classList.remove("text-muted-foreground")
+  document.getElementById("tableViewBtn").classList.remove("bg-muted", "text-foreground")
+  document.getElementById("tableViewBtn").classList.add("text-muted-foreground")
+  renderCards()
+}
 
-  } catch (err) {
-    console.error(err)
-    showAlert("No se pudo actualizar el material.", "error")
+/* =========================
+   SEARCH & FILTER
+   ========================= */
+function applyFilters() {
+  const searchTerm = document.getElementById("inputBuscar").value.toLowerCase()
+  const filterClasificacion = document.getElementById("selectFiltroRol").value
+
+  filteredData = materialsData.filter((material) => {
+    const matchesSearch =
+      material.name.toLowerCase().includes(searchTerm) || material.description.toLowerCase().includes(searchTerm)
+
+    const matchesClasificacion = !filterClasificacion || material.clasificacion === filterClasificacion
+
+    return matchesSearch && matchesClasificacion
+  })
+
+  currentPage = 1
+  currentCardPage = 1
+
+  if (currentView === "table") {
+    renderTable()
+  } else {
+    renderCards()
   }
 }
 
-async function searchMaterials(term) {
-  try {
-    const res = await fetch(`${API_URL}?accion=buscar&term=${encodeURIComponent(term)}`, { cache: "no-store" })
-    if (!res.ok) throw new Error("Error buscando")
-    const raw = await res.json()
-    materialsData = Array.isArray(raw) ? raw.map(normalizeMaterial) : []
-    // actualizar disabled set
-    disabledMaterials.clear()
-    materialsData.forEach(m => {
-      if (!isActiveStatus(m.estado)) disabledMaterials.add(m.code)
-    })
-    if (currentView === "table") renderTable()
-    else renderCards()
-    hydrateUnitSelects()
-  } catch (err) {
-    console.error(err)
-    showAlert("Error buscando materiales.", "error")
-  }
-}
+/* =========================
+   EVENT LISTENERS
+   ========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  fetchMaterials()
 
-/* ============================
-   Util: mostrar alertas Flowbite
-   ============================ */
-function showAlert(message = "", status = "info", ttl = 3500) {
-  const container = document.getElementById("flowbite-alert-container")
-  if (!container) {
-    // fallback simple
-    alert(message)
-    return
-  }
+  document.getElementById("tableViewBtn").addEventListener("click", switchToTableView)
+  document.getElementById("cardViewBtn").addEventListener("click", switchToCardView)
 
-  const id = "alert-" + Date.now()
-  const bg = status === "success" ? "bg-emerald-50 border-emerald-200" :
-             status === "error" ? "bg-red-50 border-red-200" :
-             "bg-slate-50 border-slate-200"
-
-  const inner = document.createElement("div")
-  inner.id = id
-  inner.className = `rounded-md p-3 border ${bg} shadow-sm`
-  inner.innerHTML = `<div class="text-sm">${message}</div>`
-
-  container.appendChild(inner)
-
-  setTimeout(() => {
-    const el = document.getElementById(id)
-    if (el) el.remove()
-  }, ttl)
-}
-
-/* ============================
-   Fin archivo (se mantienen exports / funciones globales)
-   ============================ */
+  document.getElementById("inputBuscar").addEventListener("input", applyFilters)
+  document.getElementById("selectFiltroRol").addEventListener("change", applyFilters)
+})

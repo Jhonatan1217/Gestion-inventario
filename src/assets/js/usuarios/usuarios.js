@@ -158,6 +158,101 @@ function toastInfo(message) {
   showFlowbiteAlert("info", message);
 }
 
+function validateUserPayload(payload, { isEdit = false, currentId = null } = {}) {
+  const nameRegex = /^[A-Za-zÁÉÍÓÚÜÑÑáéíóúüñ\s]{3,80}$/;
+  const numeroRegex = /^[0-9]{6,15}$/;
+  const telefonoRegex = /^[0-9]{7,15}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!payload.nombre_completo || !nameRegex.test(payload.nombre_completo)) {
+    toastError("Nombre inválido: solo letras y 3-80 caracteres.");
+    inputNombreCompleto.focus();
+    return false;
+  }
+
+  if (!payload.tipo_documento) {
+    toastError("Seleccione el tipo de documento.");
+    inputTipoDocumento.focus();
+    return false;
+  }
+
+  if (!payload.numero_documento || !numeroRegex.test(payload.numero_documento)) {
+    toastError("Número de documento inválido (solo números, 6-15 dígitos).");
+    inputNumeroDocumento.focus();
+    return false;
+  }
+
+  if (!payload.telefono || !telefonoRegex.test(payload.telefono)) {
+    toastError("Teléfono inválido (solo números, 7-15 dígitos).");
+    inputTelefono.focus();
+    return false;
+  }
+
+  if (!payload.correo || !emailRegex.test(payload.correo)) {
+    toastError("Correo inválido. Debe contener '@' y dominio.");
+    inputCorreo.focus();
+    return false;
+  }
+
+  if (!payload.cargo) {
+    toastError("Seleccione un cargo.");
+    inputCargo.focus();
+    return false;
+  }
+
+  if (!payload.direccion || payload.direccion.length < 5) {
+    toastError("La dirección debe tener al menos 5 caracteres.");
+    inputDireccion.focus();
+    return false;
+  }
+
+  if (!VALID_TIPOS_DOCUMENTO.includes(payload.tipo_documento)) {
+    toastError("Tipo de documento no válido (CC, TI o CE).");
+    return false;
+  }
+
+  if (!VALID_CARGOS.includes(payload.cargo)) {
+    toastError("Cargo no válido.");
+    return false;
+  }
+
+  if (payload.cargo === "Instructor" && !payload.id_programa) {
+    toastError("Debe seleccionar un programa para el Instructor.");
+    return false;
+  }
+
+  if (!isEdit && (!payload.password || payload.password.length < 6)) {
+    toastError("La contraseña es obligatoria (mínimo 6 caracteres).");
+    inputPassword.focus();
+    return false;
+  }
+
+  if (isEdit && payload.password && payload.password.length < 6) {
+    toastError("La contraseña debe tener al menos 6 caracteres.");
+    inputPassword.focus();
+    return false;
+  }
+
+  // Duplicados locales
+  const docDuplicado = users.some((u) =>
+    u.numero_documento === payload.numero_documento && (!isEdit || String(u.id_usuario) !== String(currentId))
+  );
+  if (docDuplicado) {
+    toastError("Ya existe un usuario con ese número de documento.");
+    return false;
+  }
+
+  const correoDuplicado = users.some((u) =>
+    u.correo.toLowerCase() === payload.correo.toLowerCase() && (!isEdit || String(u.id_usuario) !== String(currentId))
+  );
+  if (correoDuplicado) {
+    toastError("Ya existe un usuario con ese correo.");
+    return false;
+  }
+
+  return true;
+}
+
 
 // ====== Referencias DOM ======
 const tbodyUsuarios = document.getElementById("tbodyUsuarios");
@@ -1132,108 +1227,9 @@ formUsuario.addEventListener("submit", async (e) => {
   }
 
   const isEdit = !!hiddenUserId.value;
-  const numeroRegex = /^[0-9]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
 
-  const allEmpty =
-    !payload.nombre_completo &&
-    !payload.numero_documento &&
-    !payload.telefono &&
-    !payload.correo &&
-    !payload.password &&
-    !payload.direccion &&
-    (!inputPrograma || !payload.id_programa);
-
-  if (allEmpty) {
-    toastError("Todos los campos son obligatorios.");
-    inputNombreCompleto.focus();
-    return;
-  }
-
-  if (!payload.nombre_completo) {
-    toastError("El nombre completo es obligatorio.");
-    inputNombreCompleto.focus();
-    return;
-  }
-
-  if (!payload.tipo_documento) {
-    toastError("Debe seleccionar un tipo de documento.");
-    inputTipoDocumento.focus();
-    return;
-  }
-
-  if (!payload.numero_documento) {
-    toastError("El número de documento es obligatorio.");
-    inputNumeroDocumento.focus();
-    return;
-  }
-
-  if (!numeroRegex.test(payload.numero_documento)) {
-    toastError("El número de documento solo puede contener números.");
-    inputNumeroDocumento.focus();
-    return;
-  }
-
-  if (!payload.telefono) {
-    toastError("El teléfono es obligatorio.");
-    inputTelefono.focus();
-    return;
-  }
-
-  if (!numeroRegex.test(payload.telefono)) {
-    toastError("El teléfono solo puede contener números.");
-    inputTelefono.focus();
-    return;
-  }
-
-  if (!payload.correo) {
-    toastError("El correo electrónico es obligatorio.");
-    inputCorreo.focus();
-    return;
-  }
-
-  if (!emailRegex.test(payload.correo)) {
-    toastError("Ingrese un correo electrónico válido (debe contener '@').");
-    inputCorreo.focus();
-    return;
-  }
-
-  if (!payload.cargo) {
-    toastError("Debe seleccionar un cargo.");
-    inputCargo.focus();
-    return;
-  }
-
-  if (!payload.direccion) {
-    toastError("La dirección es obligatoria.");
-    inputDireccion.focus();
-    return;
-  }
-
-  if (!isEdit && !payload.password) {
-    toastError("La contraseña es obligatoria para crear un usuario nuevo.");
-    inputPassword.focus();
-    return;
-  }
-
-  if (!VALID_TIPOS_DOCUMENTO.includes(payload.tipo_documento)) {
-    toastError("Tipo de documento no válido. Debe ser CC, TI o CE.");
-    return;
-  }
-
-  if (!VALID_CARGOS.includes(payload.cargo)) {
-    toastError(
-      "Cargo no válido. Debe ser Coordinador, Subcoordinador, Instructor, Pasante o Aprendiz."
-    );
-    return;
-  }
-
-  if (payload.cargo === "Instructor" && !payload.id_programa) {
-    toastError("Debe seleccionar un programa de formación para el Instructor.");
-    return;
-  }
-
-  // 🧠 VALIDACIÓN EXTRA: en modo edición, verificar que haya cambios
+  // Validación de cambios en edición
   if (isEdit && originalEditData) {
     const currentData = {
       nombre_completo: payload.nombre_completo,
@@ -1251,12 +1247,10 @@ formUsuario.addEventListener("submit", async (e) => {
 
     const noHayCambios =
       JSON.stringify(currentData) === JSON.stringify(originalEditData) &&
-      !payload.password; // contraseña vacía => tampoco cambió
+      !payload.password;
 
     if (noHayCambios) {
-      toastInfo(
-        "Para actualizar el registro es necesario modificar al menos un dato del usuario."
-      );
+      toastInfo("Para actualizar debes modificar al menos un dato.");
       return;
     }
   }

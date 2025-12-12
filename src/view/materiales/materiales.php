@@ -17,7 +17,6 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   <!-- CSS global con paleta y utilidades -->
   <link rel="stylesheet" href="<?= BASE_URL ?>/src/assets/css/globals.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>/src/assets/css/materiales/materiales.css">
-  <script src="<?= BASE_URL ?>/src/assets/js/materiales.js"></script>
 
 </head>
 <body
@@ -43,9 +42,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
               <button
                 id="tableViewBtn"
                 type="button"
-                class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground view-toggle-btn active"
+                class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
                 title="Vista de tabla"
-                onclick="switchView('table')"
               >
                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -56,9 +54,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
               <button
                 id="cardViewBtn"
                 type="button"
-                class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground view-toggle-btn"
+                class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
                 title="Vista de tarjetas"
-                onclick="switchView('card')"
               >
                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                   <rect x="4" y="4" width="7" height="7" rx="1"></rect>
@@ -92,7 +89,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     <input
       type="text"
       id="inputBuscar"
-      placeholder="Buscar por nombre..."
+      placeholder="Buscar por nombre o descipcion..."
       class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
     />
   </div>
@@ -116,11 +113,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
       class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm"
     >
       <option value="">Todos</option>
-      <option value="Coordinador">Coordinador</option>
-      <option value="Subcoordinador">Subcoordinador</option>
-      <option value="Instructor">Instructor</option>
-      <option value="Pasante">Pasante</option>
-      <option value="Aprendiz">Aprendiz</option>
+      <option value="Inventariado">Inventariado</option>
+      <option value="Consumible">Consumible</option>
     </select>
   </div>
 
@@ -131,11 +125,11 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           <table class="min-w-full divide-y divide-border text-sm">
             <thead class="bg-gray-100">
               <tr>
+                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Nombre</th>
+                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Descripción</th>
+                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Clasificación</th>
                 <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Código</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Material</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Stock</th>
                 <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Unidad</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Bodega</th>
                 <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Estado</th>
                 <th class="px-4 py-3 text-right font-medium text-xs text-muted-foreground">Acciones</th>
               </tr>
@@ -162,13 +156,14 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     </main>
 
     <!-- CREATE MODAL -->
+    <!-- Updated modal for new material structure -->
     <div id="createModal" class="modal-overlay">
         <div class="relative w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-lg">
             <div class="flex items-start justify-between gap-4 mb-4">
                 <div>
                     <h2 class="text-lg font-semibold">Crear Nuevo Material</h2>
                     <p class="text-sm text-muted-foreground">
-                        Complete los datos para registrar un nuevo material
+                        Complete los datos para registrar un nuevo material de formación
                     </p>
                 </div>
                 <button
@@ -185,84 +180,78 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 </button>
             </div>
             
-            <form class="space-y-4" onsubmit="event.preventDefault();">
-                <!-- Código y Nombre -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Código *</label>
-                        <input id="codigo" type="text" placeholder="TEC-001" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Nombre *</label>
-                        <input id="nombre" type="text" placeholder="Ej: cemento gris" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
+            <form class="space-y-4" onsubmit="event.preventDefault(); createMaterial();">
+                <!-- Nombre -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Nombre *</label>
+                    <input id="nombre" type="text" placeholder="Ej: Cemento gris" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
                 </div>
                 
                 <!-- Descripción -->
                 <div class="space-y-2">
                     <label class="text-sm font-medium">Descripción *</label>
-                    <textarea id="descripcion" placeholder="Descripción técnica del material" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-20" required></textarea>
+                    <textarea id="descripcion" placeholder="Descripción del material" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-20" required></textarea>
                 </div>
                 
-                <!-- Categoría, Tipo de bien, Unidad -->
-                <div class="grid grid-cols-3 gap-3">
+                <!-- Clasificación y Unidad -->
+                <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label class="text-sm font-medium">Categoría *</label>
-                        <select id="categoria" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Construcción</option>
-                            <option>Herramientas</option>
-                            <option>Eléctrico</option>
-                            <option>Pintura</option>
-                            <option>Sanitario</option>
-                            <option>Maquinaria</option>
+                        <label class="text-sm font-medium">Clasificación *</label>
+                        <select id="clasificacion" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required onchange="toggleCodigoField()">
+                            <option value="">Seleccione...</option>
+                            <option value="Inventariado">Inventariado</option>
+                            <option value="Consumible">Consumible</option>
                         </select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-sm font-medium">Tipo de bien *</label>
-                        <select id="tipo" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Consumible</option>
-                            <option>Herramienta</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Unidad *</label>
-                        <select id="unidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Bolsa</option>
-                            <option>Unidad</option>
-                            <option>Metro</option>
-                            <option>Kg</option>
+                        <label class="text-sm font-medium">Unidad de medida *</label>
+                        <select id="unidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required>
+                            <option value="">Seleccione...</option>
+                            <option value="UND">UND</option>
+                            <option value="PAR">PAR</option>
+                            <option value="JGO">JGO</option>
+                            <option value="KIT">KIT</option>
+                            <option value="CAJA">CAJA</option>
+                            <option value="BOLSA">BOLSA</option>
+                            <option value="PAQUETE">PAQUETE</option>
+                            <option value="ROLLO">ROLLO</option>
+                            <option value="BARRA">BARRA</option>
+                            <option value="TUBO">TUBO</option>
+                            <option value="LÁMINA">LÁMINA</option>
+                            <option value="KG">KG</option>
+                            <option value="G">G</option>
+                            <option value="TON">TON</option>
+                            <option value="L">L</option>
+                            <option value="ML">ML</option>
+                            <option value="M3">M3</option>
+                            <option value="CM3">CM3</option>
+                            <option value="M">M</option>
+                            <option value="CM">CM</option>
+                            <option value="MM">MM</option>
+                            <option value="PULG">PULG</option>
+                            <option value="PIE">PIE</option>
+                            <option value="M2">M2</option>
+                            <option value="CM2">CM2</option>
+                            <option value="AMP">AMP</option>
+                            <option value="W">W</option>
+                            <option value="KW">KW</option>
+                            <option value="V">V</option>
+                            <option value="GL">GL</option>
+                            <option value="SACO">SACO</option>
+                            <option value="BIDÓN">BIDÓN</option>
+                            <option value="BULTO">BULTO</option>
+                            <option value="DISP">DISP</option>
+                            <option value="CAÑUELA">CAÑUELA</option>
+                            <option value="CABLE">CABLE</option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Stock Actual, Stock Mínimo, Bodega -->
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Stock Actual *</label>
-                        <input id="stock_actual" type="number" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Stock Mínimo *</label>
-                        <input id="stock_minimo" type="number" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Bodega *</label>
-                        <select id="bodega" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Bodega Principal</option>
-                            <option>Sub-bodega Construcción</option>
-                            <option>Sub-bodega Herramientas</option>
-                            <option>Sub-bodega Eléctrico</option>
-                            <option>Sub-bodega Pintura</option>
-                            <option>Sub-bodega Sanitario</option>
-                            <option>Sub-bodega Maquinaria</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Observación -->
-                <div class="space-y-2">
-                    <label class="text-sm font-medium">Observación *</label>
-                    <textarea id="observacion" placeholder="Formación técnica de procesos constructivos" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-16" required></textarea>
+                <!-- Código (solo si es Inventariado) -->
+                <div id="codigoContainer" class="space-y-2" style="display: none;">
+                    <label class="text-sm font-medium">Código *</label>
+                    <input id="codigo" type="text" placeholder="TEC-001" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <p class="text-xs text-muted-foreground">Este campo es obligatorio solo para materiales inventariados</p>
                 </div>
                 
                 <!-- Buttons -->
@@ -279,6 +268,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     </div>
 
     <!-- DETAILS MODAL -->
+    <!-- Updated details modal for new structure -->
     <div id="detailsModal" class="modal-overlay">
         <div class="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-lg">
             <div class="flex items-start justify-between gap-4 mb-4">
@@ -297,6 +287,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 </button>
             </div>
             
+            <!-- Reorganizado el orden de los campos según la imagen proporcionada -->
             <div id="detailsContent" class="space-y-4">
                 <div class="flex items-center gap-3 pb-3 border-b border-border">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: rgba(57, 169, 0, 0.1);">
@@ -308,26 +299,21 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                     </div>
                 </div>
                 
+                <!-- Descripción primero y en col-span-2 -->
+                <div>
+                    <p class="text-xs text-muted-foreground font-semibold">Descripción:</p>
+                    <p class="text-foreground" id="detailDescription">Cemento gris uso general 50kg para construcción</p>
+                </div>
+                
+                <!-- Grid con 2 columnas para los demás campos -->
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Categoría:</p>
-                        <p class="text-foreground" id="detailCategory">Construcción</p>
+                        <p class="text-xs text-muted-foreground font-semibold">Clasificación:</p>
+                        <p class="text-foreground" id="detailClasificacion">Inventariado</p>
                     </div>
                     <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Tipo:</p>
-                        <p class="text-foreground" id="detailType">Consumo</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Stock:</p>
-                        <p class="text-foreground" id="detailStock">45 bolsa</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Stock mínimo:</p>
-                        <p class="text-foreground" id="detailMinStock">20 bolsa</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Bodega:</p>
-                        <p class="text-foreground" id="detailWarehouse">Bodega Construcción</p>
+                        <p class="text-xs text-muted-foreground font-semibold">Unidad:</p>
+                        <p class="text-foreground" id="detailUnidad">Bolsa</p>
                     </div>
                     <div>
                         <p class="text-xs text-muted-foreground font-semibold">Estado:</p>
@@ -339,6 +325,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     </div>
 
     <!-- EDIT MODAL -->
+    <!-- Updated edit modal for new structure -->
     <div id="editModal" class="modal-overlay">
         <div class="relative w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-lg">
             <div class="flex items-start justify-between gap-4 mb-4">
@@ -362,17 +349,13 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 </button>
             </div>
 
-            <form class="space-y-4" onsubmit="event.preventDefault();">
-                <!-- Código y Nombre -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Código *</label>
-                        <input id="editCodigo" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" disabled>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Nombre *</label>
-                        <input id="editNombre" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
+            <form class="space-y-4" onsubmit="event.preventDefault(); updateMaterial();">
+                <input type="hidden" id="editId">
+                
+                <!-- Nombre -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Nombre *</label>
+                    <input id="editNombre" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
                 </div>
                 
                 <!-- Descripción -->
@@ -381,65 +364,63 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                     <textarea id="editDescripcion" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-20" required></textarea>
                 </div>
                 
-                <!-- Categoría, Tipo de bien, Unidad -->
-                <div class="grid grid-cols-3 gap-3">
+                <!-- Clasificación y Unidad -->
+                <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label class="text-sm font-medium">Categoría *</label>
-                        <select id="editCategoria" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Construcción</option>
-                            <option>Herramientas</option>
-                            <option>Eléctrico</option>
-                            <option>Pintura</option>
-                            <option>Sanitario</option>
-                            <option>Maquinaria</option>
+                        <label class="text-sm font-medium">Clasificación *</label>
+                        <select id="editClasificacion" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required onchange="toggleEditCodigoField()">
+                            <option value="Inventariado">Inventariado</option>
+                            <option value="Consumible">Consumible</option>
                         </select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-sm font-medium">Tipo de bien *</label>
-                        <select id="editTipo" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Consumible</option>
-                            <option>Herramienta</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Unidad *</label>
-                        <select id="editUnidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Bolsa</option>
-                            <option>Unidad</option>
-                            <option>Metro</option>
-                            <option>Kg</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Stock Actual, Stock Mínimo, Bodega -->
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Stock Actual *</label>
-                        <input id="editStockActual" type="number" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Stock Mínimo *</label>
-                        <input id="editStockMinimo" type="number" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium">Bodega *</label>
-                        <select id="editBodega" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input-siga" required>
-                            <option>Bodega Principal</option>
-                            <option>Sub-bodega Construcción</option>
-                            <option>Sub-bodega Herramientas</option>
-                            <option>Sub-bodega Eléctrico</option>
-                            <option>Sub-bodega Pintura</option>
-                            <option>Sub-bodega Sanitario</option>
-                            <option>Sub-bodega Maquinaria</option>
+                        <label class="text-sm font-medium">Unidad de medida *</label>
+                        <select id="editUnidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required>
+                            <option value="UND">UND</option>
+                            <option value="PAR">PAR</option>
+                            <option value="JGO">JGO</option>
+                            <option value="KIT">KIT</option>
+                            <option value="CAJA">CAJA</option>
+                            <option value="BOLSA">BOLSA</option>
+                            <option value="PAQUETE">PAQUETE</option>
+                            <option value="ROLLO">ROLLO</option>
+                            <option value="BARRA">BARRA</option>
+                            <option value="TUBO">TUBO</option>
+                            <option value="LÁMINA">LÁMINA</option>
+                            <option value="KG">KG</option>
+                            <option value="G">G</option>
+                            <option value="TON">TON</option>
+                            <option value="L">L</option>
+                            <option value="ML">ML</option>
+                            <option value="M3">M3</option>
+                            <option value="CM3">CM3</option>
+                            <option value="M">M</option>
+                            <option value="CM">CM</option>
+                            <option value="MM">MM</option>
+                            <option value="PULG">PULG</option>
+                            <option value="PIE">PIE</option>
+                            <option value="M2">M2</option>
+                            <option value="CM2">CM2</option>
+                            <option value="AMP">AMP</option>
+                            <option value="W">W</option>
+                            <option value="KW">KW</option>
+                            <option value="V">V</option>
+                            <option value="GL">GL</option>
+                            <option value="SACO">SACO</option>
+                            <option value="BIDÓN">BIDÓN</option>
+                            <option value="BULTO">BULTO</option>
+                            <option value="DISP">DISP</option>
+                            <option value="CAÑUELA">CAÑUELA</option>
+                            <option value="CABLE">CABLE</option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- Observación -->
-                <div class="space-y-2">
-                    <label class="text-sm font-medium">Observación *</label>
-                    <textarea id="editObservacion" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-16" required></textarea>
+                <!-- Código (solo si es Inventariado) -->
+                <div id="editCodigoContainer" class="space-y-2">
+                    <label class="text-sm font-medium">Código <span id="editCodigoRequired">*</span></label>
+                    <input id="editCodigo" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <p class="text-xs text-muted-foreground">Este campo es obligatorio solo para materiales inventariados</p>
                 </div>
                 
                 <!-- Buttons -->
@@ -460,6 +441,9 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
       id="flowbite-alert-container"
       class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 w-full max-w-md"
     ></div>
+
+    <!-- JavaScript al final del body -->
+    <script src="<?= BASE_URL ?>/src/assets/js/materiales.js"></script>
 
 </body>
 </html>

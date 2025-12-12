@@ -1,169 +1,203 @@
 <?php
-require_once "../../config/database.php";
-require_once "../models/material_formacion.php";
 
+require_once __DIR__ . "/../models/material_formacion.php";
+require_once __DIR__ . "/../../Config/database.php";
 
 class MaterialFormacionController {
 
-    if (isset($_GET["action"]) && $_GET["action"] === "list") {
-
-    header("Content-Type: application/json");
-
-    $materialModel = new MaterialFormacion(); 
-    $materiales = $materialModel->obtenerMateriales(); // tu función del modelo
-
-    echo json_encode($materiales);
-    exit;
-}
-
     private $model;
 
-    public function __construct($conn)
-    {
+    // Constructor: receives the PDO connection and creates the model instance.
+    // Also sets the response header to JSON format.
+    public function __construct(PDO $conn) {
         $this->model = new MaterialFormacionModel($conn);
+        header("Content-Type: application/json; charset=utf-8");
     }
 
- 
-    //   LIST MATERIALS
-    public function listar()
-    {
-        return $this->model->getAll();
+    /* List all materials */
+    public function listar() {
+        $data = $this->model->getAll();
+        echo json_encode($data);
     }
 
- 
-    //   GET MATERIAL BY ID
-    public function obtener($id)
-    {
-        return $this->model->getById($id);
-    }
+    /* Get material by ID */
+    public function obtener() {
+        $id = $_GET["id"] ?? null;
 
- 
-    //   CREATE MATERIAL
-    public function crear($data)
-    {
-        // Model returns false when validation fails
-        $ok = $this->model->create($data);
-
-        if (!$ok) {
-            return [
-                "status" => "error",
-                "message" => "El Material no fue creado. Revisa la clasificación y el código de inventario."
-            ];
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
         }
 
-        return [
-            "status" => "success",
-            "message" => "El Material fue creado exitosamente."
-        ];
+        $data = $this->model->getById($id);
+        echo json_encode($data ?: ["error" => "Material no encontrado"]);
     }
 
- 
-    //   UPDATE MATERIAL
-    public function actualizar($id, $data)
-    {
-        $ok = $this->model->update($id, $data);
+    /* Create new material */
+    public function crear() {
+        $input = json_decode(file_get_contents("php://input"), true);
 
-        if (!$ok) {
-            return [
-                "status" => "error",
-                "message" => "El Material no fue actualizado. Revisa la clasificación y el código de inventario."
-            ];
+        if (!$input) {
+            echo json_encode(["error" => "Datos inválidos"]);
+            return;
         }
 
-        return [
-            "status" => "success",
-            "message" => "El Material fue actualizado exitosamente."
-        ];
+        $ok = $this->model->create($input);
+
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Material creado correctamente" : "Error al crear material. Verifica la clasificación y el código de inventario."
+        ]);
     }
 
- 
-    //   DELETE MATERIAL
-    public function eliminar($id)
-    {
+    /* Update existing material */
+    public function actualizar() {
+        $id = $_GET["id"] ?? null;
+
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
+        }
+
+        $input = json_decode(file_get_contents("php://input"), true);
+
+        if (!$input) {
+            echo json_encode(["error" => "Datos inválidos"]);
+            return;
+        }
+
+        $ok = $this->model->update($id, $input);
+
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Material actualizado correctamente" : "Error al actualizar material. Verifica la clasificación y el código de inventario."
+        ]);
+    }
+
+    /* Delete material */
+    public function eliminar() {
+        $id = $_GET["id"] ?? null;
+
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
+        }
+
         $ok = $this->model->delete($id);
 
-        if (!$ok) {
-            return [
-                "status" => "error",
-                "message" => "El Material no puede ser eliminado porque está en uso en otras tablas."
-            ];
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Material eliminado correctamente" : "No se puede eliminar el material porque está en uso en otras tablas."
+        ]);
+    }
+
+    /* Toggle material status (enable/disable) */
+    public function toggleEstado() {
+        $id = $_GET["id"] ?? null;
+
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
         }
 
-        return [
-            "status" => "success",
-            "message" => "El Material fue eliminado exitosamente."
-        ];
+        // Get current material
+        $material = $this->model->getById($id);
+        
+        if (!$material) {
+            echo json_encode(["error" => "Material no encontrado"]);
+            return;
+        }
+
+        // Toggle status
+        $nuevoEstado = $material['estado'] === 'Disponible' ? 'Agotado' : 'Disponible';
+        
+        $ok = $this->model->update($id, [
+            'nombre' => $material['nombre'],
+            'descripcion' => $material['descripcion'],
+            'unidad_medida' => $material['unidad_medida'],
+            'clasificacion' => $material['clasificacion'],
+            'codigo_inventario' => $material['codigo_inventario'],
+            'estado' => $nuevoEstado
+        ]);
+
+        echo json_encode([
+            "success" => $ok,
+            "message" => $ok ? "Estado actualizado correctamente" : "Error al actualizar estado"
+        ]);
     }
 
- 
-    //   SEARCH MATERIAL
-    public function buscar($term)
-    {
-        return $this->model->search($term);
+    /* Search material by name or code */
+    public function buscar() {
+        $term = $_GET["term"] ?? "";
+        $data = $this->model->search($term);
+        echo json_encode($data);
     }
 
- 
-    //   MATERIAL STOCK
-    public function stock($id)
-    {
-        return $this->model->getStockTotal($id);
+    /* Get material stock */
+    public function stock() {
+        $id = $_GET["id"] ?? null;
+
+        if (!$id) {
+            echo json_encode(["error" => "ID requerido"]);
+            return;
+        }
+
+        $data = $this->model->getStockTotal($id);
+        echo json_encode($data);
     }
 }
 
+/* Router - Routes requests to controller methods */
 
-// API-LIKE ACTION HANDLER (switch)
+// Get the action from the query string
+$accion = $_GET["accion"] ?? null;
 
-
-$controller = new MaterialFormacionController($conn);
-
-// read action
-$accion = $_GET['accion'] ?? null;
-
-// simple JSON response function
-function sendJSON($data, $code = 200)
-{
-    header("Content-Type: application/json");
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+// Validate that an action was specified
+if (!$accion) {
+    echo json_encode(["error" => "Acción requerida"]);
     exit;
 }
 
+// Create controller instance with database connection
+$controller = new MaterialFormacionController($conn);
+
+// Route the request to the appropriate controller method
 switch ($accion) {
 
     case "listar":
-        sendJSON($controller->listar());
+        $controller->listar();
         break;
 
     case "obtener":
-        sendJSON($controller->obtener($_GET['id'] ?? null));
-        break;
-
-    case "buscar":
-        sendJSON($controller->buscar($_GET['term'] ?? ""));
-        break;
-
-    case "stock":
-        sendJSON($controller->stock($_GET['id'] ?? null));
+        $controller->obtener();
         break;
 
     case "crear":
-        $data = json_decode(file_get_contents("php://input"), true);
-        sendJSON($controller->crear($data));
+        $controller->crear();
         break;
 
     case "actualizar":
-        $id = $_GET['id'] ?? null;
-        $data = json_decode(file_get_contents("php://input"), true);
-        sendJSON($controller->actualizar($id, $data));
+        $controller->actualizar();
         break;
 
     case "eliminar":
-        sendJSON($controller->eliminar($_GET['id'] ?? null));
+        $controller->eliminar();
+        break;
+
+    case "toggleEstado":
+        $controller->toggleEstado();
+        break;
+
+    case "buscar":
+        $controller->buscar();
+        break;
+
+    case "stock":
+        $controller->stock();
         break;
 
     default:
-        sendJSON(["status" => "error", "message" => "Acción no reconocida"]);
-        break;
+        echo json_encode(["error" => "Acción no válida"]);
 }
 
 ?>
