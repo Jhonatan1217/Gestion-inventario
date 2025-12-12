@@ -135,13 +135,13 @@ $pieGradient = implode(", ", $gradientParts);
         <p class="text-muted-foreground">Resumen general del inventario y actividad reciente</p>
     </div>
     <div class="flex gap-2">
-        <a href="/Gestion-inventario/src/view/solicitudes/solicitudes.php">
+        <a href="?page=solicitudes">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted gap-2">
         <i data-lucide="clock" class="h-5 w-5 "></i>
         Pendientes
         </button>
     </a>
-    <a href="/Gestion-inventario/src/view/materiales/materiales.php">
+    <a href="?page=materiales">
         <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 gap-2">
         <i data-lucide="package" class="h-4 w-4"></i>
         Nuevo Material
@@ -155,7 +155,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class=" rounded-xl border border-border bg-card p-8 flex flex-col gap-2 ">
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Total Materiales</p>
-        <div class="rounded-full p-2 text-primary">
+        <div class="rounded-full p-2 text-primary bg-[#39A90020]">
         <i data-lucide="box" class="h-5 w-5 text-[#39A900]"></i>
     </div>
     </div>
@@ -174,7 +174,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Bodegas Activas</p>
-        <div class="rounded-full bg-primary/10 p-2 text-primary">
+        <div class="rounded-full p-2 text-primary bg-[#39A90020]">
         <i data-lucide="warehouse" class="h-5 w-5 text-[#39A900]"></i>
         </div>
     </div>
@@ -190,7 +190,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="text-2x1 font-medium text-muted-foreground">Movimientos Hoy</p>
-        <div class="rounded-full bg-primary/10 p-2 text-primary">
+        <div class="rounded-full p-2 text-primary bg-[#39A90020]">
         <i data-lucide="arrow-down-up" class="h-5 w-5 text-[#39A900]"></i>
         </div>
     </div>
@@ -205,10 +205,8 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card p-8 flex flex-col gap-2">
     <div class="flex items-center justify-between">
         <p class="mg-7px text-2x1 font-medium text-muted-foreground">Alertas Stock</p>
-        <div class="rounded-full bg-primary/10 p-2 text-primary <?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
-        <div class="rounded-full bg-primary/10 p-2 <?php echo count($mockAlerts) > 0 ? 'bg-warning/10' : 'bg-muted'; ?>">
+        <div class="rounded-full bg-primary/10 p-2 text-primary bg-[#39A90020]"<?php echo count($mockAlerts) > 0 ? 'bg-warning/10 text-warning-foreground' : 'bg-muted text-muted-foreground'; ?> p-2">
             <i data-lucide="alert-triangle" class="h-5 w-5 text-[#EF4444]"></i>
-        </div>
         </div>
     </div>
     <div class="flex items-center gap-2 mt-2">
@@ -279,7 +277,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Alertas de Stock</h2>
-        <a href="/Gestion-inventario/src/view/materiales/materiales.php">
+        <a href="?page=materiales">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
@@ -297,7 +295,7 @@ $pieGradient = implode(", ", $gradientParts);
             <div class="space-y-2">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium"><?php echo htmlspecialchars($alert["material_nombre"]); ?></span>
-                <span class="px-3 py-1 rounded-full bg-[#FDC300] font-medium text-sm">
+                <span class="px-3 py-1 rounded-full bg-[#FDC30050] font-medium text-sm text-[#FDC300]">
                 Bajo
                 </span>
 
@@ -320,27 +318,24 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Solicitudes Recientes</h2>
-        <a href="?page=movimientos">
-    <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
-        Ver todo
-        <i data-lucide="arrow-right" class="h-3 w-3"></i>
-    </button>
-</a>
-
-
-       
+        <a href="?page=solicitudes">
+            <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
+                Ver todo
+                <i data-lucide="arrow-right" class="h-3 w-3"></i>
+            </button>
+        </a>
     </div>
     <div class="px-6 pb-4 space-y-4">
         <?php foreach (array_slice($mockSolicitudes, 0, 3) as $solicitud): 
         $estado = $solicitud["estado"];
         if ($estado === "pendiente") {
-            $badgeClasses = "bg-[#FDC300] ";
+            $badgeClasses = "bg-[#FDC30040] text-[#FDC300]";
             $icon = "clock";
         } elseif ($estado === "aprobada") {
-            $badgeClasses = "bg-[#39A900] ";
+            $badgeClasses = "bg-[#39A90040] text-[#39A900]";
             $icon = "check-circle-2";
         } else {
-            $badgeClasses = "bg-[#EF4444] ";
+            $badgeClasses = "bg-[#EF444440] text-[#EF4444]";
             $icon = "x-circle";
         }
         ?>
@@ -364,7 +359,7 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="rounded-xl border border-border bg-card">
     <div class="flex items-center justify-between px-6 pt-4 pb-3">
         <h2 class="text-base font-semibold">Actividad Reciente</h2>
-        <a href="/Gestion-inventario/src/view/movimientos/movimientos.php">
+        <a href="?page=movimientos">
         <button class="inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted gap-1 h-8">
             Ver todo
             <i data-lucide="arrow-right" class="h-3 w-3"></i>
