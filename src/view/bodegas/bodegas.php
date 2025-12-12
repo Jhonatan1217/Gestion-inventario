@@ -28,91 +28,90 @@ $bodegas = [
   style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;"
 >
 
-  <!-- Título -->
-  <div class="mb-6">
+  <!-- HEADER: TÍTULO (izq) + BOTONES (der) -->
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+  <div>
     <h1 class="text-3xl font-bold">Gestión Bodegas</h1>
     <p class="text-sm text-gray-500">
       Administra las bodegas y sub-bodegas del inventario
     </p>
   </div>
 
-  <!-- CONTROLES SUPERIORES -->
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+  <!-- Botones al frente del título (arriba a la derecha) -->
+  <div class="flex items-center gap-3">
+    <!-- Switch Lista/Grid -->
+    <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+      <button
+        type="button"
+        id="btnVistaTabla"
+        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
+      >
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
 
-    <!-- Buscador -->
-    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[360px] bg-gray-100">
-      <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
-      <input
-        type="text"
-        placeholder="Buscar por nombre o ID"
-        class="w-full bg-transparent outline-none text-sm "
-      />
+      <button
+        type="button"
+        id="btnVistaTarjetas"
+        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
+      >
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+          <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+          <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+          <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+        </svg>
+      </button>
     </div>
 
-    <div class="flex flex-col gap-3 sm:items-end">
+    <!-- Nueva Bodega -->
+    <button
+      id="btnNuevaBodega"
+      type="button"
+      class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+    >
+      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Nueva Bodega
+    </button>
+  </div>
+</div>
 
-      <div class="flex items-center gap-3">
+<!-- CONTROLES (abajo): BUSCADOR (izq) + FILTRO (der) -->
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+  <!-- Buscador -->
+  <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[360px] bg-gray-100">
+    <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
+    <input
+      type="text"
+      placeholder="Buscar por nombre o ID"
+      class="w-full bg-transparent outline-none text-sm"
+    />
+  </div>
 
-        <!-- Switch Lista/Grid -->
-        <div class="inline-flex rounded-full border border-gray-200 bg-white overflow-hidden shadow-sm">
+  <!-- Filtro -->
+  <div class="flex items-center gap-2 sm:justify-end">
+    <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
 
-        <!-- Lista -->
-            <button
-            type="button"
-            id="btnVistaTabla"
-            class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
-            >
-            <!-- Icono lista -->
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-            </button>
-
-          <!-- Tarjetas -->
-            <button
-            type="button"
-            id="btnVistaTarjetas"
-            class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground">
-            <!-- Icono grid -->
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <rect x="4" y="4" width="7" height="7" rx="1"></rect>
-                <rect x="13" y="4" width="7" height="7" rx="1"></rect>
-                <rect x="4" y="13" width="7" height="7" rx="1"></rect>
-                <rect x="13" y="13" width="7" height="7" rx="1"></rect>
-            </svg>
-            </button>
-        </div>
-
-        <!-- Nueva Bodega -->
-        <button
-          id="btnNuevaBodega"
-          class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          Nueva Bodega
-        </button>
-      </div>
-
-      <!-- Filtro -->
-      <div class="flex items-center gap-2">
-        <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
-
-        <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm min-w-[160px]">
-          <select
-            id="bodegasFilter"
-            class="w-full appearance-none bg-transparent outline-none text-sm text-gray-700 pr-6"
-          >
-            <option value="Todos">Todos</option>
-            <option value="Activo">Activos</option>
-            <option value="Inactivo">Inactivos</option>
-          </select>
-          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-        </div>
-      </div>
+    <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm min-w-[160px]">
+      <select
+        id="bodegasFilter"
+        class="w-full appearance-none bg-transparent outline-none text-sm text-gray-700 pr-6"
+      >
+        <option value="Todos">Todos</option>
+        <option value="Activo">Activos</option>
+        <option value="Inactivo">Inactivos</option>
+      </select>
+      <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
     </div>
   </div>
+</div>
+
 
   <!-- ========= VISTA LISTA ========= -->
   <div id="view-list">
