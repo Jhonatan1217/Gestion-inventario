@@ -14,7 +14,7 @@ if (!isset($conn)) {
 }
 
 $programa = new Programa($conn);
-$accion = $_GET['accion'] ?? '';  
+$accion = $_GET['accion'] ?? '';
 
 if ($accion === '') {
     echo json_encode(['error'=>'Debe especificar acción']);
@@ -25,8 +25,17 @@ switch ($accion) {
 
     //List programs
     case 'listar':
-        echo json_encode($programa->listar());
+        $programasList = $programa->listar();
+
+        // Recorremos cada programa y contamos los instructores reales
+        foreach ($programasList as &$p) {
+            $instructores = $programa->listarInstructoresPorPrograma($p['id_programa']);
+            $p['instructores'] = count($instructores);
+        }
+
+        echo json_encode($programasList);
         break;
+
     
     //List instructors by program
     case 'listar_instructores_programa':
@@ -83,7 +92,9 @@ switch ($accion) {
             exit;
         }
 
-        if (!in_array($nivel, ['Técnico','Tecnólogo','Tecnico','Tecnologo'], true)) {
+        $nivel = trim($nivel);
+
+        if (!in_array($nivel, ['Tecnico', 'Tecnologo'])) {
             echo json_encode(['error'=>'Nivel invalido']);
             exit;
         }
@@ -122,7 +133,7 @@ switch ($accion) {
             exit;
         }
 
-        if (!in_array($nivel, ['Técnico','Tecnólogo'], true)) {
+        if (!in_array($nivel, ['Tecnico','Tecnologo'], true)) {
             echo json_encode(['error'=>'Nivel inválido']);
             exit;
         }
@@ -174,4 +185,5 @@ switch ($accion) {
     default:
         echo json_encode(['error'=>'Acción inválida']);
 }
+
 ?>
