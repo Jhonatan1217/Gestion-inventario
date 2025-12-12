@@ -24,13 +24,21 @@ switch ($page) {
     case 'notificaciones':
         $viewFile = BASE_PATH . '/src/view/notificaciones/notificaciones.php';  // ajusta al archivo real
         break;
-    case 'programas':
-        $viewFile = BASE_PATH . '/src/view/programas/programas.php';  // ajusta al archivo real
+    case 'movimientos':
+        $viewFile = BASE_PATH . '/src/view/movimientos/movimientos.php';  // ajusta al archivo real
         break;
+        
+    case 'programas':
+    $viewFile = BASE_PATH . '/src/view/programas/programas.php';  // ajusta al archivo real
+    break;
+
+    case 'raes':
+    $viewFile = BASE_PATH . '/src/view/raes/raes.php';  // ajusta al archivo real
+    break;
 
     case 'reportes':
         $viewFile = BASE_PATH . '/src/view/reportes/reportes.php';  // ajusta al archivo real
-        break;
+    break;
 
     case 'fichas':
         $viewFile = BASE_PATH . '/src/view/fichas/fichas.php';  // ajusta al archivo real

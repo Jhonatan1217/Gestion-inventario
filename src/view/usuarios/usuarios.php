@@ -34,7 +34,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   <!-- <?php include '../partials/dashboard-header.php'; ?> -->
 
   <main class="p-6 transition-all duration-300"
-      style="margin-left: <?= $sidebarWidth ?>;>
+      style="margin-left: <?= $sidebarWidth ?>;">
     <div class="space-y-6 animate-fade-in-up">
       <!-- ================================== -->
       <!-- PAGE HEADER                         -->
@@ -126,49 +126,62 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
       <!-- ================================== -->
       <!-- TOP FILTERS (SEARCH + ROLE FILTER) -->
       <!-- ================================== -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between  my-6">
-        <!-- Free-text search by user name -->
-        <div class="w-full sm:max-w-xs">
-          <input
-            id="inputBuscar"
-            type="text"
-            placeholder="Buscar por nombre..."
-            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-        </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between my-6">
 
-        <!-- Role filter (select) -->
-        <div class="flex items-center gap-2">
-          <!-- Filter icon used as visual label -->
-          <svg
-            class="h-4 w-4"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+  <!-- SEARCH -->
+  <div class="relative w-full sm:max-w-xs">
+    <!-- Lupa dentro -->
+    <svg
+      class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.35-4.35"></path>
+    </svg>
 
-          <select
-            id="selectFiltroRol"
-            class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm"
-          >
-            <option value="">Todos</option>
-            <!-- Role values must match database values -->
-            <option value="Coordinador">Coordinador</option>
-            <option value="Subcoordinador">Subcoordinador</option>
-            <option value="Instructor">Instructor</option>
-            <option value="Pasante">Pasante</option>
-            <option value="Aprendiz">Aprendiz</option>
-          </select>
-        </div>
-      </div>
+    <input
+      id="inputBuscar"
+      type="text"
+      placeholder="Buscar por nombre..."
+      class="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm"
+    />
+  </div>
+
+  <!-- ROLE FILTER -->
+  <div class="flex items-center gap-2">
+    <svg
+      class="h-4 w-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <path
+        d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+
+    <select
+      id="selectFiltroRol"
+      class="rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm"
+    >
+      <option value="">Todos</option>
+      <option value="Coordinador">Coordinador</option>
+      <option value="Subcoordinador">Subcoordinador</option>
+      <option value="Instructor">Instructor</option>
+      <option value="Pasante">Pasante</option>
+      <option value="Aprendiz">Aprendiz</option>
+    </select>
+  </div>
+
+</div>
 
       <!-- ================================== -->
       <!-- TABLE VIEW CONTAINER               -->
