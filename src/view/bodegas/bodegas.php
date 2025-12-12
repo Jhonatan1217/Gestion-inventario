@@ -164,7 +164,7 @@ $bodegas = [
 
               <td class="px-4 py-3">
                 <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
-                  <?= $activo ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' ?>">
+                  <?= $activo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100' ?>">
                   <?= htmlspecialchars($b[5]) ?>
                 </span>
               </td>
@@ -250,7 +250,7 @@ $bodegas = [
 
             <div class="flex items-center gap-3">
               <span
-                class="estado-text text-sm font-medium <?= $estadoActivo ? 'text-emerald-700' : 'text-red-700' ?>"
+                class="estado-text text-sm font-medium <?= $estadoActivo  ?>"
               >
                 <?= $estadoActivo ? "Activa" : "Inactiva" ?>
               </span>
@@ -684,9 +684,7 @@ document.addEventListener("DOMContentLoaded", () => {
       est.textContent = selectedData.estado;
       est.className =
         "inline-flex items-center rounded-full px-3 py-1 text-xs " +
-        (selectedData.estado === "Activo"
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-red-100 text-red-700");
+        (selectedData.estado === "Activo");
 
       openModal(modalDetalle);
       closeContextMenu();
@@ -742,8 +740,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const estadoText = card.querySelector(".estado-text");
     if (estadoText) {
       estadoText.textContent = textoNuevo;
-      estadoText.classList.toggle("text-emerald-700", sw.checked);
-      estadoText.classList.toggle("text-red-700", !sw.checked);
+      estadoText.classList.toggle(sw.checked);
+      estadoText.classList.toggle(!sw.checked);
     }
 
     // Guardar estado
