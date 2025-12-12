@@ -74,19 +74,6 @@ class BodegaModel {
         }
     }
 
-    /*DELETE BODEGA*/
-    public function eliminar(int $id): bool {
-        try {
-            $sql = "DELETE FROM bodegas WHERE id_bodega = :id"; // Delete statement
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error eliminar bodega: " . $e->getMessage());
-            return false;
-        }
-    }
-
     /* CHANGE BODEGA STATE (Active/Inactive)*/
     public function cambiarEstado(int $id, string $estado): bool {
         try {

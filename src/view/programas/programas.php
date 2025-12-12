@@ -1,201 +1,183 @@
 <?php
-// Datos de ejemplo para los programas
-$programas = [
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '18 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '24 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '10 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Tecnólogo',
-        'duracion' => '11 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '12 meses',
-        'instructores' => 1,
-        'estado' => 'Inactivo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '13 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '14 meses',
-        'instructores' => 2,
-        'estado' => 'Activo'
-    ],
-    [
-        'codigo' => 'TEC-001',
-        'nombre' => 'Técnico en Construcción',
-        'descripcion' => 'Formación técnica en procesos constructivos',
-        'nivel' => 'Técnico',
-        'duracion' => '15 meses',
-        'instructores' => 1,
-        'estado' => 'Activo'
-    ],
-];
+require_once __DIR__ . '../../../../Config/database.php';
+
+// Final array that will be used by the HTML
+$programas = [];
+
+try {
+    $sql = "SELECT 
+                id_programa, 
+                codigo_programa, 
+                nombre_programa, 
+                nivel_programa, 
+                descripcion_programa, 
+                duracion_horas, 
+                estado 
+            FROM programas_formacion";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+
+    // Fetch raw DB results
+    $raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Map DB fields → HTML expected fields
+    foreach ($raw as $r) {
+        $programas[] = [
+            'id_programa' => $r['id_programa'],  // Added id_programa
+            'codigo'      => $r['codigo_programa'],
+            'nombre'      => $r['nombre_programa'],
+            'descripcion' => $r['descripcion_programa'],
+            'nivel'       => $r['nivel_programa'],
+            'duracion'    => $r['duracion_horas'] . ' horas',
+            'instructores'=> 0,
+            'estado'      => $r['estado']
+        ];
+    }
+
+} catch (PDOException $e) {
+    die("Error al cargar programas: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programas de Formación - SENA</title>
-    
-    <!-- Configuración de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // Colores del tema SENA desde global.css
-                        background: '#f9fafb',
-                        foreground: '#0f172a',
-                        card: '#ffffff',
-                        'card-foreground': '#0f172a',
-                        popover: '#ffffff',
-                        'popover-foreground': '#0f172a',
-                        primary: '#39A935',
-                        'primary-foreground': '#ffffff',
-                        secondary: '#047857',
-                        'secondary-foreground': '#ffffff',
-                        muted: '#f1f5f9',
-                        'muted-foreground': '#64748b',
-                        accent: '#f1f5f9',
-                        'accent-foreground': '#0f172a',
-                        destructive: '#ef4444',
-                        'destructive-foreground': '#ffffff',
-                        border: '#e2e8f0',
-                        input: '#e2e8f0',
-                        ring: '#39A935',
-                        success: '#22c55e',
-                        warning: '#f59e0b',
-                        info: '#3b82f6',
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Programas de Formación - SENA</title>
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                        background: 'var(--background)',
+                        foreground: 'var(--foreground)',
+                        card: 'var(--card)',
+                        'card-foreground': 'var(--card-foreground)',
+                        popover: 'var(--popover)',
+                        'popover-foreground': 'var(--popover-foreground)',
+                        primary: 'var(--primary)',
+                        'primary-foreground': 'var(--primary-foreground)',
+                        secondary: 'var(--secondary)',
+                        'secondary-foreground': 'var(--secondary-foreground)',
+                        muted: 'var(--muted)',
+                        'muted-foreground': 'var(--muted-foreground)',
+                        accent: 'var(--accent)',
+                        'accent-foreground': 'var(--accent-foreground)',
+                        destructive: 'var(--destructive)',
+                        'destructive-foreground': 'var(--destructive-foreground)',
+                        border: 'var(--border)',
+                        input: 'var(--input)',
+                        ring: 'var(--ring)',
+                        success: 'var(--success)',
+                        warning: 'var(--warning)',
+                        info: 'var(--info)',
+                        }
                     }
                 }
             }
-        }
-    </script>
-    <!-- Solo importamos global.css del SENA, sin styles.css personalizado -->
-    <link rel="stylesheet" href="../../assets/css/global.css">
+        </script>
+    <!-- Import SENA global.css only, without custom styles.css -->
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>css/globals.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-background text-foreground min-h-screen flex flex-col">
     
-    <!-- CONTENIDO PRINCIPAL - Sin header ni sidebar (componentes separados) -->
-    <main class="flex-1 p-8">
+    <!-- MAIN CONTENT - Without header or sidebar (separate components) -->
+    <main class="p-6 transition-all duration-300"
+      style="margin-left: <?= $collapsed ? '70px' : '260px' ?>;">
         <?php
             // include_once __DIR__ . '/../../includes/footer.php';
         ?>
-        <!-- Título de la página -->
+        <!-- Page title -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
             <p class="text-muted-foreground mt-1">Gestiona los programas técnicos y tecnológicos</p>
         </div>
 
-        <!-- Contenedor principal con bordes y sombra -->
-        <div class="bg-card rounded-lg shadow-sm border border-border p-6">
-            
-            <!-- Barra de filtros y acciones -->
+        <!-- Main container with borders and shadow -->
+        <div class="bg-card rounded-lg shadow-sm">
+            <!-- Filter bar and actions -->
             <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                 
-                <!-- Barra de búsqueda -->
+                <!-- Search bar -->
                 <div class="relative flex-1 max-w-md">
                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
                     <input 
                         type="text" 
                         placeholder="Buscar por nombre..." 
-                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                     >
                 </div>
                 
-                <!-- Botones de acción -->
+                <!-- Action buttons -->
                 <div class="flex items-center gap-3">
                     
-                    <!-- Botones de vista (tabla/grid) -->
-                    <button 
-                        onclick="toggleView('table')" 
-                        id="viewTableBtn" 
-                        class="p-2 hover:bg-muted rounded-lg transition-colors bg-muted"
-                        title="Vista de tabla"
+                    <!-- View buttons (table/grid) -->
+                    <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+
+                    <!-- Table View -->
+                    <button
+                        type="button"
+                        id="viewTableBtn"
+                        onclick="toggleView('table')"
+                        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
+                        title="Vista tabla"
                     >
-                        <i class="fas fa-list text-muted-foreground"></i>
+                        <!-- Icono lista -->
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
                     </button>
-                    <button 
-                        onclick="toggleView('grid')" 
-                        id="viewGridBtn" 
-                        class="p-2 hover:bg-muted rounded-lg transition-colors"
-                        title="Vista de bloques"
+
+                    <!-- Card View -->
+                    <button
+                        type="button"
+                        id="viewGridBtn"
+                        onclick="toggleView('grid')"
+                        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
+                        title="Vista tarjetas"
                     >
-                        <i class="fas fa-th-large text-muted-foreground"></i>
+                        <!-- Icono grid -->
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+                            <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+                            <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+                            <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+                        </svg>
                     </button>
+
+                </div>
                     
-                    <!-- Botón nuevo programa -->
-                    <button onclick="openCreateModal()" id="btnNewProgram" class="bg-primary hover:bg-secondary text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium">
+                    <!-- New program button -->
+                    <button onclick="openCreateModal()" id="btnNewProgram" class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
                         <i class="fas fa-plus"></i>
                         Nuevo Programa
                     </button>
                     
-                    <!-- Filtro desplegable -->
+                    <!-- Dropdown filter -->
                     <div class="relative">
                         <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none"></i>
-                        <select class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-card text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
-                            <option>Todos</option>
-                            <option>Activos</option>
-                            <option>Inactivos</option>
+                        <select id="selectFiltroEstado" class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                            <option value="">Todos</option>
+                            <option value="1">Activos</option>
+                            <option value="0">Inactivos</option>
                         </select>
-                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm pointer-events-none"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- VISTA DE TABLA -->
-            <div id="tableView" class="overflow-x-auto">
+            <!-- TABLE VIEW -->
+            <div id="tableView" class="overflow-x-auto border border-border rounded-lg">
                 <table class="w-full border-collapse">
                     
-                    <!-- Encabezados de la tabla -->
+                    <!-- Table headers -->
                     <thead>
                         <tr class="border-b border-border bg-muted">
                             <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Código</th>
@@ -208,31 +190,33 @@ $programas = [
                         </tr>
                     </thead>
                     
-                    <!-- Filas de datos -->
+                    <!-- Data rows -->
                     <tbody>
                         <?php foreach ($programas as $index => $programa): ?>
+                        <?php $isActive = (isset($programa['estado']) && (strtolower(trim((string)$programa['estado'])) === 'activo' || (string)$programa['estado'] === '1' || $programa['estado'] == 1)); ?>
                         <tr 
                             class="border-b border-border hover:bg-muted transition-colors"
                             data-index="<?php echo $index; ?>"
+                            data-id-programa="<?php echo htmlspecialchars($programa['id_programa']); ?>"
                             data-codigo="<?php echo htmlspecialchars($programa['codigo']); ?>"
                             data-nombre="<?php echo htmlspecialchars($programa['nombre']); ?>"
                             data-descripcion="<?php echo htmlspecialchars($programa['descripcion']); ?>"
                             data-nivel="<?php echo htmlspecialchars($programa['nivel']); ?>"
                             data-duracion="<?php echo htmlspecialchars($programa['duracion']); ?>"
                             data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
-                            data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
+                            data-estado="<?php echo $isActive ? 1 : 0; ?>"
                         >
-                            <!-- Código del programa -->
+                            <!-- Program code -->
                             <td class="py-4 px-4 text-sm font-medium text-foreground">
                                 <span class="js-code"><?php echo $programa['codigo']; ?></span>
                             </td>
                             
-                            <!-- Información del programa con ícono -->
+                            <!-- Program information with icon -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-3">
-                                    <!-- Ícono circular -->
+                                    <!-- Circular icon -->
                                     <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-graduation-cap text-primary text-sm"></i>
+                                        <i class="fas fa-graduation-cap text-secondary text-sm"></i>
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-foreground js-name"><?php echo $programa['nombre']; ?></div>
@@ -241,7 +225,7 @@ $programas = [
                                 </div>
                             </td>
                             
-                            <!-- Badge de nivel (Técnico/Tecnólogo) -->
+                            <!-- Level badge (Técnico/Tecnólogo) -->
                             <td class="py-4 px-4">
                                 <span class="js-nivel">
                                 <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
@@ -256,7 +240,7 @@ $programas = [
                                 </span>
                             </td>
                             
-                            <!-- Duración con ícono de reloj -->
+                            <!-- Duration with clock icon -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="far fa-clock"></i>
@@ -264,30 +248,31 @@ $programas = [
                                 </div>
                             </td>
                             
-                            <!-- Cantidad de instructores -->
+                            <!-- Number of instructors -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                                     <i class="fas fa-users"></i>
                                     <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
                                 </div>
                             </td>
+
                             
-                            <!-- Badge de estado (Activo/Inactivo) -->
+                            <!-- Status badge (Active/Inactive) -->
                             <td class="py-4 px-4">
                                 <span class="js-estado">
-                                <?php if (strtolower($programa['estado']) === 'activo'): ?>
+                                <?php if ($isActive): ?>
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">
-                                        <?php echo $programa['estado']; ?>
+                                        Activo
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#ef444426] text-destructive">
-                                        <?php echo $programa['estado']; ?>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">
+                                        Inactivo
                                     </span>
                                 <?php endif; ?>
                                 </span>
                             </td>
                             
-                            <!-- Menú de acciones -->
+                            <!-- Actions menu -->
                             <td class="py-4 px-4">
                                 <div class="relative">
                                     <button onclick="toggleActionMenu(<?php echo $index; ?>)" class="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded">
@@ -302,9 +287,9 @@ $programas = [
                                             <i class="far fa-eye text-muted-foreground"></i>
                                             Ver detalles
                                         </button>
-                                        <button class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-b-lg transition-colors">
+                                        <button data-action="toggle-estado" class="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-3 text-sm text-foreground rounded-b-lg transition-colors">
                                             <i class="fas fa-ban text-muted-foreground"></i>
-                                            Deshabilitar
+                                            <?php echo $isActive ? 'Deshabilitar' : 'Habilitar'; ?>
                                         </button>
                                     </div>
                                 </div>
@@ -315,115 +300,104 @@ $programas = [
                 </table>
             </div>
 
-            <!-- VISTA DE GRID (Bloques) -->
-            <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- GRID VIEW -->
+            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+
                 <?php foreach ($programas as $index => $programa): ?>
-                
-                <!-- Tarjeta individual del programa -->
-                <div 
-                    class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
+                <?php $isActive = (isset($programa['estado']) && (strtolower(trim((string)$programa['estado'])) === 'activo' || (string)$programa['estado'] === '1' || $programa['estado'] == 1)); ?>
+                <div class="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-all hover:-translate-y-1"
                     data-index="<?php echo $index; ?>"
+                    data-id-programa="<?php echo htmlspecialchars($programa['id_programa']); ?>"
                     data-codigo="<?php echo htmlspecialchars($programa['codigo']); ?>"
                     data-nombre="<?php echo htmlspecialchars($programa['nombre']); ?>"
                     data-descripcion="<?php echo htmlspecialchars($programa['descripcion']); ?>"
                     data-nivel="<?php echo htmlspecialchars($programa['nivel']); ?>"
                     data-duracion="<?php echo htmlspecialchars($programa['duracion']); ?>"
                     data-instructores="<?php echo htmlspecialchars($programa['instructores']); ?>"
-                    data-estado="<?php echo htmlspecialchars($programa['estado']); ?>"
-                >
-                    
-                    <!-- Header de la tarjeta -->
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <!-- Ícono del programa -->
-                            <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-graduation-cap text-primary text-lg"></i>
+                    data-estado="<?php echo $isActive ? 1 : 0; ?>"
+                    <!-- ICONO + TÍTULO + EDIT -->
+                    <div class="flex justify-between items-start mb-3">
+
+                        <!-- Info + Icon -->
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-secondary text-lg"></i>
                             </div>
+
                             <div>
                                 <h3 class="font-semibold text-foreground js-name"><?php echo $programa['nombre']; ?></h3>
+                                <p class="text-sm text-muted-foreground js-descripcion"><?php echo $programa['descripcion']; ?></p>
                                 <p class="text-xs text-muted-foreground js-code"><?php echo $programa['codigo']; ?></p>
                             </div>
                         </div>
-                        
-                        <!-- Botón de editar directo (modo tarjetas) -->
-                        <div>
-                            <button onclick="openEditModal(<?php echo $index; ?>)" title="Editar" class="text-muted-foreground hover:text-foreground p-2 bg-muted hover:bg-muted rounded-lg transition-colors flex items-center gap-2">
-                                <i class="far fa-edit"></i>
-                                <span class="sr-only">Editar</span>
-                            </button>
-                        </div>
+
+                        <!-- Changed link to button that opens edit modal -->
+                        <button onclick="openEditModal(<?php echo $index; ?>)" 
+                        class="text-muted-foreground hover:text-foreground transition">
+                            <i class="fas fa-edit text-lg"></i>
+                        </button>
                     </div>
 
-                    <!-- Descripción del programa -->
-                    <p class="text-sm text-muted-foreground mb-4 js-descripcion"><?php echo $programa['descripcion']; ?></p>
+                    <!-- Level + Duration -->
+                    <div class="flex items-center justify-between mb-3">
 
-                    <!-- Información adicional -->
-                    <div class="space-y-2 mb-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground">Instructor:</span>
-                            <span class="text-sm font-medium text-foreground">Juan Guillermo Crespo</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <!-- Badge de nivel -->
+                        <!-- Nivel -->
+                        <div class="flex items-center gap-2">
                             <span class="js-nivel">
-                            <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
-                                    <?php echo $programa['nivel']; ?>
+                                <?php if (strtolower($programa['nivel']) === 'técnico'): ?>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#39A93526] text-primary">
+                                        <?php echo $programa['nivel']; ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3b82f626] text-info">
+                                        <?php echo $programa['nivel']; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </span>
+
+                            <!-- State (badge igual same at the table) -->
+                            <?php if ($isActive): ?>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success js-estado">
+                                    Activo
                                 </span>
                             <?php else: ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#3b82f626] text-info">
-                                    <?php echo $programa['nivel']; ?>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 js-estado">
+                                    Inactivo
                                 </span>
                             <?php endif; ?>
-                            </span>
-                            
-                            <!-- Duración -->
-                            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                <i class="far fa-clock"></i>
-                                <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
-                            </div>
                         </div>
-                        
-                        <!-- Cantidad de instructores -->
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground">Instructor/es</span>
-                            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                                <i class="fas fa-users"></i>
-                                <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
-                            </div>
+
+                        <!-- Duration -->
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <i class="far fa-clock"></i>
+                            <span class="js-duracion"><?php echo $programa['duracion']; ?></span>
                         </div>
                     </div>
 
-                    <!-- Badge de estado y toggle -->
-                    <div class="flex items-center justify-between pt-4 border-t border-border">
-                        <span class="js-estado">
-                        <?php if (strtolower($programa['estado']) === 'activo'): ?>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success">
-                                <?php echo $programa['estado']; ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#ef444426] text-destructive">
-                                <?php echo $programa['estado']; ?>
-                            </span>
-                        <?php endif; ?>
-                        </span>
-                        
-                        <!-- Toggle switch -->
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                class="sr-only peer" 
-                                <?php echo strtolower($programa['estado']) === 'activo' ? 'checked' : ''; ?>
-                            >
-                            <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
+                    <hr class="border-border mb-3">
+                    <!-- Instructors + Toggle -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                            <i class="fas fa-users"></i>
+                            <span class="js-instructores"><?php echo $programa['instructores']; ?></span>
+                        </div>
+
+                        <div class="flex flex-col items-end">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" <?php echo $isActive ? 'checked' : ''; ?>>
+
+                                <div class="w-11 h-6 bg-gray-500/20 rounded-full peer-checked:bg-secondary transition-all"></div>
+
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <!-- Modal de edición de programa -->
+        <!-- Program edit modal -->
         <div id="editProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeEditModal()"></div>
             <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
@@ -435,49 +409,39 @@ $programas = [
                     <input type="hidden" id="edit_index">
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Código *</label>
-                        <input id="edit_codigo" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" required>
+                        <input id="edit_codigo" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" required>
                     </div>
-                    <div>
+                    <div class="relative">
                         <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
-                        <select id="edit_nivel" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                        <select id="edit_nivel" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground appearance-none">
                             <option>Técnico</option>
                             <option>Tecnólogo</option>
                         </select>
                     </div>
+
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Nombre del programa *</label>
-                        <input id="edit_nombre" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" required>
+                        <input id="edit_nombre" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" required>
                     </div>
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Descripción *</label>
-                        <textarea id="edit_descripcion" rows="3" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground"></textarea>
+                        <textarea id="edit_descripcion" rows="3" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground"></textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
-                            <input id="edit_duracion" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
+                            <input id="edit_duracion" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground">
                         </div>
-                        <div>
-                            <label class="block text-xs text-muted-foreground mb-1">Instructores</label>
-                            <input id="edit_instructores" type="number" min="0" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-muted-foreground mb-1">Estado</label>
-                        <select id="edit_estado" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
-                            <option>Activo</option>
-                            <option>Inactivo</option>
-                        </select>
                     </div>
                     <div class="flex items-center justify-end gap-3 mt-4">
                         <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Guardar Cambios</button>
+                        <button type="submit" class="px-4 py-2 bg-primary bg-secondary-foreground rounded">Guardar Cambios</button>
                     </div>
                 </form>
             </div>
         </div>
         
-        <!-- Modal de ver detalles -->
+        <!-- View details modal -->
         <div id="viewProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeViewModal()"></div>
             <div class="relative max-w-md w-full bg-card rounded-lg shadow-lg border border-border p-6">
@@ -491,7 +455,7 @@ $programas = [
 
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-12 h-12 bg-[#e6f7ea] rounded-full flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-primary text-xl"></i>
+                        <i class="fas fa-graduation-cap text-secondary text-xl"></i>
                     </div>
                     <div>
                         <div class="font-semibold text-foreground" id="view_name">Nombre Programa</div>
@@ -508,7 +472,7 @@ $programas = [
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs text-muted-foreground">Duración:</span>
-                        <span id="view_duracion" class="text-sm font-medium text-foreground">0 meses</span>
+                        <span id="view_duracion" class="text-sm font-medium text-foreground">0 Horas</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs text-muted-foreground">Instructor:</span>
@@ -522,7 +486,7 @@ $programas = [
             </div>
         </div>
 
-        <!-- Modal Crear Nuevo Programa (UI only) -->
+        <!-- Create New Program Modal (UI only) -->
         <div id="createProgramModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
             <div class="absolute inset-0 bg-black/40" onclick="closeCreateModal()"></div>
             <div class="relative max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6">
@@ -538,40 +502,41 @@ $programas = [
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs text-muted-foreground mb-1">Código *</label>
-                            <input id="create_codigo" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="TEC-001">
+                            <input id="create_codigo" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" placeholder="TEC-001">
                         </div>
                         <div>
                             <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
-                            <select id="create_nivel" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground">
-                                <option>Técnico</option>
-                                <option>Tecnólogo</option>
+                            <select id="create_nivel" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground">
+                                <option value="Tecnico">Técnico</option>
+                                <option value="Tecnologo">Tecnólogo</option>
                             </select>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Nombre del programa *</label>
-                        <input id="create_nombre" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="Técnico en Construcción">
+                        <input id="create_nombre" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" placeholder="Técnico en Construcción">
                     </div>
 
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Descripción *</label>
-                        <textarea id="create_descripcion" rows="4" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="Formación técnica de procesos constructivos"></textarea>
+                        <textarea id="create_descripcion" rows="4" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" placeholder="Formación técnica de procesos constructivos"></textarea>
                     </div>
 
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
-                        <input id="create_duracion" type="text" class="w-full border border-border rounded px-3 py-2 bg-card text-foreground" placeholder="18 meses">
+                        <input id="create_duracion" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" placeholder="X Horas">
                     </div>
 
                     <div class="flex items-center justify-end gap-3 mt-4">
                         <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Crear Programa</button>
+                        <button type="submit" class="px-4 py-2 bg-secondary text-primary-foreground rounded">Crear Programa</button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
-    <script src="../../assets/js/programas.js"></script>
+    <!-- Changed script src from toggle-view.js to programas.js -->
+    <script src="<?= ASSETS_URL ?>js/programas/programas.js"></script>
 </body>
 </html>

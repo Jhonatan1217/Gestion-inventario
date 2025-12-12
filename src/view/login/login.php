@@ -18,9 +18,9 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', $protocol . $host . $script_dir); // ej: .../src/view/login/
 }
 
-// Si ya está logueado, mandarlo al dashboard
+// Si ya está logueado, mandarlo al dashboard (usando el index de la raíz)
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: ' . BASE_URL . '../dashboard/index.php');
+    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
     exit;
 }
 
@@ -37,36 +37,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = "Por favor ingresa tu correo y contraseña.";
     } else {
         try {
-            // Ajusta el nombre de tabla/campos según tu BD
-            $sql = "SELECT id_usuario, nombre_completo, correo, password_hash, rol 
+            // 🔥 AGREGAMOS direccion y fecha_creacion SIN BORRAR NADA
+            // ✅ AGREGAMOS foto_perfil SIN BORRAR NADA
+            $sql = "SELECT 
+                        id_usuario,
+                        nombre_completo,
+                        tipo_documento,
+                        numero_documento,
+                        telefono,
+                        direccion,          -- 🔥 agregado
+                        fecha_creacion,     -- 🔥 agregado
+                        cargo,
+                        correo,
+                        estado,
+                        password,
+                        foto_perfil         -- ✅ agregado (ajusta el nombre si tu columna se llama distinto)
                     FROM usuarios 
                     WHERE correo = :correo 
                     LIMIT 1";
+
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':correo', $email, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Asumo que guardas la contraseña con password_hash()
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Guardar datos mínimos en sesión
-                $_SESSION['usuario_id']     = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre_completo'];
-                $_SESSION['usuario_rol']    = $user['rol'];
+            if ($user) {
+                $hash = $user['password'];
 
-                // 🔁 Redirige al dashboard (una carpeta arriba de /login/)
-                header('Location: ' . BASE_URL . '../dashboard/index.php');
-                exit;
+                $passwordOk = false;
+
+                if (password_verify($password, $hash)) {
+                    $passwordOk = true;
+                } else {
+                    if ($password === $hash) {
+                        $passwordOk = true;
+                    }
+                }
+
+                if ($passwordOk) {
+
+                    // ============================
+                    // 🔥 GUARDAR TODOS LOS DATOS EN SESIÓN
+                    // ============================
+                    $_SESSION['usuario_id']                = $user['id_usuario'];
+                    $_SESSION['usuario_nombre']            = $user['nombre_completo'];
+                    $_SESSION['usuario_cargo']             = $user['cargo'];
+
+                    $_SESSION['usuario_tipo_documento']    = $user['tipo_documento'];
+                    $_SESSION['usuario_numero_documento']  = $user['numero_documento'];
+                    $_SESSION['usuario_telefono']          = $user['telefono'];
+                    $_SESSION['usuario_correo']            = $user['correo'];
+                    $_SESSION['usuario_estado']            = $user['estado'];
+
+                    // 🔥 AGREGAMOS ESTOS DOS CAMPOS QUE FALTABAN
+                    $_SESSION['usuario_direccion']         = $user['direccion'];
+                    $_SESSION['usuario_fecha_creacion']    = $user['fecha_creacion'];
+
+                    // ✅ CLAVE: guardar la foto en sesión para que persista tras volver a iniciar sesión
+                    $_SESSION['usuario_foto']              = $user['foto_perfil'] ?? null;
+
+                    header('Location: ' . BASE_URL . '../../../index.php?page=dashboard');
+                    exit;
+
+                } else {
+                    $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+                }
+
             } else {
                 $loginError = "Credenciales incorrectas. Verifica tu correo y contraseña.";
             }
+
         } catch (PDOException $e) {
-            $loginError = "Error al intentar iniciar sesión. Intenta nuevamente.";
+            $loginError = "Error BD: " . $e->getMessage();
         }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -194,13 +240,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       const isText = passwordInput.type === "text";
       passwordInput.type = isText ? "password" : "text";
 
-      // Cambiar icono
       eyeIcon.innerHTML = isText
         ? `<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>`
         : `<path d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-7-11-7a19.207 19.207 0 015.677-5.48m3.461-.762A11.413 11.413 0 0112 5c7 0 11 7 11 7a20.626 20.626 0 01-2.364 3.442M3 3l18 18"/>`;
     });
 
-    // Mantener el loader pero dejar que PHP maneje la redirección
     document.getElementById("loginForm").addEventListener("submit", function () {
       const btn = document.getElementById("btnLogin");
       const loader = document.getElementById("loaderIcon");
@@ -209,8 +253,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       btn.disabled = true;
       loader.classList.remove("hidden");
       text.textContent = "Iniciando sesión...";
-      // No hacemos preventDefault ni redirección en JS:
-      // PHP se encarga de validar y redirigir.
     });
   </script>
 
