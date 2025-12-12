@@ -34,7 +34,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   <!-- <?php include '../partials/dashboard-header.php'; ?> -->
 
   <main class="p-6 transition-all duration-300"
-      style="margin-left: <?= $sidebarWidth ?>;>
+      style="margin-left: <?= $sidebarWidth ?>;">
     <div class="space-y-6 animate-fade-in-up">
       <!-- ================================== -->
       <!-- PAGE HEADER                         -->
