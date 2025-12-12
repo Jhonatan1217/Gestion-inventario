@@ -121,24 +121,30 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 </div>
 
         <!-- Updated materials table with consistent styling -->
-        <div id="tableView" class="overflow-visible rounded-xl border border-border bg-card relative">
-          <table class="min-w-full divide-y divide-border text-sm">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Nombre</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Descripción</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Clasificación</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Código</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Unidad</th>
-                <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Estado</th>
-                <th class="px-4 py-3 text-right font-medium text-xs text-muted-foreground">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-border bg-card">
-              <!-- Se llena dinámicamente con JS -->
-            </tbody>
-          </table>
-          <div class="pagination" id="pagination"></div>
+        <div id="tableView">
+          <div class="overflow-visible rounded-xl border border-border bg-card relative">
+            <table class="min-w-full divide-y divide-border text-sm">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Nombre</th>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Descripción</th>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Clasificación</th>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Código</th>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Unidad</th>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Estado</th>
+                  <th class="px-4 py-3 text-right font-medium text-xs text-muted-foreground">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-border bg-card">
+                <!-- Se llena dinámicamente con JS -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Moved table pagination outside the card but inside tableView -->
+          <div class="flex justify-end mt-4">
+            <div class="pagination" id="pagination"></div>
+          </div>
         </div>
 
         <!-- Card view container -->
@@ -149,7 +155,10 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           >
             <!-- Se llena dinámicamente con JS -->
           </div>
-          <div class="pagination" id="cardPagination"></div>
+          <!-- Moved pagination to bottom right corner -->
+          <div class="flex justify-end mt-4">
+            <div class="pagination" id="cardPagination"></div>
+          </div>
         </div>
 
       </div>
@@ -443,7 +452,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     ></div>
 
     <!-- JavaScript al final del body -->
-    <script src="<?= BASE_URL ?>/src/assets/js/materiales.js"></script>
+    <script src="<?= BASE_URL ?>/src/assets/js/materiales/materiales.js"></script>
 
 </body>
 </html>
