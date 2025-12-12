@@ -3,6 +3,9 @@
 // HEADER – PHP
 // ==========================
 
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+$sidebarWidth = $collapsed ? "70px" : "260px";
+
 // Datos del usuario (de ejemplo)
 $currentUser = [
     "nombre_completo" => "Ana María López",
@@ -40,7 +43,7 @@ $manyAlerts = count($mockAlerts) > 5;
 ?>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="../assets/css/globals.css">
+<link rel="stylesheet" href="src/assets/css/globals.css">
 
 <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-6 transition-all duration-300 <?php echo $sidebarMarginClass; ?>">
 
