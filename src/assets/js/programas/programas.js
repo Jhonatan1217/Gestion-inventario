@@ -95,7 +95,20 @@ function openViewModal(index) {
     document.getElementById("view_description").textContent = row.dataset.descripcion
     document.getElementById("view_nivel").textContent = row.dataset.nivel
     document.getElementById("view_duracion").textContent = row.dataset.duracion
-    document.getElementById("view_estado").textContent = row.dataset.estado
+    
+    // Normalize state and display human-friendly badge (Activo / Inactivo)
+    const estadoAttrView = String(row.dataset.estado ?? '').trim()
+    const estadoHuman = (estadoAttrView === '1' || estadoAttrView === '0')
+      ? (estadoAttrView === '1' ? 'Activo' : 'Inactivo')
+      : (estadoAttrView.toLowerCase() === 'activo' ? 'Activo' : 'Inactivo')
+
+    const viewEstadoEl = document.getElementById('view_estado')
+    viewEstadoEl.textContent = estadoHuman
+    if (estadoHuman === 'Activo') {
+      viewEstadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success'
+    } else {
+      viewEstadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400'
+    }
   }
 
   modal.classList.remove("hidden")
@@ -279,6 +292,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   })
+
+  // State filter (table + grid)
+  const selectFiltroEstado = document.getElementById('selectFiltroEstado')
+  if (selectFiltroEstado) {
+    const applyFilter = () => {
+      const val = selectFiltroEstado.value // '' | '1' | '0'
+
+      // Table rows
+      document.querySelectorAll('#tableView tbody tr[data-index]').forEach(row => {
+        const estado = String(row.dataset.estado ?? '').trim()
+        if (val === '') {
+          row.style.display = ''
+        } else if (estado === val) {
+          row.style.display = ''
+        } else {
+          row.style.display = 'none'
+        }
+      })
+
+      // Grid cards
+      document.querySelectorAll('#gridView [data-index]').forEach(card => {
+        const estado = String(card.dataset.estado ?? '').trim()
+        if (val === '') {
+          card.style.display = ''
+        } else if (estado === val) {
+          card.style.display = ''
+        } else {
+          card.style.display = 'none'
+        }
+      })
+    }
+
+    selectFiltroEstado.addEventListener('change', applyFilter)
+  }
 
   // Checkboxes in grid view
   document.querySelectorAll('#gridView input[type="checkbox"]').forEach(chk => {

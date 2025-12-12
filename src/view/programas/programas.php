@@ -109,7 +109,7 @@ try {
                     <input 
                         type="text" 
                         placeholder="Buscar por nombre..." 
-                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                     >
                 </div>
                 
@@ -156,7 +156,7 @@ try {
                 </div>
                     
                     <!-- New program button -->
-                    <button onclick="openCreateModal()" id="btnNewProgram" class="bg-primary hover:bg-secondary text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium">
+                    <button onclick="openCreateModal()" id="btnNewProgram" class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
                         <i class="fas fa-plus"></i>
                         Nuevo Programa
                     </button>
@@ -164,12 +164,11 @@ try {
                     <!-- Dropdown filter -->
                     <div class="relative">
                         <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none"></i>
-                        <select class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-card text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
-                            <option>Todos</option>
-                            <option>Activos</option>
-                            <option>Inactivos</option>
+                        <select id="selectFiltroEstado" class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                            <option value="">Todos</option>
+                            <option value="1">Activos</option>
+                            <option value="0">Inactivos</option>
                         </select>
-                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm pointer-events-none"></i>
                     </div>
                 </div>
             </div>
@@ -217,7 +216,7 @@ try {
                                 <div class="flex items-center gap-3">
                                     <!-- Circular icon -->
                                     <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-graduation-cap text-primary text-sm"></i>
+                                        <i class="fas fa-graduation-cap text-secondary text-sm"></i>
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-foreground js-name"><?php echo $programa['nombre']; ?></div>
@@ -322,7 +321,7 @@ try {
                         <!-- Info + Icon -->
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                                <i class="fas fa-graduation-cap text-primary text-lg"></i>
+                                <i class="fas fa-graduation-cap text-secondary text-lg"></i>
                             </div>
 
                             <div>
@@ -387,7 +386,7 @@ try {
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" class="sr-only peer" <?php echo $isActive ? 'checked' : ''; ?>>
 
-                                <div class="w-11 h-6 bg-muted rounded-full peer-checked:bg-success transition-all"></div>
+                                <div class="w-11 h-6 bg-gray-500/20 rounded-full peer-checked:bg-secondary transition-all"></div>
 
                                 <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
                             </label>
@@ -412,13 +411,14 @@ try {
                         <label class="block text-xs text-muted-foreground mb-1">Código *</label>
                         <input id="edit_codigo" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" required>
                     </div>
-                    <div>
+                    <div class="relative">
                         <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
-                        <select id="edit_nivel" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground">
+                        <select id="edit_nivel" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground appearance-none">
                             <option>Técnico</option>
                             <option>Tecnólogo</option>
                         </select>
                     </div>
+
                     <div>
                         <label class="block text-xs text-muted-foreground mb-1">Nombre del programa *</label>
                         <input id="edit_nombre" type="text" class="w-full border border-border rounded-[10px] px-3 py-2 bg-card text-foreground" required>
@@ -435,7 +435,7 @@ try {
                     </div>
                     <div class="flex items-center justify-end gap-3 mt-4">
                         <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Guardar Cambios</button>
+                        <button type="submit" class="px-4 py-2 bg-primary bg-secondary-foreground rounded">Guardar Cambios</button>
                     </div>
                 </form>
             </div>
@@ -455,7 +455,7 @@ try {
 
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-12 h-12 bg-[#e6f7ea] rounded-full flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-primary text-xl"></i>
+                        <i class="fas fa-graduation-cap text-secondary text-xl"></i>
                     </div>
                     <div>
                         <div class="font-semibold text-foreground" id="view_name">Nombre Programa</div>
@@ -530,7 +530,7 @@ try {
 
                     <div class="flex items-center justify-end gap-3 mt-4">
                         <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded">Crear Programa</button>
+                        <button type="submit" class="px-4 py-2 bg-secondary text-primary-foreground rounded">Crear Programa</button>
                     </div>
                 </form>
             </div>
