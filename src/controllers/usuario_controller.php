@@ -66,7 +66,8 @@ switch ($accion) {
             'id_programa'      => $data['id_programa']      ?? $_POST['id_programa']      ?? null,
         ];
 
-        $u['estado'] = 1;
+        // 👉 Estado por defecto: ACTIVO (lo manejas como 'activo' en el modelo)
+        $u['estado'] = 1; // puedes dejarlo si lo usas luego para otra cosa
 
         if (in_array(null, [
             $u['nombre_completo'],
@@ -122,7 +123,7 @@ switch ($accion) {
             $u['correo'],
             $u['direccion'],
             $u['password'],
-            $u['id_programa']
+            $u['id_programa'] // 👈 AHORA SÍ ES id_programa
         );
 
         echo json_encode(
@@ -131,6 +132,10 @@ switch ($accion) {
         );
     break;
 
+
+    // ==========================
+    // Actualizar usuario
+    // ==========================
     case 'actualizar':
         $data = json_decode(file_get_contents("php://input"), true);
 

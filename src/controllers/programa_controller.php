@@ -14,7 +14,7 @@ if (!isset($conn)) {
 }
 
 $programa = new Programa($conn);
-$accion = $_GET['accion'] ?? '';
+$accion = $_GET['accion'] ?? '';  
 
 if ($accion === '') {
     echo json_encode(['error'=>'Debe especificar acción']);
@@ -25,44 +25,7 @@ switch ($accion) {
 
     //List programs
     case 'listar':
-        $programasList = $programa->listar();
-
-        foreach ($programasList as &$p) {
-            $instructores = $programa->listarInstructoresPorPrograma($p['id_programa']);
-            $p['instructores'] = count($instructores);
-        }
-
-        echo json_encode($programasList);
-        break;
-
-    
-    //List instructors by program
-    case 'listar_instructores_programa':
-        $id_programa = $_GET['id_programa'] ?? null;
-
-        if (!$id_programa) {
-            echo json_encode(['error'=>'Debe enviar id_programa']);
-            exit;
-        }
-
-        echo json_encode($programa->listarInstructoresPorPrograma($id_programa));
-        break;
-
-    //Count instructors
-    case 'contar_instructores':
-        echo json_encode($programa->contarInstructores());
-        break;
-
-    //Count instructors by program    
-    case 'contar_instructores_programa':
-        $id_programa = $_GET['id_programa'] ?? null;
-
-        if (!$id_programa) {
-            echo json_encode(['error'=>'Debe enviar id_programa']);
-            exit;
-        }
-
-        echo json_encode($programa->contarInstructoresPorPrograma($id_programa));
+        echo json_encode($programa->listar());
         break;
 
     //Get program by id
@@ -91,9 +54,7 @@ switch ($accion) {
             exit;
         }
 
-        $nivel = trim($nivel);
-
-        if (!in_array($nivel, ['Tecnico', 'Tecnologo'])) {
+        if (!in_array($nivel, ['Técnico','Tecnólogo','Tecnico','Tecnologo'], true)) {
             echo json_encode(['error'=>'Nivel invalido']);
             exit;
         }
@@ -132,7 +93,7 @@ switch ($accion) {
             exit;
         }
 
-        if (!in_array($nivel, ['Tecnico','Tecnologo'], true)) {
+        if (!in_array($nivel, ['Técnico','Tecnólogo'], true)) {
             echo json_encode(['error'=>'Nivel inválido']);
             exit;
         }

@@ -352,7 +352,7 @@ $pieGradient = implode(", ", $gradientParts);
             <p class="text-sm font-medium truncate"><?php echo htmlspecialchars($solicitud["instructor_nombre"]); ?></p>
             <p class="text-xs text-muted-foreground">Ficha <?php echo htmlspecialchars($solicitud["ficha_numero"]); ?></p>
             </div>
-            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs border <?php echo $badgeClasses; ?>">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs  <?php echo $badgeClasses; ?>">
             <?php echo htmlspecialchars($estado); ?>
             </span>
         </div>
