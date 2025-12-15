@@ -84,7 +84,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
       </div>
 
       <!-- SEARCH + ESTADO FILTER -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between my-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
         <!-- Search -->
         <div class="w-full sm:max-w-xs relative">
@@ -102,7 +102,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
         </div>
 
         <!-- Estado filter -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between my-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <!-- ... (búsqueda) ... -->
     
         <!-- Estado filter actualizado para 3 estados -->
@@ -236,7 +236,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
         <!-- FOOTER -->
         <div class="flex justify-end gap-2 pt-4">
           <button id="btnCancelarModalFicha" type="button"
-            class="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm hover:bg-muted">
+            class="inline-flex items-center justify-center rounded-md border border-input px-4 py-2 text-sm hover:bg-muted">
             Cancelar
           </button>
 
