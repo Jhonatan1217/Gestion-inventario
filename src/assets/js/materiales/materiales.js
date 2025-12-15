@@ -138,7 +138,7 @@ function showFlowbiteAlert(type, message) {
     titleText = "Éxito"
     iconSVG = `
       <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293 2.293z"/>
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm-1 15-4-4 1.414-1.414L9 12.172l4.586-4.586L15 9z"/>
       </svg>
     `
   }
@@ -149,7 +149,7 @@ function showFlowbiteAlert(type, message) {
     titleText = "Error"
     iconSVG = `
       <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293 2.293z"/>
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293-2.293 1.414 1.414-2.293 2.293 2.293 2.293z"/>
       </svg>
     `
   }
@@ -203,7 +203,7 @@ function showAlert(message, type = "success") {
 }
 
 function validateMaterialPayload(data, { isEdit = false, id = null } = {}) {
-  const nameRegex = /^[A-Za-zÁÉÍÓÚÜÑñáéíóúüñ\s\-.]{3,80}$/
+  const nameRegex = /^[A-Za-z0-9ÁÉÍÓÚÜÑñáéíóúüñ\s\-.]{3,80}$/
   const codeRegex = /^[A-Za-z0-9_-]{3,30}$/
 
   if (!data.nombre) {
@@ -281,6 +281,8 @@ function getDataToRender() {
 const icons = {
   eye: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
   edit: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
+  check: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+  x: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
   trash:
     '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
   menu: '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>',
@@ -307,11 +309,10 @@ function renderTable() {
   paginatedData.forEach((material) => {
     const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
     const statusText = material.enabled ? "Disponible" : "Agotado"
-    const rowClass = !material.enabled ? "disabled-row" : ""
     const codigoDisplay = material.codigo || "-"
 
     const row = document.createElement("tr")
-    row.className = `hover:bg-muted/40 ${rowClass}`
+    row.className = "hover:bg-muted/40"
     row.dataset.materialId = material.id
 
     row.innerHTML = `
@@ -327,15 +328,14 @@ function renderTable() {
       </td>
       <td class="px-4 py-3 align-middle text-sm max-w-xs truncate" title="${material.description}">${material.description}</td>
       <td class="px-4 py-3 align-middle">
-        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium badge-clasificacion-base ${material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"}">
           ${material.clasificacion}
         </span>
       </td>
       <td class="px-4 py-3 align-middle text-sm font-medium">${codigoDisplay}</td>
       <td class="px-4 py-3 align-middle text-sm">${material.unit}</td>
       <td class="px-4 py-3 align-middle">
-        <span class="inline-flex items-center gap-1 px-2 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${!material.enabled ? "inactive" : "active"}">
-          <span class="w-2 h-2 ${!material.enabled ? "bg-red-700" : "bg-green-500"} rounded-full"></span>
+        <span class="inline-flex items-center px-2 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${!material.enabled ? "inactive" : "active"}">
           ${statusText}
         </span>
       </td>
@@ -371,12 +371,11 @@ function renderTable() {
             <hr class="border-border my-1">
             <button 
               type="button"
-              class="flex w-full items-center px-3 py-2 text-sm hover:bg-muted rounded-b-xl"
+              class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted rounded-b-xl"
               onclick="toggleMaterialStatus(${material.id}, event)"
-              style="color: ${!material.enabled ? "#16a34a" : "#dc2626"}; background-color: ${!material.enabled ? "#dcfce7" : "#fee2e2"};"
             >
-              ${icons.trash}
-              <span class="ml-2">${!material.enabled ? "Activar" : "Desactivar"}</span>
+              ${!material.enabled ? icons.check : icons.x}
+              <span class="ml-2">${!material.enabled ? "Disponible" : "Agotado"}</span>
             </button>
           </div>
         </div>
@@ -404,9 +403,7 @@ function renderCards() {
     const codigoDisplay = material.codigo || "Sin código"
 
     const card = document.createElement("div")
-    card.className = `rounded-2xl border border-border bg-card p-2.5 shadow-sm flex flex-col gap-1.5 ${
-      !material.enabled ? "disabled" : ""
-    }`
+    card.className = "rounded-2xl border border-border bg-card p-2.5 shadow-sm flex flex-col gap-1.5"
     card.dataset.materialId = material.id
 
     card.innerHTML = `
@@ -458,8 +455,8 @@ function renderCards() {
               class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted rounded-b-xl"
               onclick="event.stopPropagation(); toggleMaterialStatus(${material.id}, event)"
             >
-              ${icons.trash}
-              <span class="ml-2">${material.enabled ? "Desactivar" : "Activar"}</span>
+              ${material.enabled ? icons.x : icons.check}
+              <span class="ml-2">${material.enabled ? "Agotado" : "Disponible"}</span>
             </button>
           </div>
         </div>
@@ -478,7 +475,7 @@ function renderCards() {
 
       <div class="flex items-center justify-between">
         <div class="flex flex-wrap gap-1.5">
-          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium badge-clasificacion-base ${material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"}">
             ${material.clasificacion}
           </span>
           <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusClass}">
@@ -614,15 +611,57 @@ function openDetailsModal(id) {
   const material = materialsData.find((m) => m.id === id)
   if (!material) return
 
-  document.getElementById("detailName").textContent = material.name
-  document.getElementById("detailCode").textContent = material.codigo || "Sin código"
-  document.getElementById("detailDescription").textContent = material.description
-  document.getElementById("detailClasificacion").textContent = material.clasificacion
-  document.getElementById("detailUnidad").textContent = material.unit
-  document.getElementById("detailStatus").textContent = material.enabled ? "Disponible" : "Agotado"
-  document.getElementById("detailStatus").className = material.enabled
-    ? "inline-block px-2 py-1 rounded text-xs font-medium bg-success text-success-foreground"
-    : "inline-block px-2 py-1 rounded text-xs font-medium bg-gray-300 text-gray-600"
+  const estadoBadgeClass = material.enabled ? "badge-estado-activo" : "badge-estado-inactivo"
+  const clasificacionBadgeClass = material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"
+
+  // Obtener iniciales del nombre del material
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase()
+  }
+
+  const detailsContent = document.getElementById("detailsContent")
+  detailsContent.innerHTML = `
+    <div class="flex items-start gap-4 pb-4 border-b border-border">
+      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-lg font-semibold flex-shrink-0">
+        ${getInitials(material.name)}
+      </div>
+      <div class="flex-1">
+        <h3 class="font-semibold text-lg">${material.name}</h3>
+        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-clasificacion-base ${clasificacionBadgeClass}">
+          ${material.clasificacion}
+        </span>
+      </div>
+    </div>
+    
+    <div class="grid gap-3 text-sm">
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Código:</span>
+        <span class="col-span-2 font-medium">${material.codigo || "Sin código"}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Descripción:</span>
+        <span class="col-span-2">${material.description}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Unidad:</span>
+        <span class="col-span-2">${material.unit}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Estado:</span>
+        <div class="col-span-2">
+          <span class="badge-estado-base ${estadoBadgeClass}">
+            ${material.enabled ? "Disponible" : "Agotado"}
+          </span>
+        </div>
+      </div>
+    </div>
+  `
 
   document.getElementById("detailsModal").classList.add("active")
 }

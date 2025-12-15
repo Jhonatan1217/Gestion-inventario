@@ -95,9 +95,9 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   </div>
 
   <!-- FILTRO A LA DERECHA -->
-  <div class="flex items-center gap-2 ml-4">
+  <div class="flex items-center gap-2">
     <!-- Ícono de filtro -->
-    <svg class="h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+    <svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
       <path
         d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
         stroke="currentColor"
@@ -277,7 +277,6 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     </div>
 
     <!-- DETAILS MODAL -->
-    <!-- Updated details modal for new structure -->
     <div id="detailsModal" class="modal-overlay">
         <div class="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-lg">
             <div class="flex items-start justify-between gap-4 mb-4">
@@ -296,39 +295,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 </button>
             </div>
             
-            <!-- Reorganizado el orden de los campos según la imagen proporcionada -->
             <div id="detailsContent" class="space-y-4">
-                <div class="flex items-center gap-3 pb-3 border-b border-border">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: rgba(57, 169, 0, 0.1);">
-                        <svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    </div>
-                    <div>
-                        <p class="font-bold text-foreground text-sm" id="detailName">Cemento gris</p>
-                        <p class="text-xs text-muted-foreground" id="detailCode">MAT-001</p>
-                    </div>
-                </div>
-                
-                <!-- Descripción primero y en col-span-2 -->
-                <div>
-                    <p class="text-xs text-muted-foreground font-semibold">Descripción:</p>
-                    <p class="text-foreground" id="detailDescription">Cemento gris uso general 50kg para construcción</p>
-                </div>
-                
-                <!-- Grid con 2 columnas para los demás campos -->
-                <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Clasificación:</p>
-                        <p class="text-foreground" id="detailClasificacion">Inventariado</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Unidad:</p>
-                        <p class="text-foreground" id="detailUnidad">Bolsa</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-muted-foreground font-semibold">Estado:</p>
-                        <span class="inline-block px-2 py-1 rounded text-xs font-medium bg-success text-success-foreground" id="detailStatus">Disponible</span>
-                    </div>
-                </div>
+                <!-- Se llena dinámicamente con JS -->
             </div>
         </div>
     </div>
