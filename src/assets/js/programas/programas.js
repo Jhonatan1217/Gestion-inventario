@@ -1,3 +1,82 @@
+// ========== HELPER FUNCTION: Filter and show/hide empty states ==========
+function applyFilterAndUpdateEmptyStates() {
+  const searchInput = document.querySelector('input[placeholder="Buscar por nombre..."]')
+  const searchTerm = (searchInput?.value ?? '').toLowerCase().trim()
+  const filterEstado = document.getElementById('selectFiltroEstado').value
+  
+  // Get all table rows and grid cards
+  const tableRows = document.querySelectorAll('#tableView tbody tr[data-index]')
+  const gridCards = document.querySelectorAll('#gridView [data-index]')
+  const tableView = document.getElementById('tableView')
+  const gridView = document.getElementById('gridView')
+  
+  let visibleRowCount = 0
+  let visibleCardCount = 0
+  
+  // Filter table rows
+  tableRows.forEach(row => {
+    const nombre = row.dataset.nombre?.toLowerCase() ?? ''
+    const estado = String(row.dataset.estado ?? '')
+    
+    const matchesSearch = searchTerm === '' || nombre.includes(searchTerm)
+    const matchesFilter = filterEstado === '' || estado === filterEstado
+    
+    if (matchesSearch && matchesFilter) {
+      row.classList.remove('hidden')
+      visibleRowCount++
+    } else {
+      row.classList.add('hidden')
+    }
+  })
+  
+  // Filter grid cards
+  gridCards.forEach(card => {
+    const nombre = card.dataset.nombre?.toLowerCase() ?? ''
+    const estado = String(card.dataset.estado ?? '')
+    
+    const matchesSearch = searchTerm === '' || nombre.includes(searchTerm)
+    const matchesFilter = filterEstado === '' || estado === filterEstado
+    
+    if (matchesSearch && matchesFilter) {
+      card.classList.remove('hidden')
+      visibleCardCount++
+    } else {
+      card.classList.add('hidden')
+    }
+  })
+  
+  // Show/hide empty states and tables
+  const emptyState = document.getElementById('emptyStateProgramas')
+  const emptySearch = document.getElementById('emptySearchProgramas')
+  
+  const totalRows = tableRows.length
+  const totalCards = gridCards.length
+  const totalProgramas = totalRows + totalCards > 0 ? totalRows : totalCards
+  
+  if (totalProgramas === 0) {
+    // No programas in system
+    emptyState?.classList.remove('hidden')
+    emptySearch?.classList.add('hidden')
+    tableView?.classList.add('hidden')
+    gridView?.classList.add('hidden')
+  } else if (visibleRowCount === 0 && visibleCardCount === 0) {
+    // Programas exist but no results for current search/filter
+    emptyState?.classList.add('hidden')
+    emptySearch?.classList.remove('hidden')
+    tableView?.classList.add('hidden')
+    gridView?.classList.add('hidden')
+  } else {
+    // Results found
+    emptyState?.classList.add('hidden')
+    emptySearch?.classList.add('hidden')
+    tableView?.classList.remove('hidden')
+    // Nota: gridView será mostrado/ocultado por toggleView()
+    if (!gridView?.classList.contains('hidden')) {
+      gridView?.classList.remove('hidden')
+    }
+  }
+}
+
 // Function to switch between table and grid view
 function toggleView(view) {
   const tableView = document.getElementById("tableView")
@@ -95,7 +174,7 @@ function openViewModal(index) {
     document.getElementById("view_description").textContent = row.dataset.descripcion
     document.getElementById("view_nivel").textContent = row.dataset.nivel
     document.getElementById("view_duracion").textContent = row.dataset.duracion
-    
+
     // Normalize state and display human-friendly badge (Activo / Inactivo)
     const estadoAttrView = String(row.dataset.estado ?? '').trim()
     const estadoHuman = (estadoAttrView === '1' || estadoAttrView === '0')
@@ -349,4 +428,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
   })
+
+  // ========== SEARCH AND FILTER EVENT LISTENERS ==========
+  // Search input listener
+  const searchInput = document.querySelector('input[placeholder="Buscar por nombre..."]')
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilterAndUpdateEmptyStates)
+  }
+
+  // State filter listener (already exists but enhance it)
+  const filterSelect = document.getElementById('selectFiltroEstado')
+  if (filterSelect) {
+    filterSelect.addEventListener('change', applyFilterAndUpdateEmptyStates)
+  }
+
+  // Initial call to check empty states on page load
+  applyFilterAndUpdateEmptyStates()
 })

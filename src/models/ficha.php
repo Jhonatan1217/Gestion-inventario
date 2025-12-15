@@ -9,9 +9,7 @@ class FichaModel {
         $this->conn = $db;
     }
 
-    /* ============================
-       LISTAR TODAS LAS FICHAS
-    ============================ */
+    /*List all FICHAS*/
     public function listar() {
         try {
             $sql = "SELECT * FROM " . $this->table;
@@ -25,9 +23,7 @@ class FichaModel {
         }
     }
 
-    /* ============================
-       OBTENER FICHA POR ID
-    ============================ */
+    /*Get FICHA for ID*/
     public function obtener($id) {
         try {
             $sql = "SELECT * FROM " . $this->table . " WHERE id_ficha = ?";
@@ -41,9 +37,7 @@ class FichaModel {
         }
     }
 
-    /* ============================
-       CREAR FICHA
-    ============================ */
+    /*Create FICHA*/
     public function crear($data) {
         try {
             $sql = "INSERT INTO " . $this->table . "
@@ -67,9 +61,7 @@ class FichaModel {
         }
     }
 
-    /* ============================
-       ACTUALIZAR FICHA
-    ============================ */
+    /*Update FICHA*/
     public function actualizar($data) {
         try {
             $sql = "UPDATE " . $this->table . "
@@ -100,31 +92,15 @@ class FichaModel {
         }
     }
 
-    /* ============================
-       ACTIVAR FICHA
-    ============================ */
-    public function activar($id) {
+    public function cambiarEstado($id, $estado) {
         try {
-            $sql = "UPDATE " . $this->table . " SET estado = 'Activa' WHERE id_ficha = ?";
+            $sql = "UPDATE " . $this->table . " SET estado = ? WHERE id_ficha = ?";
             $stmt = $this->conn->prepare($sql);
-            return $stmt->execute([$id]);
+            return $stmt->execute([$estado, $id]);
 
         } catch (Exception $e) {
             return false;
         }
     }
 
-    /* ============================
-       INACTIVAR FICHA
-    ============================ */
-    public function inactivar($id) {
-        try {
-            $sql = "UPDATE " . $this->table . " SET estado = 'Inactiva' WHERE id_ficha = ?";
-            $stmt = $this->conn->prepare($sql);
-            return $stmt->execute([$id]);
-
-        } catch (Exception $e) {
-            return false;
-        }
-    }
 }

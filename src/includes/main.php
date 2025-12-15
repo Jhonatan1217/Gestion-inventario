@@ -24,6 +24,10 @@ switch ($page) {
     case 'notificaciones':
         $viewFile = BASE_PATH . '/src/view/notificaciones/notificaciones.php';  // ajusta al archivo real
         break;
+    case 'movimientos':
+        $viewFile = BASE_PATH . '/src/view/movimientos/movimientos.php';  // ajusta al archivo real
+        break;
+        
     case 'programas':
     $viewFile = BASE_PATH . '/src/view/programas/programas.php';  // ajusta al archivo real
     break;
@@ -41,6 +45,10 @@ switch ($page) {
         break;        
     case 'rae':
         $viewFile = BASE_PATH . '/src/view/raes/raes.php';  // ajusta al archivo real
+        break;        
+
+    case 'solicitudes':
+        $viewFile = BASE_PATH . '/src/view/solicitudes/solicitudes.php';  // ajusta al archivo real
         break;        
 
     // ...agrega aquí más casos según tus carpetas/vistas...

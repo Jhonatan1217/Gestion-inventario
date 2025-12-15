@@ -35,11 +35,12 @@ class Usuario {
 
     // Function to create a new user
     public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $password, $id_programa = null) {
-        $stmt = $this->conn->prepare("
-            INSERT INTO usuarios 
-            (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, direccion, password, id_programa)
-            VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :direccion, :password, :id_programa)
-        ");
+        $sql = "INSERT INTO usuarios 
+                (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, password, direccion, estado, id_programa)
+                VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :password, :direccion, 'activo', :programa)";
+        $stmt = $this->conn->prepare($sql);
+        
+        $hash = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt->bindParam(':nombre', $nombre);
         $stmt->bindParam(':tipo_doc', $tipo_doc);
@@ -47,13 +48,15 @@ class Usuario {
         $stmt->bindParam(':telefono', $telefono);
         $stmt->bindParam(':cargo', $cargo);
         $stmt->bindParam(':correo', $correo);
+        $stmt->bindParam(':password', $hash); 
         $stmt->bindParam(':direccion', $direccion);
-        $stmt->bindParam(':password', $password);
 
-        if ($id_programa === null) {
-            $stmt->bindValue(':id_programa', null, PDO::PARAM_NULL);
+        // 👇 manejo correcto del programa (NULL u entero)
+        if ($id_programa === null || $id_programa === '' ) {
+            $stmt->bindValue(':programa', null, PDO::PARAM_NULL);
         } else {
-            $stmt->bindValue(':id_programa', $id_programa, PDO::PARAM_INT);
+            $idProgramaInt = (int)$id_programa;
+            $stmt->bindValue(':programa', $idProgramaInt, PDO::PARAM_INT);
         }
 
         return $stmt->execute();

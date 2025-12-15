@@ -40,7 +40,7 @@ if ($page === 'landing') {
     } else {
         echo "<p style='color:red; text-align:center; padding:2rem;'>
                 No se encontró la vista <strong>landing.php</strong>.
-              </p>";
+            </p>";
     }
     exit; // importante: no seguir renderizando el layout
 }

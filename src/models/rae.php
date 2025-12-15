@@ -19,7 +19,7 @@ class RaeModel {
     }
 
     /* GET RAE BY ID */
-    public function obtener(int $id): ?array {
+    public function obtenerPorId(int $id): ?array {
         try {
             $sql = "SELECT * FROM raes WHERE id_rae = :id LIMIT 1";
             $stmt = $this->conn->prepare($sql);
@@ -37,21 +37,26 @@ class RaeModel {
     /* CREATE RAE */
     public function crear(
         string $codigo_rae,
-        string $descripcion_rae,
-        int $id_programa,
+        string $nombre_rae,
+        string $descripcion,
+        int $id_ficha,
+        string $fecha_inicio,
+        string $fecha_fin,
         string $estado
     ): bool {
         try {
             $sql = "INSERT INTO raes 
-                    (codigo_rae, descripcion_rae, id_programa, estado)
-                    VALUES (:codigo, :descripcion, :programa, :estado)";
+                    (codigo_rae, nombre_rae, descripcion, id_ficha, fecha_inicio, fecha_fin, estado)
+                    VALUES (:codigo, :nombre, :descripcion, :ficha, :inicio, :fin, :estado)";
 
             $stmt = $this->conn->prepare($sql);
-
-            $stmt->bindValue(':codigo', $codigo_rae);
-            $stmt->bindValue(':descripcion', $descripcion_rae);
-            $stmt->bindValue(':programa', $id_programa, PDO::PARAM_INT);
-            $stmt->bindValue(':estado', $estado);
+            $stmt->bindParam(':codigo', $codigo_rae);
+            $stmt->bindParam(':nombre', $nombre_rae);
+            $stmt->bindParam(':descripcion', $descripcion);
+            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
+            $stmt->bindParam(':inicio', $fecha_inicio);
+            $stmt->bindParam(':fin', $fecha_fin);
+            $stmt->bindParam(':estado', $estado);
 
             return $stmt->execute();
 
@@ -88,9 +93,17 @@ class RaeModel {
         $params[] = $descripcion_rae;
     }
 
-    if ($estado !== null) {
-        $campos[] = "estado = ?";
-        $params[] = $estado;
+    /* DELETE RAE */
+    public function eliminar(int $id): bool {
+        try {
+            $sql = "DELETE FROM raes WHERE id_rae = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error al eliminar RAE: " . $e->getMessage());
+            return false;
+        }
     }
 
     if (empty($campos)) {
@@ -109,15 +122,29 @@ class RaeModel {
     /* CHANGE RAE STATE (Active/Inactive)*/
     public function cambiarEstado(int $id, string $estado): bool {
         try {
-            $sql = "UPDATE raes SET estado = :estado WHERE id_rae = :id"; // Update only estado
+            $sql = "UPDATE raes SET estado = :estado WHERE id_rae = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':estado', $estado);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             return $stmt->execute();
         } catch (PDOException $e) {
-            error_log("Error cambiar estado bodega: " . $e->getMessage());
+            error_log("Error al cambiar estado de RAE: " . $e->getMessage());
             return false;
         }
     }
 
+    /*LIST RAEs BY FICHA */
+    public function listarPorFicha(int $id_ficha): array {
+        try {
+            $sql = "SELECT * FROM raes WHERE id_ficha = :ficha ORDER BY fecha_inicio DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
 }

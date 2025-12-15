@@ -91,6 +91,17 @@ function formatCOP($number)
 {
     return '$' . number_format($number, 0, ',', '.');
 }
+
+// =====================================================
+// ✅ ADAPTACIÓN SIDEBAR (SIN TOCAR TU BASE)
+//   - si tu sidebar usa ?coll=1, lo detectamos aquí
+//   - y ajustamos el padding/offset del contenido
+// =====================================================
+$collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
+
+// En desktop dejamos espacio para el sidebar (igual que tu header):
+// expandido: 260px, colapsado: 70px
+$contentOffsetClass = $collapsed ? 'lg:pl-[90px]' : 'lg:pl-[260px]';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -105,9 +116,9 @@ function formatCOP($number)
     <link rel="stylesheet" href="src/assets/css/reportes/reportes.css">
 </head>
 <body class="min-h-screen">
-    <!-- SOLO CAMBIO: añadí la clase page-with-sidebar aquí -->
-    <!-- Y AHORA ADEMÁS: lg:pl-[280px] para dejar espacio al sidebar en escritorio -->
-    <div class="page-with-sidebar w-full px-6 pt-8 pb-8 lg:pl-[280px]">
+
+    <!-- ✅ SOLO ADAPTACIÓN: el contenido ahora respeta sidebar colapsado/expandido -->
+    <div class="page-with-sidebar w-full px-6 pt-8 pb-8 <?php echo $contentOffsetClass; ?>">
 
         <div class="space-y-6 animate-fade-in-up">
             <!-- Header -->
@@ -123,7 +134,7 @@ function formatCOP($number)
             <!-- Tabs -->
             <div class="w-full">
                 <div class="inline-flex bg-muted p-1 rounded-lg gap-1 max-w-md w-full">
-                    <a href="?page=reportes&tab=estadisticas"
+                    <a href="?page=reportes&tab=estadisticas<?php echo $collapsed ? '&coll=1' : ''; ?>"
                        class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all
                               <?= $activeTab === 'estadisticas' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground' ?>">
                         <svg class="w-4 h-4"
@@ -141,7 +152,7 @@ function formatCOP($number)
                         Estadísticas
                     </a>
 
-                    <a href="?page=reportes&tab=reportes"
+                    <a href="?page=reportes&tab=reportes<?php echo $collapsed ? '&coll=1' : ''; ?>"
                        class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all
                               <?= $activeTab === 'reportes' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground' ?>">
                         <svg class="w-4 h-4"
@@ -266,10 +277,8 @@ function formatCOP($number)
                                         <div class="space-y-3">
                                             <?php foreach ($consumoPorPrograma as $item): ?>
                                                 <div class="flex items-center gap-3">
-                                                    <!-- bolita -->
                                                     <span class="h-3 w-3 rounded-full"
                                                           style="background-color: <?= $item['color'] ?>"></span>
-                                                    <!-- título con el mismo color -->
                                                     <span class="text-sm font-medium"
                                                           style="color: <?= $item['color'] ?>">
                                                         <?= htmlspecialchars($item['name']) ?>
@@ -387,7 +396,6 @@ function formatCOP($number)
                                 <div class="bg-card border border-border rounded-lg shadow-sm hover:shadow-lg transition-shadow">
                                     <div class="p-6 pb-3">
                                         <div class="flex items-start gap-4">
-                                            <!-- Cuadrito con la tonalidad del verde secundario -->
                                             <div class="rounded-2xl p-3"
                                                  style="background-color: rgba(0, 120, 50, 0.08);">
                                                 <?php if ($report['icon'] === 'file-text'): ?>
@@ -475,7 +483,6 @@ function formatCOP($number)
                                     </div>
                                     <div class="p-6 pt-3">
                                         <div class="flex gap-2">
-                                            <!-- Botón en verde secundario -->
                                             <button onclick="handleGenerateReport('<?= $report['id'] ?>')"
                                                     class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition-opacity">
                                                 <svg class="w-4 h-4"
@@ -592,7 +599,6 @@ function formatCOP($number)
                                     </div>
                                 </div>
                                 <div class="flex justify-end pt-4">
-                                    <!-- Botón principal en verde secundario -->
                                     <button class="inline-flex items-center gap-2 px-6 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition-opacity">
                                         <svg class="w-4 h-4"
                                              xmlns="http://www.w3.org/2000/svg"
@@ -630,8 +636,8 @@ function formatCOP($number)
             accent:     '#50E5F9',
             warning:    '#FDC300',
             purple:     '#71277A',
-            navy:       '#002B49',  // Azul oscuro
-            lightGreen: '#6CC24A',  // Verde claro para Construcción
+            navy:       '#002B49',
+            lightGreen: '#6CC24A',
             foreground: '#00304D',
             border:     'rgba(0, 48, 77, 0.12)'
         };
@@ -647,13 +653,13 @@ function formatCOP($number)
                     {
                         label: 'Consumo',
                         data: consumoPorMes.map(d => d.consumo),
-                        backgroundColor: chartColors.secondary, // verde oscuro
+                        backgroundColor: chartColors.secondary,
                         borderRadius: 4
                     },
                     {
                         label: 'Devoluciones',
                         data: consumoPorMes.map(d => d.devoluciones),
-                        backgroundColor: chartColors.navy, // azul oscuro
+                        backgroundColor: chartColors.navy,
                         borderRadius: 4
                     }
                 ]
@@ -691,12 +697,11 @@ function formatCOP($number)
                 labels: consumoPorPrograma.map(d => d.name),
                 datasets: [{
                     data: consumoPorPrograma.map(d => d.value),
-                    // Colores fijos de la dona (NO se cambian)
                     backgroundColor: [
-                        chartColors.lightGreen, // Construcción
-                        chartColors.secondary,  // Eléctrico
-                        chartColors.navy,       // Herramientas
-                        chartColors.purple      // Pinturas / Otros
+                        chartColors.lightGreen,
+                        chartColors.secondary,
+                        chartColors.navy,
+                        chartColors.purple
                     ],
                     borderWidth: 0
                 }]
@@ -705,9 +710,7 @@ function formatCOP($number)
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '60%',
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             }
         });
 
@@ -728,9 +731,7 @@ function formatCOP($number)
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: {
                         ticks: { color: chartColors.foreground },

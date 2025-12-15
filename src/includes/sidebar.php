@@ -20,6 +20,9 @@ $navigation = [
 // Estado del sidebar
 $collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
 
+// ✅ Mantener estado collapsed en toda la navegación (sin cambiar tu base)
+$collQuery = $collapsed ? '&coll=1' : '';
+
 // 🔹 Mapeo de tus claves a nombres reales de Lucide
 function getLucideIconName(string $key): string {
   switch ($key) {
@@ -58,7 +61,8 @@ if (!defined('BASE_URL')) {
   <!-- Logo -->
   <div class="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
     <?php if (!$collapsed): ?>
-      <a href="<?= BASE_URL ?>index.php?page=dashboard" class="flex items-center gap-3">
+      <!-- ✅ Conserva coll en el logo también -->
+      <a href="<?= BASE_URL ?>index.php?page=dashboard<?= $collQuery ?>" class="flex items-center gap-3">
         <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-white">
           <img
             src="src/assets/img/logo-sena-negro.png"
@@ -87,43 +91,39 @@ if (!defined('BASE_URL')) {
     <nav class="flex flex-col gap-1">
 
       <?php foreach ($navigation as $item): ?>
-  <?php
-    // URL final SIEMPRE pasa por index.php?page=...
-    $itemHref = BASE_URL . 'index.php?page=' . $item['page'];
+        <?php
+          // URL final SIEMPRE pasa por index.php?page=... y conserva coll
+          $itemHref = BASE_URL . 'index.php?page=' . $item['page'] . $collQuery;
 
-    // ✅ Dashboard siempre activo, los demás solo si coinciden con $currentPage
-    if ($item['page'] === 'dashboard') {
-        $isActive = true;                      // siempre verde
-    } else {
-        $isActive = ($currentPage === $item['page']);  // activo solo si es la página actual
-    }
+          // ✅ Ya NO es dashboard siempre activo: activo solo si coincide con la página actual
+          $isActive = ($currentPage === $item['page']);
 
-    $iconName = getLucideIconName($item["icon"]);
-  ?>
+          $iconName = getLucideIconName($item["icon"]);
+        ?>
 
-  <a href="<?php echo $itemHref; ?>"
-    class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all
-    <?php echo $isActive
-      ? 'bg-sidebar-accent text-sidebar-primary'
-      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'; ?>"
-  >
-    <i
-      data-lucide="<?php echo htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8'); ?>"
-      class="h-5 w-5 shrink-0 <?php echo $isActive ? 'text-sidebar-primary' : ''; ?>"
-    ></i>
+        <a href="<?php echo $itemHref; ?>"
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all
+          <?php echo $isActive
+            ? 'bg-sidebar-accent text-sidebar-primary'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'; ?>"
+        >
+          <i
+            data-lucide="<?php echo htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8'); ?>"
+            class="h-5 w-5 shrink-0 <?php echo $isActive ? 'text-sidebar-primary' : ''; ?>"
+          ></i>
 
-    <?php if (!$collapsed): ?>
-      <span class="flex-1"><?php echo $item["name"]; ?></span>
+          <?php if (!$collapsed): ?>
+            <span class="flex-1"><?php echo $item["name"]; ?></span>
 
-      <?php if (isset($item["badge"])): ?>
-        <span class="h-5 min-w-5 flex items-center justify-center bg-primary text-white text-[11px] rounded-full">
-          <?php echo $item["badge"]; ?>
-        </span>
-      <?php endif; ?>
-    <?php endif; ?>
-  </a>
+            <?php if (isset($item["badge"])): ?>
+              <span class="h-5 min-w-5 flex items-center justify-center bg-primary text-white text-[11px] rounded-full">
+                <?php echo $item["badge"]; ?>
+              </span>
+            <?php endif; ?>
+          <?php endif; ?>
+        </a>
 
-<?php endforeach; ?>
+      <?php endforeach; ?>
 
     </nav>
   </div>
@@ -134,7 +134,7 @@ if (!defined('BASE_URL')) {
 
       <!-- Bell -->
       <a 
-        href="<?= BASE_URL ?>index.php?page=notificaciones"
+        href="<?= BASE_URL ?>index.php?page=notificaciones<?= $collQuery ?>"
         class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent"
       >
         <i data-lucide="bell" class="h-5 w-5"></i>
@@ -159,7 +159,6 @@ if (!defined('BASE_URL')) {
           <i data-lucide="chevron-left" class="h-5 w-5"></i>
         <?php endif; ?>
       </a>
-
 
     </div>
   </div>

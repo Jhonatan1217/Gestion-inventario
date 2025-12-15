@@ -92,34 +92,16 @@ try {
         <?php
             // include_once __DIR__ . '/../../includes/footer.php';
         ?>
-        <!-- Page title -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
-            <p class="text-muted-foreground mt-1">Gestiona los programas técnicos y tecnológicos</p>
-        </div>
+        <!-- Page title + controls (aligned) -->
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-foreground">Programas de Formación</h1>
+                <p class="text-muted-foreground mt-1">Gestiona los programas técnicos y tecnológicos</p>
+            </div>
 
-        <!-- Main container with borders and shadow -->
-        <div class="bg-card rounded-lg shadow-sm">
-            <!-- Filter bar and actions -->
-            <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
-                
-                <!-- Search bar -->
-                <div class="relative flex-1 max-w-md">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
-                    <input 
-                        type="text" 
-                        placeholder="Buscar por nombre..." 
-                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-                    >
-                </div>
-                
-                <!-- Action buttons -->
-                <div class="flex items-center gap-3">
-                    
-                    <!-- View buttons (table/grid) -->
-                    <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-
-                    <!-- Table View -->
+            <!-- Right-side controls: view switch and "Nuevo Programa" -->
+            <div class="flex items-center gap-3">
+                <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
                     <button
                         type="button"
                         id="viewTableBtn"
@@ -127,7 +109,6 @@ try {
                         class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
                         title="Vista tabla"
                     >
-                        <!-- Icono lista -->
                         <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -135,7 +116,6 @@ try {
                         </svg>
                     </button>
 
-                    <!-- Card View -->
                     <button
                         type="button"
                         id="viewGridBtn"
@@ -143,7 +123,6 @@ try {
                         class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
                         title="Vista tarjetas"
                     >
-                        <!-- Icono grid -->
                         <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <rect x="4" y="4" width="7" height="7" rx="1"></rect>
@@ -152,24 +131,78 @@ try {
                             <rect x="13" y="13" width="7" height="7" rx="1"></rect>
                         </svg>
                     </button>
-
                 </div>
-                    
-                    <!-- New program button -->
-                    <button onclick="openCreateModal()" id="btnNewProgram" class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
-                        <i class="fas fa-plus"></i>
-                        Nuevo Programa
-                    </button>
-                    
-                    <!-- Dropdown filter -->
-                    <div class="relative">
-                        <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none"></i>
-                        <select id="selectFiltroEstado" class="pl-10 pr-8 py-2 border border-border rounded-lg appearance-none bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
-                            <option value="">Todos</option>
-                            <option value="1">Activos</option>
-                            <option value="0">Inactivos</option>
-                        </select>
+
+                <button onclick="openCreateModal()" id="btnNewProgram" class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
+                    <i class="fas fa-plus"></i>
+                    Nuevo Programa
+                </button>
+            </div>
+        </div>
+
+        <!-- Main container with borders and shadow -->
+        <div class="bg-card rounded-lg shadow-sm">
+
+            <!-- Filter row (Row 2: Search left + State filter right) -->
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+                <!-- Search bar (left) -->
+                <div class="relative flex-1 max-w-md">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar por nombre..." 
+                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                    >
+                </div>
+
+                <!-- State filter on right (icon matches Usuarios module) -->
+                <div class="flex items-center gap-2">
+                    <svg
+                        class="h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                    >
+                        <path
+                            d="M5 5h14a1 1 0 0 1 .8 1.6L15 12v4.5a1 1 0 0 1-.553.894l-3 1.5A1 1 0 0 1 10 18v-6L4.2 6.6A1 1 0 0 1 5 5z"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+
+                    <select id="selectFiltroEstado" class="rounded-lg border border-border appearance-none bg-background text-foreground px-3 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                        <option value="">Todos</option>
+                        <option value="1">Activos</option>
+                        <option value="0">Inactivos</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Empty State: No programas in system -->
+            <div id="emptyStateProgramas" class="hidden overflow-visible rounded-lg border border-border bg-card relative p-6 mb-6">
+                <div class="flex flex-col items-center justify-center py-12 px-4">
+                    <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-inbox text-2xl text-muted-foreground"></i>
                     </div>
+                    <h3 class="text-lg font-semibold text-foreground mb-2">No hay programas registrados</h3>
+                    <p class="text-sm text-muted-foreground text-center max-w-md">
+                        Comienza creando un nuevo programa de formación usando el botón "Nuevo Programa".
+                    </p>
+                </div>
+            </div>
+
+            <!-- Empty State: Search results empty -->
+            <div id="emptySearchProgramas" class="hidden overflow-visible rounded-lg border border-border bg-card relative p-6 mb-6">
+                <div class="flex flex-col items-center justify-center py-12 px-4">
+                    <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-search text-2xl text-muted-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-foreground mb-2">No se encontraron programas</h3>
+                    <p class="text-sm text-muted-foreground text-center max-w-md">
+                        No hay resultados que coincidan con tu búsqueda o filtros. Intenta con otros criterios.
+                    </p>
                 </div>
             </div>
 
