@@ -3,11 +3,11 @@ $collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
 $sidebarWidth = $collapsed ? "70px" : "260px";
 
 $bodegas = [
-    [1, "Bodega Principal - Eléctrico", "Eléctrico", "Bloque A, Piso 1", "Bodega", "Activo", 1],
-    [2, "Bodega Construcción", "Construcción", "Bloque A, Piso 2", "Bodega", "Activo", 3],
-    [3, "Sub-bodega Sanitario", "Sanitario", "Bloque B, Piso 1", "Sub-Bodega", "Activo", 4],
-    [4, "Bodega Herramientas", "Herramientas", "Bloque C, Piso 1", "Bodega", "Activo", 2],
-    [5, "Ejemplo", "Ejemplo", "Bloque A, Piso 3", "Bodega", "Inactivo", 1],
+    [1, "Bodega Principal - Eléctrico", "Insumos", "Bloque A, Piso 1", "Bodega", "Activo", 1],
+    [2, "Bodega Construcción", "Equipos", "Bloque A, Piso 2", "Bodega", "Activo", 3],
+    [3, "Sub-bodega Sanitario", "Insumos", "Bloque B, Piso 1", "Sub-Bodega", "Activo", 4],
+    [4, "Bodega Herramientas", "Equipos", "Bloque C, Piso 1", "Bodega", "Activo", 2],
+    [5, "Ejemplo", "Insumos", "Bloque A, Piso 3", "Bodega", "Inactivo", 1],
 ];
 ?>
 <!DOCTYPE html>
@@ -19,8 +19,8 @@ $bodegas = [
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <link rel="stylesheet" href="../../assets/css/globals.css" />
-  <script src="../../assets/js/bodegas.js" defer></script>
+  <link rel="stylesheet" href="src/assets/css/globals.css" />
+  <script src="src/assets/js/bodegas/bodegas.js" defer></script>
 </head>
 
 <body class="bg-gray-50 text-gray-900">
@@ -339,11 +339,8 @@ $bodegas = [
           <label class="block text-sm font-medium text-gray-700 mb-1">Clasificación *</label>
           <select
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Eléctrico</option>
-            <option>Construcción</option>
-            <option>Sanitario</option>
-            <option>Herramientas</option>
-            <option>Ejemplo</option>
+            <option>Insumos</option>
+            <option>Equipos</option>
           </select>
         </div>
 
@@ -437,11 +434,8 @@ $bodegas = [
           <select
             id="editClasificacion"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Eléctrico</option>
-            <option>Construcción</option>
-            <option>Sanitario</option>
-            <option>Herramientas</option>
-            <option>Ejemplo</option>
+            <option>Insumos</option>
+            <option>Equipos</option>
           </select>
         </div>
 
