@@ -3,7 +3,6 @@
 // =========================
 const API_URL = "src/controllers/ficha_controller.php"
 const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"
-const INSTRUCTORES_API_URL = "src/controllers/instructor_controller.php"
 
 // =========================
 // NIVEL CONFIGURATION (label and badge styles)
@@ -17,23 +16,20 @@ const nivelLabels = {
 const nivelBadgeStyles = {
   Tecnólogo: "badge-nivel-tecnologo",
   Técnico: "badge-nivel-tecnico",
-  Auxiliar: "badge-nivel-auxiliar",
-  Operario: "badge-nivel-operario",
 }
 
 // =========================
 // VALID LISTS ACCORDING TO DATABASE
 // =========================
-const VALID_NIVELES = ["Tecnólogo", "Técnico"]
+const VALID_NIVELES = ["Tecnólogo", "Técnico"];
 
 // In-memory list used to render table and cards
-let fichas = []
-let originalEditData = null
-let selectedFicha = null
-let programas = []
-let programasMap = {}
-let instructores = []
-let instructoresMap = {}
+let fichas = [];
+let originalEditData = null;
+let selectedFicha = null;
+
+let programas = [];
+let programasMap = {};
 
 // =========================
 // PAGINATION
@@ -76,11 +72,11 @@ function showFlowbiteAlert(type, message) {
       <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
       <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
     </svg>
-  `
+  `;
 
   if (type === "success") {
     borderColor = "border-emerald-500"
-    textColor = "text-emerald-900"
+    textColor = "text-primary-900"
     titleText = "Éxito"
     iconSVG = `
       <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
@@ -170,10 +166,13 @@ const hiddenFichaId = document.getElementById("hiddenFichaId")
 const modalFichaTitulo = document.getElementById("modalFichaTitulo")
 const modalFichaDescripcion = document.getElementById("modalFichaDescripcion")
 
-const inputNumeroFicha = document.getElementById("numero_ficha")
-const inputPrograma = document.getElementById("id_programa")
-const inputNivel = document.getElementById("nivel")
-const inputInstructor = document.getElementById("id_instructor")
+// Inputs del formulario de Fichas
+const inputNumeroFicha = document.getElementById("numero_ficha");
+const inputPrograma = document.getElementById("id_programa");
+const inputJornada = document.getElementById("jornada");
+const inputModalidad = document.getElementById("modalidad");
+const inputFechaInicio = document.getElementById("fecha_inicio");
+const inputFechaFin = document.getElementById("fecha_fin");
 
 const modalVerFicha = document.getElementById("modalVerFicha")
 const btnCerrarModalVerFicha = document.getElementById("btnCerrarModalVerFicha")
@@ -269,29 +268,8 @@ function renderOpcionesPrograma() {
     const opt = document.createElement("option")
     opt.value = p.id_programa
     opt.textContent = p.nombre_programa || p.nombre || ""
+    opt.dataset.nivel = p.nivel || "Tecnólogo"
     inputPrograma.appendChild(opt)
-  })
-}
-
-function renderOpcionesInstructor() {
-  if (!inputInstructor) return
-
-  inputInstructor.innerHTML = ""
-
-  if (!Array.isArray(instructores) || instructores.length === 0) {
-    inputInstructor.innerHTML = `<option value="">No hay instructores disponibles</option>`
-    inputInstructor.disabled = true
-    return
-  }
-
-  inputInstructor.disabled = false
-  inputInstructor.innerHTML = `<option value="">Seleccione un instructor</option>`
-
-  instructores.forEach((i) => {
-    const opt = document.createElement("option")
-    opt.value = i.id_instructor || i.id_usuario
-    opt.textContent = i.nombre_completo || `${i.nombres || ""} ${i.apellidos || ""}`.trim()
-    inputInstructor.appendChild(opt)
   })
 }
 
@@ -300,25 +278,17 @@ async function cargarProgramas() {
 
   try {
     const res = await fetch(`${PROGRAMAS_API_URL}?accion=listar`)
-    const text = await res.text()
-
-    let data
-    try {
-      const start = text.indexOf("[")
-      const end = text.lastIndexOf("]")
-      if (start !== -1 && end !== -1 && end > start) {
-        data = JSON.parse(text.slice(start, end + 1))
-      } else {
-        data = []
-      }
-    } catch (e) {
-      data = []
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     }
-
+    
+    const data = await res.json()
+    
     if (Array.isArray(data)) {
       programas = data.map((p) => ({
         id_programa: p.id_programa,
         nombre_programa: p.nombre_programa || p.nombre || "",
+        nivel: p.nivel || "Tecnólogo",
       }))
 
       programasMap = {}
@@ -327,55 +297,15 @@ async function cargarProgramas() {
       })
     } else {
       programas = []
+      console.error("La respuesta de programas no es un array:", data)
     }
 
     renderOpcionesPrograma()
   } catch (error) {
     console.error("Error al cargar programas:", error)
+    toastError("Error al cargar los programas")
     programas = []
     renderOpcionesPrograma()
-  }
-}
-
-async function cargarInstructores() {
-  if (!inputInstructor) return
-
-  try {
-    const res = await fetch(`${INSTRUCTORES_API_URL}?accion=listar`)
-    const text = await res.text()
-
-    let data
-    try {
-      const start = text.indexOf("[")
-      const end = text.lastIndexOf("]")
-      if (start !== -1 && end !== -1 && end > start) {
-        data = JSON.parse(text.slice(start, end + 1))
-      } else {
-        data = []
-      }
-    } catch (e) {
-      data = []
-    }
-
-    if (Array.isArray(data)) {
-      instructores = data.map((i) => ({
-        id_instructor: i.id_instructor || i.id_usuario,
-        nombre_completo: i.nombre_completo || `${i.nombres || ""} ${i.apellidos || ""}`.trim(),
-      }))
-
-      instructoresMap = {}
-      instructores.forEach((i) => {
-        instructoresMap[String(i.id_instructor)] = i.nombre_completo
-      })
-    } else {
-      instructores = []
-    }
-
-    renderOpcionesInstructor()
-  } catch (error) {
-    console.error("Error al cargar instructores:", error)
-    instructores = []
-    renderOpcionesInstructor()
   }
 }
 
@@ -388,28 +318,41 @@ function openModalFicha(editFicha = null) {
     modalFichaDescripcion.textContent = "Modifica la información de la ficha"
     hiddenFichaId.value = editFicha.id
 
-    inputNumeroFicha.value = editFicha.numero_ficha
+    // Cargar datos al formulario
+    inputNumeroFicha.value = editFicha.numero_ficha || ""
     inputPrograma.value = editFicha.id_programa || ""
-    inputNivel.value = editFicha.nivel || "Tecnólogo"
-    inputInstructor.value = editFicha.id_instructor || ""
+    inputJornada.value = editFicha.jornada || ""
+    inputModalidad.value = editFicha.modalidad || ""
+    inputFechaInicio.value = editFicha.fecha_inicio || ""
+    inputFechaFin.value = editFicha.fecha_fin || ""
 
+    // Datos originales para comparar cambios
     originalEditData = {
       numero_ficha: String(editFicha.numero_ficha ?? "").trim(),
       id_programa: editFicha.id_programa ? String(editFicha.id_programa) : "",
-      nivel: editFicha.nivel || "Tecnólogo",
-      id_instructor: editFicha.id_instructor ? String(editFicha.id_instructor) : "",
+      jornada: editFicha.jornada || "",
+      modalidad: editFicha.modalidad || "",
+      fecha_inicio: editFicha.fecha_inicio || "",
+      fecha_fin: editFicha.fecha_fin || "",
     }
+
   } else {
     modalFichaTitulo.textContent = "Crear Nueva Ficha"
     modalFichaDescripcion.textContent = "Complete los datos para registrar una nueva ficha de formación"
     hiddenFichaId.value = ""
-    formFicha.reset()
-    inputNivel.value = "Tecnólogo"
+
+    // Limpiar el formulario
+    inputNumeroFicha.value = ""
+    inputPrograma.value = ""
+    inputJornada.value = ""
+    inputModalidad.value = ""
+    inputFechaInicio.value = ""
+    inputFechaFin.value = ""
+    
     originalEditData = null
   }
 
   renderOpcionesPrograma()
-  renderOpcionesInstructor()
 }
 
 function closeModalFicha() {
@@ -423,29 +366,23 @@ function openModalVerFicha(ficha) {
   selectedFicha = ficha
   modalVerFicha.classList.add("active")
 
-  const estadoBadgeClass = ficha.estado ? "badge-estado-activo" : "badge-estado-inactivo"
-
   const programaNombre = ficha.id_programa
     ? programasMap[String(ficha.id_programa)] || "Sin programa asignado"
     : "Sin programa asignado"
 
-  const instructorNombre = ficha.id_instructor
-    ? instructoresMap[String(ficha.id_instructor)] || "Sin instructor asignado"
-    : "Sin instructor asignado"
+  const nivelNombre = ficha.nivel || "N/A"
 
   detalleFichaContent.innerHTML = `
     <div class="flex items-center gap-4">
-      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-badge-secondary text-badge-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-kanban-icon lucide-folder-kanban"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M8 10v4"/><path d="M12 10v2"/><path d="M16 10v6"/></svg>
       </div>
       <div>
         <h3 class="font-semibold text-xl">${ficha.numero_ficha}</h3>
         <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
           nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
         }">
-          ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+          ${nivelLabels[ficha.nivel] || nivelNombre || "N/A"}
         </span>
       </div>
     </div>
@@ -455,14 +392,28 @@ function openModalVerFicha(ficha) {
         <span class="font-medium">${programaNombre}</span>
       </div>
       <div class="flex items-start gap-3">
-        <span class="text-muted-foreground min-w-[80px]">Instructor:</span>
-        <span class="font-medium">${instructorNombre}</span>
+        <span class="text-muted-foreground min-w-[80px]">Nivel:</span>
+        <span class="font-medium">${nivelNombre}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="text-muted-foreground min-w-[80px]">Jornada:</span>
+        <span class="font-medium">${ficha.jornada || "No especificado"}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="text-muted-foreground min-w-[80px]">Modalidad:</span>
+        <span class="font-medium">${ficha.modalidad || "No especificado"}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="text-muted-foreground min-w-[80px]">Fecha Inicio:</span>
+        <span class="font-medium">${ficha.fecha_inicio || "No especificado"}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="text-muted-foreground min-w-[80px]">Fecha Fin:</span>
+        <span class="font-medium">${ficha.fecha_fin || "No especificado"}</span>
       </div>
       <div class="flex items-start gap-3">
         <span class="text-muted-foreground min-w-[80px]">Estado:</span>
-        <span class="badge-estado-base ${estadoBadgeClass}">
-          ${ficha.estado ? "Activa" : "Inactiva"}
-        </span>
+        <span class="font-medium">${ficha.estado || "Activa"}</span>
       </div>
     </div>
   `
@@ -477,75 +428,60 @@ function closeModalVerFicha() {
 // BACKEND COMMUNICATION LOGIC
 // =========================
 
-async function callApi(url, payload) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-
-  const text = await res.text()
-
+async function callApi(url, payload = null) {
   try {
-    const start = text.indexOf("{")
-    const end = text.lastIndexOf("}")
-    if (start !== -1 && end !== -1 && end > start) {
-      const jsonString = text.slice(start, end + 1)
-      return JSON.parse(jsonString)
+    const options = {
+      method: payload ? "POST" : "GET",
+      headers: { "Content-Type": "application/json" },
     }
-    return { error: "Respuesta no válida del servidor: " + text }
-  } catch (e) {
-    return { error: "Respuesta no válida del servidor: " + text }
+    
+    if (payload) {
+      options.body = JSON.stringify(payload)
+    }
+    
+    const res = await fetch(url, options)
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    }
+    
+    const data = await res.json()
+    return data
+  } catch (error) {
+    console.error("Error en callApi:", error)
+    return { error: error.message || "Error de conexión" }
   }
 }
 
 async function cargarFichas() {
   try {
-    const res = await fetch(`${API_URL}?accion=listar`)
-    const text = await res.text()
-
-    let data
-    try {
-      const start = text.indexOf("[")
-      const end = text.lastIndexOf("]")
-      if (start !== -1 && end !== -1 && end > start) {
-        data = JSON.parse(text.slice(start, end + 1))
-      } else {
-        data = []
-      }
-    } catch (e) {
-      data = []
+    const data = await callApi(`${API_URL}?accion=listar`)
+    
+    if (data.error) {
+      throw new Error(data.error) 
     }
-
+    
     if (!Array.isArray(data)) {
       fichas = []
+      console.error("La respuesta de fichas no es un array:", data)
     } else {
-      fichas = data.map((f) => {
-        let estadoBool = true
-
-        if (typeof f.estado !== "undefined" && f.estado !== null) {
-          const raw = String(f.estado).toLowerCase().trim()
-          if (raw === "activa" || raw === "activo" || raw === "1" || raw === "true") {
-            estadoBool = true
-          } else if (raw === "inactiva" || raw === "inactivo" || raw === "0" || raw === "false") {
-            estadoBool = false
-          }
-        }
-
-        return {
-          id: f.id_ficha,
-          numero_ficha: f.numero_ficha,
-          id_programa: f.id_programa ?? null,
-          id_instructor: f.id_instructor ?? null,
-          nivel: f.nivel || "Tecnólogo",
-          estado: estadoBool,
-        }
-      })
+      fichas = data.map((f) => ({
+        id: f.id_ficha,
+        numero_ficha: f.numero_ficha,
+        id_programa: f.id_programa ?? null,
+        jornada: f.jornada || null,
+        modalidad: f.modalidad || null,
+        fecha_inicio: f.fecha_inicio || null,
+        fecha_fin: f.fecha_fin || null,
+        nivel: f.nivel || "Tecnólogo",
+        estado: f.estado || "Activa",
+      }))
     }
 
     renderTable()
   } catch (error) {
     console.error("Error al cargar fichas:", error)
+    toastError("Error al cargar las fichas")
     fichas = []
     renderTable()
   }
@@ -559,35 +495,76 @@ function actualizarFicha(payload) {
   return callApi(`${API_URL}?accion=actualizar`, payload)
 }
 
-function cambiarEstadoFicha(payload) {
-  return callApi(`${API_URL}?accion=cambiar_estado`, payload)
-}
+// =========================
+// FUNCIONES PARA CAMBIAR ESTADO
+// =========================
 
-async function toggleStatus(fichaId) {
-  const ficha = fichas.find((f) => String(f.id) === String(fichaId))
-  if (!ficha) return
-
-  const nuevoEstado = ficha.estado ? 0 : 1
-
-  try {
-    const data = await cambiarEstadoFicha({
-      id_ficha: fichaId,
-      estado: nuevoEstado,
-    })
-
-    if (data.error) {
-      toastError(data.error || "No se pudo cambiar el estado de la ficha.")
-      return
+async function cambiarEstadoFicha(id, accion) {
+    if (!id) {
+        toastError("ID de ficha no válido");
+        return;
     }
 
-    fichas = fichas.map((f) => (String(f.id) === String(fichaId) ? { ...f, estado: !!nuevoEstado } : f))
-    renderTable()
+    // Validar acciones permitidas según tu controlador
+    const accionesPermitidas = ['activar', 'finalizar', 'cancelar'];
+    if (!accionesPermitidas.includes(accion)) {
+        toastError("Acción no válida");
+        return;
+    }
+    try {
+        // Llamar al endpoint correspondiente según la acción
+        const res = await fetch(`${API_URL}?accion=${accion}&id_ficha=${id}`, {
+            method: "GET" // Tu controlador usa GET con parámetros en la URL
+        });
 
-    toastSuccess(nuevoEstado === 1 ? "Ficha activada correctamente." : "Ficha desactivada correctamente.")
-  } catch (error) {
-    console.error("Error al cambiar estado:", error)
-    toastError("Ocurrió un error al cambiar el estado (red/servidor).")
-  }
+        const text = await res.text();
+        
+        // Parsear la respuesta
+        let data;
+        try {
+            const start = text.indexOf("{");
+            const end = text.lastIndexOf("}");
+            if (start !== -1 && end !== -1 && end > start) {
+                data = JSON.parse(text.slice(start, end + 1));
+            } else {
+                throw new Error("Respuesta no válida");
+            }
+        } catch (e) {
+            data = { error: "Respuesta no válida del servidor" };
+        }
+
+        if (data.error) {
+            toastError(data.error);
+        } else if (data.success) {
+            // Mensajes según la acción
+            const mensajesExito = {
+                'activar': 'Ficha activada correctamente',
+                'finalizar': 'Ficha finalizada correctamente',
+                'cancelar': 'Ficha cancelada correctamente'
+            };
+            
+            toastSuccess(data.message || mensajesExito[accion]);
+            await cargarFichas(); // Recargar la lista
+        } else {
+            toastError(data.message || `Error al ${accion} la ficha`);
+        }
+    } catch (error) {
+        console.error(`Error al ${accion} ficha:`, error);
+        toastError(`Error al ${accion} la ficha`);
+    }
+}
+
+// Funciones específicas para compatibilidad
+async function activarFicha(id) {
+    await cambiarEstadoFicha(id, 'activar');
+}
+
+async function finalizarFicha(id) {
+    await cambiarEstadoFicha(id, 'finalizar');
+}
+
+async function cancelarFicha(id) {
+    await cambiarEstadoFicha(id, 'cancelar');
 }
 
 // =========================
@@ -672,13 +649,11 @@ function renderPaginationControls(container, totalItems, pageSize, currentPage, 
 
 function renderTable() {
   const search = inputBuscar.value.trim().toLowerCase()
-  const estadoFilter = selectFiltroEstado ? selectFiltroEstado.value : ""
+  const filtroEstado = selectFiltroEstado.value
 
   const filtered = fichas.filter((f) => {
     const matchNumero = String(f.numero_ficha).toLowerCase().includes(search)
-    let matchEstado = true
-    if (estadoFilter === "1") matchEstado = f.estado === true
-    else if (estadoFilter === "0") matchEstado = f.estado === false
+    const matchEstado = !filtroEstado || f.estado === filtroEstado
     return matchNumero && matchEstado
   })
 
@@ -735,54 +710,101 @@ function renderTable() {
   tbodyFichas.innerHTML = ""
 
   pageItemsTable.forEach((ficha) => {
-    const tr = document.createElement("tr")
-    tr.className = "hover:bg-muted/40"
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-muted/40";
 
-    const estadoBadgeClass = ficha.estado ? "badge-estado-activo" : "badge-estado-inactivo"
-    const programaNombre = ficha.id_programa ? programasMap[String(ficha.id_programa)] || "Sin asignar" : "Sin asignar"
-    const instructorNombre = ficha.id_instructor
-      ? instructoresMap[String(ficha.id_instructor)] || "Sin asignar"
-      : "Sin asignar"
+    const programaNombre = ficha.id_programa
+        ? programasMap[String(ficha.id_programa)] || "Sin asignar"
+        : "Sin asignar";
+
+    const nivelNombre = ficha.nivel || "N/A";
+
+    // Determinar qué acciones mostrar según el estado
+    let accionesHTML = '';
+    if (ficha.estado === 'Activa') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
+                data-action="finalizar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Finalizar
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                data-action="cancelar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+            </button>
+        `;
+    } else if (ficha.estado === 'Finalizada' || ficha.estado === 'Cancelada') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-sm text-green-600 hover:bg-green-50"
+                data-action="activar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Activar
+            </button>
+        `;
+    }
 
     tr.innerHTML = `
       <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-badge-secondary text-badge-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-kanban-icon lucide-folder-kanban"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M8 10v4"/><path d="M12 10v2"/><path d="M16 10v6"/></svg>
           </div>
           <span class="font-medium text-sm">${ficha.numero_ficha}</span>
         </div>
       </td>
+
       <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-2">
-          <svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap-icon lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
           <span class="text-sm">${programaNombre}</span>
         </div>
       </td>
+
       <td class="px-4 py-3 align-middle">
         <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
           nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
         }">
-          ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+          ${nivelLabels[ficha.nivel] || nivelNombre || "N/A"}
         </span>
       </td>
+
       <td class="px-4 py-3 align-middle">
-        <div class="flex items-center gap-2">
-          <svg class="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <span class="text-sm">${instructorNombre}</span>
-        </div>
+        <span class="text-sm">${ficha.jornada || "No especificado"}</span>
       </td>
+
       <td class="px-4 py-3 align-middle">
-        <span class="badge-estado-base ${estadoBadgeClass}">
-          ${ficha.estado ? "Activa" : "Inactiva"}
+        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+          ficha.estado === 'Activa' ? 'badge-estado-activo' :
+          ficha.estado === 'Finalizada' ? 'badge-estado-inactivo' :
+          ficha.estado === 'Cancelada' ? 'badge-estado-inactivo' :
+          'bg-gray-100 text-gray-800'
+        }">
+          ${ficha.estado || 'Activa'}
         </span>
       </td>
+
       <td class="px-4 py-3 align-middle text-right">
         <div class="relative inline-block text-left">
           <button
@@ -796,6 +818,7 @@ function renderTable() {
               <circle cx="19" cy="12" r="1.5"></circle>
             </svg>
           </button>
+
           <div
             class="dropdown-menu hidden absolute right-0 mt-2 w-48 rounded-xl border border-border bg-popover shadow-md py-1 z-50"
             data-menu="${ficha.id}"
@@ -814,6 +837,7 @@ function renderTable() {
               </svg>
               Ver detalles
             </button>
+
             <button
               type="button"
               class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
@@ -828,47 +852,73 @@ function renderTable() {
               </svg>
               Editar
             </button>
-            <hr class="border-border my-1">
-            <button
-              type="button"
-              class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
-              data-action="toggle"
-              data-id="${ficha.id}"
-            >
-              ${
-                ficha.estado
-                  ? `<svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                    </svg>
-                    Desactivar`
-                  : `<svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Activar`
-              }
-            </button>
+            
+            ${accionesHTML}
           </div>
         </div>
       </td>
-    `
+    `;
 
-    tbodyFichas.appendChild(tr)
-  })
+    tbodyFichas.appendChild(tr);
+  });
 
   cardsContainer.innerHTML = ""
 
   pageItemsCards.forEach((ficha) => {
-    const programaNombre = ficha.id_programa ? programasMap[String(ficha.id_programa)] || "Sin asignar" : "Sin asignar"
-    const instructorNombre = ficha.id_instructor
-      ? instructoresMap[String(ficha.id_instructor)] || "Sin asignar"
-      : "Sin asignar"
+    const programaNombre = ficha.id_programa
+        ? programasMap[String(ficha.id_programa)] || "Sin asignar"
+        : "Sin asignar";
 
-    const card = document.createElement("div")
-    card.className = "rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col"
+    const nivelNombre = ficha.nivel || "N/A";
+
+    // Determinar qué acciones mostrar según el estado (para tarjetas)
+    let accionesHTML = '';
+    if (ficha.estado === 'Activa') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted"
+                data-action="finalizar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Finalizar
+            </button>
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-red-600 hover:bg-red-50"
+                data-action="cancelar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+            </button>
+        `;
+    } else if (ficha.estado === 'Finalizada' || ficha.estado === 'Cancelada') {
+        accionesHTML = `
+            <button
+                type="button"
+                class="flex w-full items-center px-3 py-2 text-xs text-green-600 hover:bg-green-50"
+                data-action="activar"
+                data-id="${ficha.id}"
+            >
+                <svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Activar
+            </button>
+        `;
+    }
+
+    const card = document.createElement("div");
+    card.className = "rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col";
 
     card.innerHTML = `
       <div class="flex items-start justify-between gap-2 mb-3">
@@ -883,7 +933,15 @@ function renderTable() {
             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
               nivelBadgeStyles[ficha.nivel] || "badge-nivel-default"
             }">
-              ${nivelLabels[ficha.nivel] || ficha.nivel || "N/A"}
+              ${nivelLabels[ficha.nivel] || nivelNombre}
+            </span>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mt-1 ${
+              ficha.estado === 'Activa' ? 'bg-green-100 text-green-800' :
+              ficha.estado === 'Finalizada' ? 'bg-blue-100 text-blue-800' :
+              ficha.estado === 'Cancelada' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }">
+              ${ficha.estado || 'Activa'}
             </span>
           </div>
         </div>
@@ -932,29 +990,7 @@ function renderTable() {
               </svg>
               Editar
             </button>
-            <hr class="border-border my-1">
-            <button
-              type="button"
-              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted"
-              data-action="toggle"
-              data-id="${ficha.id}"
-            >
-              ${
-                ficha.estado
-                  ? `<svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                    </svg>
-                    Desactivar`
-                  : `<svg class="mr-2 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Activar`
-              }
-            </button>
+            ${accionesHTML}
           </div>
         </div>
       </div>
@@ -968,30 +1004,30 @@ function renderTable() {
         </div>
         <div class="flex items-center gap-2">
           <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>${instructorNombre}</span>
+          <span>${ficha.jornada || "No especificado"}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span>${ficha.modalidad || "No especificado"}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>${ficha.fecha_inicio || "No especificado"} - ${ficha.fecha_fin || "No especificado"}</span>
         </div>
       </div>
+    `;
 
-      <hr class="border-border my-3" />
-
-      <div class="flex items-center justify-between">
-        <span class="text-sm ${ficha.estado ? "text-foreground" : "text-muted-foreground"}">${ficha.estado ? "Activa" : "Inactiva"}</span>
-        <button
-          type="button"
-          class="switch-siga ${ficha.estado ? "on" : "off"}"
-          onclick="toggleStatus('${ficha.id}')"
-        >
-          <span class="thumb" style="transform: translateX(${ficha.estado ? "20px" : "0px"});"></span>
-        </button>
-      </div>
-    `
-
-    cardsContainer.appendChild(card)
-  })
+    cardsContainer.appendChild(card);
+  });
 
   attachMenuEvents()
+  attachActionEvents()
 
   const tablaVisible = !vistaTabla.classList.contains("hidden")
 
@@ -1052,28 +1088,35 @@ function attachMenuEvents() {
       }
     })
   })
+}
 
+function attachActionEvents() {
   document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation()
 
       const action = btn.getAttribute("data-action")
       const id = btn.getAttribute("data-id")
-      const ficha = fichas.find((f) => String(f.id) === String(id))
-      if (!ficha) return
+      
+      if (!id || !action) return
 
-      if (action === "ver") {
-        openModalVerFicha(ficha)
-      } else if (action === "editar") {
-        openModalFicha(ficha)
-      } else if (action === "toggle") {
-        toggleStatus(id)
-      }
-
+      // Cerrar el menú
       const menu = btn.closest("[data-menu]")
       if (menu) {
         menu.classList.add("hidden")
         menu.classList.remove("show")
+      }
+
+      // Manejar diferentes acciones
+      if (action === "ver") {
+        const ficha = fichas.find((f) => String(f.id) === String(id))
+        if (ficha) openModalVerFicha(ficha)
+      } else if (action === "editar") {
+        const ficha = fichas.find((f) => String(f.id) === String(id))
+        if (ficha) openModalFicha(ficha)
+      } else if (['activar', 'finalizar', 'cancelar'].includes(action)) {
+        // Usar la nueva función unificada
+        await cambiarEstadoFicha(id, action)
       }
     })
   })
@@ -1089,13 +1132,11 @@ inputBuscar.addEventListener("input", () => {
   renderTable()
 })
 
-if (selectFiltroEstado) {
-  selectFiltroEstado.addEventListener("change", () => {
-    currentPageTable = 1
-    currentPageCards = 1
-    renderTable()
-  })
-}
+selectFiltroEstado.addEventListener("change", () => {
+  currentPageTable = 1
+  currentPageCards = 1
+  renderTable()
+})
 
 btnNuevaFicha.addEventListener("click", () => openModalFicha(null))
 btnCerrarModalFicha.addEventListener("click", closeModalFicha)
@@ -1110,98 +1151,99 @@ btnVistaTarjetas.addEventListener("click", setVistaTarjetas)
 // FORM VALIDATION AND SUBMISSION
 // ================================
 formFicha.addEventListener("submit", async (e) => {
-  e.preventDefault()
+    e.preventDefault();
 
-  const payload = {
-    numero_ficha: inputNumeroFicha.value.trim(),
-    id_programa: inputPrograma.value || null,
-    nivel: inputNivel.value,
-    id_instructor: inputInstructor.value || null,
-  }
+    // Determinar si es edición o creación
+    const isEdit = hiddenFichaId.value !== "" && hiddenFichaId.value !== null && hiddenFichaId.value !== undefined;
 
-  const isEdit = !!hiddenFichaId.value
-  const numeroRegex = /^[0-9]+$/
+    const payload = {
+        numero_ficha: inputNumeroFicha.value.trim(),
+        id_programa: inputPrograma.value || null,
+        jornada: inputJornada.value || null,
+        modalidad: inputModalidad.value || null,
+        fecha_inicio: inputFechaInicio.value || null,
+        fecha_fin: inputFechaFin.value || null,
+        estado: "Activa" // Siempre se crea como Activa
+    };
 
-  const allEmpty = !payload.numero_ficha && !payload.id_programa && !payload.id_instructor
+    const numeroRegex = /^[0-9]+$/;
 
-  if (allEmpty) {
-    toastError("Todos los campos son obligatorios.")
-    inputNumeroFicha.focus()
-    return
-  }
-
-  if (!payload.numero_ficha) {
-    toastError("El número de ficha es obligatorio.")
-    inputNumeroFicha.focus()
-    return
-  }
-
-  if (!numeroRegex.test(payload.numero_ficha)) {
-    toastError("El número de ficha solo puede contener números.")
-    inputNumeroFicha.focus()
-    return
-  }
-
-  if (!payload.id_programa) {
-    toastError("Debe seleccionar un programa de formación.")
-    inputPrograma.focus()
-    return
-  }
-
-  if (!payload.nivel) {
-    toastError("Debe seleccionar un nivel.")
-    inputNivel.focus()
-    return
-  }
-
-  if (!payload.id_instructor) {
-    toastError("Debe seleccionar un instructor.")
-    inputInstructor.focus()
-    return
-  }
-
-  if (!VALID_NIVELES.includes(payload.nivel)) {
-    toastError("Nivel no válido.")
-    return
-  }
-
-  if (isEdit && originalEditData) {
-    const currentData = {
-      numero_ficha: payload.numero_ficha,
-      id_programa: payload.id_programa ? String(payload.id_programa) : "",
-      nivel: payload.nivel,
-      id_instructor: payload.id_instructor ? String(payload.id_instructor) : "",
+    // VALIDACIONES BÁSICAS
+    if (!payload.numero_ficha) {
+        toastError("El número de ficha es obligatorio.");
+        inputNumeroFicha.focus();
+        return;
     }
 
-    const noHayCambios = JSON.stringify(currentData) === JSON.stringify(originalEditData)
-
-    if (noHayCambios) {
-      toastInfo("Para actualizar el registro es necesario modificar al menos un dato de la ficha.")
-      return
-    }
-  }
-
-  if (isEdit) {
-    payload.id_ficha = hiddenFichaId.value
-  }
-
-  try {
-    const data = isEdit ? await actualizarFicha(payload) : await crearFicha(payload)
-
-    if (data.error) {
-      toastError(data.error || "Ocurrió un error al procesar la solicitud.")
-      return
+    if (!numeroRegex.test(payload.numero_ficha)) {
+        toastError("El número de ficha solo puede contener números.");
+        inputNumeroFicha.focus();
+        return;
     }
 
-    toastSuccess(data.mensaje || (isEdit ? "Ficha actualizada correctamente." : "Ficha creada correctamente."))
+    if (!payload.id_programa) {
+        toastError("Debe seleccionar un programa de formación.");
+        inputPrograma.focus();
+        return;
+    }
 
-    closeModalFicha()
-    await cargarFichas()
-  } catch (error) {
-    console.error("Error de red al guardar ficha:", error)
-    toastError("Ocurrió un error al guardar la ficha (red/servidor).")
-  }
-})
+    if (!payload.jornada) {
+        toastError("Debe seleccionar una jornada.");
+        inputJornada.focus();
+        return;
+    }
+
+    if (!payload.modalidad) {
+        toastError("Debe seleccionar una modalidad.");
+        inputModalidad.focus();
+        return;
+    }
+
+    if (!payload.fecha_inicio) {
+        toastError("Debe seleccionar la fecha de inicio.");
+        inputFechaInicio.focus();
+        return;
+    }
+
+    if (!payload.fecha_fin) {
+        toastError("Debe seleccionar la fecha de fin.");
+        inputFechaFin.focus();
+        return;
+    }
+
+    if (payload.fecha_fin < payload.fecha_inicio) {
+        toastError("La fecha fin no puede ser menor que la fecha inicio.");
+        inputFechaFin.focus();
+        return;
+    }
+
+    // Agregar ID si es edición
+    if (isEdit) {
+        payload.id_ficha = hiddenFichaId.value;
+    }
+
+    try {
+        const data = isEdit ? await actualizarFicha(payload) : await crearFicha(payload);
+
+        if (data.error) {
+            toastError(data.error || "Ocurrió un error al procesar la solicitud.");
+            return;
+        }
+
+        if (!data.success) {
+            toastError(data.message || "Error al procesar la solicitud.");
+            return;
+        }
+
+        toastSuccess(data.message || (isEdit ? "Ficha actualizada correctamente." : "Ficha creada correctamente."));
+
+        closeModalFicha();
+        await cargarFichas();
+    } catch (error) {
+        console.error("Error de red al guardar ficha:", error);
+        toastError("Ocurrió un error al guardar la ficha (red/servidor).");
+    }
+});
 
 // ================================
 // KEYBOARD SHORTCUTS: CLOSE MODALS WITH ESC
@@ -1218,10 +1260,15 @@ document.addEventListener("keydown", (e) => {
   }
 })
 
-// ================================
-// INITIAL LOAD
-// ================================
-cargarFichas()
-cargarProgramas()
-cargarInstructores()
-setVistaTabla()
+/*INITIAL LOAD*/
+
+async function inicializar() {
+  await Promise.all([
+      cargarProgramas(),  // Cargar programas primero
+      cargarFichas()      // Cargar fichas en paralelo
+  ]);
+  setVistaTabla();        // Renderizar después de que ambos hayan cargado
+}
+
+// Iniciar
+inicializar();
