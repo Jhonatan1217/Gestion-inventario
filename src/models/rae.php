@@ -62,13 +62,30 @@ class RaeModel {
     }
 
     /* UPDATE RAE */
-    public function actualizar(int $id_rae, ?string $descripcion, ?string $estado): bool {
+    public function actualizar(
+    int $id_rae,
+    ?string $codigo_rae,
+    ?int $id_programa,
+    ?string $descripcion_rae,
+    ?string $estado
+): bool {
+
     $campos = [];
     $params = [];
 
-    if ($descripcion !== null) {
+    if ($codigo_rae !== null) {
+        $campos[] = "codigo_rae = ?";
+        $params[] = $codigo_rae;
+    }
+
+    if ($id_programa !== null) {
+        $campos[] = "id_programa = ?";
+        $params[] = $id_programa;
+    }
+
+    if ($descripcion_rae !== null) {
         $campos[] = "descripcion_rae = ?";
-        $params[] = $descripcion;
+        $params[] = $descripcion_rae;
     }
 
     if ($estado !== null) {
@@ -76,7 +93,10 @@ class RaeModel {
         $params[] = $estado;
     }
 
-    // Agregar el ID
+    if (empty($campos)) {
+        return false;
+    }
+
     $params[] = $id_rae;
 
     $sql = "UPDATE raes SET " . implode(", ", $campos) . " WHERE id_rae = ?";
