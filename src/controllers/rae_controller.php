@@ -81,35 +81,30 @@ class RaeController {
         );
     }
 
-    /* ==========================
-       ACTUALIZAR
-    ========================== */
-    public function actualizar() {
+/*Update*/
+public function actualizar() {
+
     $data = $this->getJson();
 
     if (!isset($data["id_rae"])) {
         return $this->jsonResponse(["error" => "id_rae es obligatorio"], 400);
     }
 
-    $id_rae = (int)$data["id_rae"];
-
-    // Campos opcionales
-    $descripcion = $data["descripcion"] ?? null;
-    $estado = $data["estado"] ?? null;
-
-    // Validar que al menos venga 1 campo a actualizar
-    if ($descripcion === null && $estado === null) {
-        return $this->jsonResponse(["error" => "No hay datos para actualizar"], 400);
-    }
-
-    $ok = $this->model->actualizar($id_rae, $descripcion, $estado);
+    $ok = $this->model->actualizar(
+        (int)$data["id_rae"],
+        $data["codigo_rae"] ?? null,
+        isset($data["id_programa"]) ? (int)$data["id_programa"] : null,
+        $data["descripcion_rae"] ?? null,
+        $data["estado"] ?? null
+    );
 
     return $this->jsonResponse(
-        $ok ? ["mensaje" => "RAE actualizado correctamente"] :
-              ["error" => "No se pudo actualizar"],
-        $ok ? 200 : 500
+        $ok ? ["mensaje" => "RAE actualizado correctamente"]
+            : ["error" => "No hay datos para actualizar"],
+        $ok ? 200 : 400
     );
 }
+
 
 
     /* ==========================
