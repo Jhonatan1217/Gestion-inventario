@@ -120,7 +120,13 @@ function getUserInitials(string $nombreCompleto): string {
     return mb_strtoupper($iniNombre . $iniApellido, 'UTF-8');
 }
 
-// Margen según sidebar
+// ==========================
+// ✅ FIX: detectar collapsed igual que "usuarios" (?coll=1)
+// (SIN cambiar tu base: solo garantizamos que $collapsed exista)
+// ==========================
+$collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
+
+// Margen según sidebar (mantenemos tu lógica, pero ahora siempre funciona)
 $sidebarMarginClass = 'ml-[260px]';
 if (isset($collapsed)) {
     $sidebarMarginClass = $collapsed ? 'ml-[70px]' : 'ml-[260px]';
