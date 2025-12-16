@@ -187,6 +187,11 @@ select {
   background-color: var(--background) !important;
 }
 
+/* Buscador – fondo gris como el filtro */
+#inputBuscar {
+  background-color: var(--background) !important;
+}
+
 /* ===========================
    COMPACT MODALS
    =========================== */

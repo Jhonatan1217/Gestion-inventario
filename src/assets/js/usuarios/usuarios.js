@@ -1,10 +1,12 @@
 // =========================
-// CONFIG: URL DEL CONTROLADOR
+// CONFIG: CONTROLLER ENDPOINTS
 // =========================
-const API_URL = "src/controllers/usuario_controller.php"; // 👈 esta ruta no se toca
-const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"; // 👈 ajusta si tu controlador tiene otro nombre
+const API_URL = "src/controllers/usuario_controller.php"; 
+const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"; 
 
-// ====== Configuración de roles (equivalente a roleLabels / roleBadgeStyles) ======
+// =========================
+// ROLE CONFIGURATION (label and badge styles)
+// =========================
 const roleLabels = {
   "Coordinador": "Coordinador",
   "Subcoordinador": "Subcoordinador",
@@ -13,42 +15,45 @@ const roleLabels = {
   "Aprendiz": "Aprendiz",
 };
 
-// Clases definidas en tu globals.css
+// Badge classes defined in globals.css
 const roleBadgeStyles = {
   "Coordinador": "badge-role-coordinador",
   "Subcoordinador": "badge-role-coordinador",
   "Instructor": "badge-role-instructor",
   "Pasante": "badge-role-pasante",
-  // 👇 Aprendiz usa el MISMO estilo que Instructor (clase tuya)
+  // "Aprendiz" uses the same visual style as "Instructor"
   "Aprendiz": "badge-role-parendiz",
 };
 
 // =========================
-// LISTAS VÁLIDAS SEGÚN BD
+// VALID LISTS ACCORDING TO DATABASE
 // =========================
 const VALID_TIPOS_DOCUMENTO = ["CC", "TI", "CE"];
 const VALID_CARGOS = ["Coordinador", "Subcoordinador", "Instructor", "Pasante", "Aprendiz"];
 
-// Aquí vivirá siempre la lista que se usa para pintar la tabla/tarjetas
+// In-memory list used to render table and cards
 let users = [];
-let originalEditData = null; // guarda los datos originales cuando se edita
+let originalEditData = null; // Keeps original data snapshot when editing a record
 let selectedUser = null;
 let programas = [];
-let programasMap = {}; // id_programa => nombre_programa
+let programasMap = {}; // Maps id_programa => nombre_programa
 
 // =========================
-// PAGINACIÓN
+// PAGINATION
 // =========================
-const PAGE_SIZE_TABLE = 10; // 👈 10 elementos por página en tabla
-const PAGE_SIZE_CARDS = 9;  // 👈 9 elementos por página en tarjetas
+const PAGE_SIZE_TABLE = 10; // Page size for table view
+const PAGE_SIZE_CARDS = 9;  // Page size for cards view
 
 let currentPageTable = 1;
 let currentPageCards = 1;
 
 // =========================
-// ALERTAS TIPO FLOWBITE (FONDO BLANCO, WARNING, SIN BARRA)
+// FLOWBITE-STYLE ALERTS (WHITE BACKGROUND, WARNING, NO PROGRESS BAR)
 // =========================
 
+/**
+ * Returns the existing Flowbite-style alert container or creates it if it does not exist.
+ */
 function getOrCreateFlowbiteContainer() {
   let container = document.getElementById("flowbite-alert-container");
 
@@ -65,16 +70,21 @@ function getOrCreateFlowbiteContainer() {
   return container;
 }
 
+/**
+ * Generic alert renderer using a Flowbite-like appearance.
+ * type: "warning" | "success" | "info"
+ * message: string to be displayed to the user
+ */
 function showFlowbiteAlert(type, message) {
   const container = getOrCreateFlowbiteContainer();
   const wrapper = document.createElement("div");
 
-  // 🔸 Estilo advertencia por defecto (warning)
+  // Default style: warning
   let borderColor = "border-amber-500";
   let textColor = "text-amber-900";
   let titleText = "Advertencia";
 
-  // Icono por defecto: triángulo de advertencia
+  // Default icon: warning triangle
   let iconSVG = `
     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
          fill="currentColor" viewBox="0 0 20 20">
@@ -107,7 +117,7 @@ function showFlowbiteAlert(type, message) {
     `;
   }
 
-  // 👇 AQUÍ VA LA ANIMACIÓN DE ENTRADA
+  // Entry animation and base visual configuration
   wrapper.className = `
     relative flex items-center w-full mx-auto pointer-events-auto
     rounded-2xl border-l-4 ${borderColor} bg-white shadow-md
@@ -130,13 +140,13 @@ function showFlowbiteAlert(type, message) {
 
   container.appendChild(wrapper);
 
-  // 🔥 Suavizado extra con transición (puedes dejarlo o quitarlo, no rompe el diseño)
+  // Smooth fade-in using CSS transition
   requestAnimationFrame(() => {
     wrapper.classList.remove("opacity-0", "-translate-y-2");
     wrapper.classList.add("opacity-100", "translate-y-0");
   });
 
-  // 🔥 Animación de salida automática (la que ya tenías)
+  // Automatic fade-out and removal
   setTimeout(() => {
     wrapper.classList.add("opacity-0", "-translate-y-2");
     wrapper.classList.remove("opacity-100", "translate-y-0");
@@ -144,8 +154,7 @@ function showFlowbiteAlert(type, message) {
   }, 4000);
 }
 
-
-// API que usa el resto del código
+// Public API used by the rest of the module
 function toastError(message) {
   showFlowbiteAlert("warning", message);
 }
@@ -158,103 +167,9 @@ function toastInfo(message) {
   showFlowbiteAlert("info", message);
 }
 
-function validateUserPayload(payload, { isEdit = false, currentId = null } = {}) {
-  const nameRegex = /^[A-Za-zÁÉÍÓÚÜÑÑáéíóúüñ\s]{3,80}$/;
-  const numeroRegex = /^[0-9]{6,15}$/;
-  const telefonoRegex = /^[0-9]{7,15}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!payload.nombre_completo || !nameRegex.test(payload.nombre_completo)) {
-    toastError("Nombre inválido: solo letras y 3-80 caracteres.");
-    inputNombreCompleto.focus();
-    return false;
-  }
-
-  if (!payload.tipo_documento) {
-    toastError("Seleccione el tipo de documento.");
-    inputTipoDocumento.focus();
-    return false;
-  }
-
-  if (!payload.numero_documento || !numeroRegex.test(payload.numero_documento)) {
-    toastError("Número de documento inválido (solo números, 6-15 dígitos).");
-    inputNumeroDocumento.focus();
-    return false;
-  }
-
-  if (!payload.telefono || !telefonoRegex.test(payload.telefono)) {
-    toastError("Teléfono inválido (solo números, 7-15 dígitos).");
-    inputTelefono.focus();
-    return false;
-  }
-
-  if (!payload.correo || !emailRegex.test(payload.correo)) {
-    toastError("Correo inválido. Debe contener '@' y dominio.");
-    inputCorreo.focus();
-    return false;
-  }
-
-  if (!payload.cargo) {
-    toastError("Seleccione un cargo.");
-    inputCargo.focus();
-    return false;
-  }
-
-  if (!payload.direccion || payload.direccion.length < 5) {
-    toastError("La dirección debe tener al menos 5 caracteres.");
-    inputDireccion.focus();
-    return false;
-  }
-
-  if (!VALID_TIPOS_DOCUMENTO.includes(payload.tipo_documento)) {
-    toastError("Tipo de documento no válido (CC, TI o CE).");
-    return false;
-  }
-
-  if (!VALID_CARGOS.includes(payload.cargo)) {
-    toastError("Cargo no válido.");
-    return false;
-  }
-
-  if (payload.cargo === "Instructor" && !payload.id_programa) {
-    toastError("Debe seleccionar un programa para el Instructor.");
-    return false;
-  }
-
-  if (!isEdit && (!payload.password || payload.password.length < 6)) {
-    toastError("La contraseña es obligatoria (mínimo 6 caracteres).");
-    inputPassword.focus();
-    return false;
-  }
-
-  if (isEdit && payload.password && payload.password.length < 6) {
-    toastError("La contraseña debe tener al menos 6 caracteres.");
-    inputPassword.focus();
-    return false;
-  }
-
-  // Duplicados locales
-  const docDuplicado = users.some((u) =>
-    u.numero_documento === payload.numero_documento && (!isEdit || String(u.id_usuario) !== String(currentId))
-  );
-  if (docDuplicado) {
-    toastError("Ya existe un usuario con ese número de documento.");
-    return false;
-  }
-
-  const correoDuplicado = users.some((u) =>
-    u.correo.toLowerCase() === payload.correo.toLowerCase() && (!isEdit || String(u.id_usuario) !== String(currentId))
-  );
-  if (correoDuplicado) {
-    toastError("Ya existe un usuario con ese correo.");
-    return false;
-  }
-
-  return true;
-}
-
-
-// ====== Referencias DOM ======
+// =========================
+// DOM REFERENCES
+// =========================
 const tbodyUsuarios = document.getElementById("tbodyUsuarios");
 const inputBuscar = document.getElementById("inputBuscar");
 const selectFiltroRol = document.getElementById("selectFiltroRol");
@@ -284,7 +199,7 @@ const inputCorreo = document.getElementById("correo");
 const inputPassword = document.getElementById("password");
 const inputDireccion = document.getElementById("direccion");
 
-// Select de programa y wrapper
+// Training program select and its wrapper
 const inputPrograma = document.getElementById("id_programa");
 const wrapperPrograma = document.getElementById("wrapper_programa");
 
@@ -292,22 +207,96 @@ const modalVerUsuario = document.getElementById("modalVerUsuario");
 const btnCerrarModalVerUsuario = document.getElementById("btnCerrarModalVerUsuario");
 const detalleUsuarioContent = document.getElementById("detalleUsuarioContent");
 
-// ===== CONTENEDOR ÚNICO DE PAGINACIÓN =====
-let paginationTabla = document.getElementById("paginationTabla"); // será el único
+// =========================
+// SINGLE PAGINATION CONTAINER
+// =========================
+let paginationTabla = document.getElementById("paginationTabla");
 
+/**
+ * Ensures there is a single shared pagination container placed
+ * after the cards view. It is reused for both table and card views.
+ */
 function ensurePaginationContainer() {
   if (vistaTarjetas && !paginationTabla) {
     paginationTabla = document.createElement("div");
     paginationTabla.id = "paginationTabla";
     paginationTabla.className = "mt-4 flex justify-end gap-2";
-    // lo colocamos justo después de la última vista (quedará por fuera de ambas)
+    // Insert right after the cards view (applies to both views)
     vistaTarjetas.parentNode.insertBefore(paginationTabla, vistaTarjetas.nextSibling);
   }
 }
 
 ensurePaginationContainer();
 
-// ====== Helpers ======
+// =========================
+// EMPTY STATE CONTAINERS (OUTSIDE OF TABLE)
+// =========================
+let emptyStateContainer = document.getElementById("emptyStateUsuarios");
+let emptySearchContainer = document.getElementById("emptySearchUsuarios");
+
+// Global "no users in system" empty state
+if (!emptyStateContainer && vistaTabla && vistaTabla.parentNode) {
+  emptyStateContainer = document.createElement("div");
+  emptyStateContainer.id = "emptyStateUsuarios";
+
+  emptyStateContainer.className =
+    "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full";
+
+  emptyStateContainer.innerHTML = `
+    <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+      <svg class="h-7 w-7 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 14v.01M8 9h8m-9 9h10a2 2 0 0 0 2-2V8.5A2.5 2.5 0 0 0 16.5 6h-9A2.5 2.5 0 0 0 5 8.5V16a2 2 0 0 0 2 2z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-semibold mt-4">No hay usuarios registrados</h3>
+    <p class="text-sm text-muted-foreground mt-1 max-w-md">
+      Una vez agregue usuarios desde el botón <strong>“Nuevo usuario”</strong>, aparecerán listados en esta vista.
+    </p>
+  `;
+
+  vistaTabla.parentNode.insertBefore(emptyStateContainer, vistaTabla);
+}
+
+// Search-specific empty state: used when there are users but no matches for current filters
+if (!emptySearchContainer && vistaTabla && vistaTabla.parentNode) {
+  emptySearchContainer = document.createElement("div");
+  emptySearchContainer.id = "emptySearchUsuarios";
+
+  emptySearchContainer.className =
+    "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full";
+
+  emptySearchContainer.innerHTML = `
+    <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+      <svg class="h-7 w-7 text-muted-foreground"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor"
+           stroke-width="1.8">
+        <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round"></circle>
+        <line x1="16" y1="16" x2="20" y2="20" stroke-linecap="round" stroke-linejoin="round"></line>
+      </svg>
+    </div>
+    <h3 class="text-lg font-semibold mt-4">No se encontraron resultados</h3>
+    <p class="text-sm text-muted-foreground mt-1 max-w-md">
+      No se encontraron usuarios que coincidan con los criterios de búsqueda actuales.
+    </p>
+  `;
+
+  // Place the search empty state right before the table for better context
+  vistaTabla.parentNode.insertBefore(emptySearchContainer, vistaTabla);
+}
+
+
+// =========================
+// HELPER FUNCTIONS
+// =========================
+
+/**
+ * Returns the initials of a full name.
+ */
 function getInitials(nombre) {
   return nombre
     .split(" ")
@@ -318,6 +307,9 @@ function getInitials(nombre) {
     .toUpperCase();
 }
 
+/**
+ * Shows or hides the training program field depending on the selected role.
+ */
 function actualizarVisibilidadPrograma() {
   if (!inputPrograma || !wrapperPrograma) return;
   const esInstructor = inputCargo.value === "Instructor";
@@ -329,9 +321,30 @@ function actualizarVisibilidadPrograma() {
   }
 }
 
+/**
+ * Renders the options for the training program select based on the loaded "programas" list.
+ */
 function renderOpcionesPrograma() {
   if (!inputPrograma) return;
-  inputPrograma.innerHTML = '<option value="">Seleccione un programa</option>';
+
+  // Clear the select before repopulating
+  inputPrograma.innerHTML = "";
+
+  // No programs available
+  if (!Array.isArray(programas) || programas.length === 0) {
+    inputPrograma.innerHTML = `
+      <option value="">No hay programas disponibles</option>
+    `;
+    inputPrograma.disabled = true;
+    return;
+  }
+
+  // Programs available
+  inputPrograma.disabled = false;
+
+  // Default placeholder option
+  inputPrograma.innerHTML = `<option value="">Seleccione un programa</option>`;
+
   programas.forEach((p) => {
     const opt = document.createElement("option");
     opt.value = p.id_programa;
@@ -340,8 +353,12 @@ function renderOpcionesPrograma() {
   });
 }
 
+/**
+ * Loads training programs from the backend and updates the select element.
+ */
 async function cargarProgramas() {
   if (!inputPrograma) return;
+
   try {
     const res = await fetch(`${PROGRAMAS_API_URL}?accion=listar`);
     const text = await res.text();
@@ -372,27 +389,46 @@ async function cargarProgramas() {
       programas.forEach((p) => {
         programasMap[String(p.id_programa)] = p.nombre_programa;
       });
+    } else {
+      programas = [];
+    }
 
-      renderOpcionesPrograma();
+    // Always refresh the program options after loading
+    renderOpcionesPrograma();
+
+    // Informative alert when there are no programs in the system
+    if (programas.length === 0) {
+      toastInfo(
+        "No hay programas de formación registrados aún. Registre al menos un programa antes de asignarlo a un Instructor."
+      );
     }
   } catch (error) {
     console.error("Error al cargar programas:", error);
+    programas = [];
+    renderOpcionesPrograma();
+    toastError("Ocurrió un error al cargar los programas de formación.");
   }
 }
 
+/**
+ * Opens the create/edit user modal.
+ * If "editUser" is provided, the modal is configured in edit mode.
+ */
 function openModalUsuario(editUser = null) {
   selectedUser = editUser;
   modalUsuario.classList.add("active");
 
-  // 👉 contenedor del campo contraseña (no tocamos HTML, solo buscamos el padre)
+  // Wrapper of the password field (identified via the closest valid container)
   let passwordWrapper = null;
   if (inputPassword) {
-    passwordWrapper = inputPassword.closest(".space-y-2") ||
-                      inputPassword.closest(".grid") ||
-                      inputPassword.closest("div");
+    passwordWrapper =
+      inputPassword.closest(".space-y-2") ||
+      inputPassword.closest(".grid") ||
+      inputPassword.closest("div");
   }
 
   if (editUser) {
+    // Edit mode configuration
     modalUsuarioTitulo.textContent = "Editar Usuario";
     modalUsuarioDescripcion.textContent = "Modifica la información del usuario";
     hiddenUserId.value = editUser.id;
@@ -406,7 +442,7 @@ function openModalUsuario(editUser = null) {
     inputPassword.value = "";
     inputDireccion.value = editUser.direccion;
 
-        // 🧾 Guardamos una foto de los datos originales para validar cambios
+    // Store original data snapshot for change detection
     originalEditData = {
       nombre_completo: editUser.nombre_completo?.trim() || "",
       tipo_documento: editUser.tipo_documento || "",
@@ -421,8 +457,7 @@ function openModalUsuario(editUser = null) {
           : null,
     };
 
-
-    // 🔒 En editar: ocultamos el campo contraseña
+    // For edit mode, password is not shown by default
     if (passwordWrapper) {
       passwordWrapper.classList.add("hidden");
     }
@@ -441,7 +476,8 @@ function openModalUsuario(editUser = null) {
         inputPrograma.value = "";
       }
     }
-    } else {
+  } else {
+    // Create mode configuration
     modalUsuarioTitulo.textContent = "Crear Nuevo Usuario";
     modalUsuarioDescripcion.textContent = "Complete los datos para registrar un nuevo usuario";
     hiddenUserId.value = "";
@@ -451,23 +487,29 @@ function openModalUsuario(editUser = null) {
     if (inputPrograma) inputPrograma.value = "";
     actualizarVisibilidadPrograma();
 
-    // 🧹 En crear, no hay datos originales
+    // No original data in create mode
     originalEditData = null;
 
+    // Show password field in create mode
     if (passwordWrapper) {
       passwordWrapper.classList.remove("hidden");
     }
   }
 }
 
+/**
+ * Closes the create/edit user modal and resets related state.
+ */
 function closeModalUsuario() {
   modalUsuario.classList.remove("active");
   selectedUser = null;
   hiddenUserId.value = "";
-  originalEditData = null; // 🧹 limpiamos el estado original al cerrar
+  originalEditData = null;
 }
 
-
+/**
+ * Opens the "view user details" modal for the given user.
+ */
 function openModalVerUsuario(user) {
   selectedUser = user;
   modalVerUsuario.classList.add("active");
@@ -538,15 +580,21 @@ function openModalVerUsuario(user) {
     `;
 }
 
+/**
+ * Closes the "view user details" modal.
+ */
 function closeModalVerUsuario() {
   modalVerUsuario.classList.remove("active");
   selectedUser = null;
 }
 
 // =========================
-// LÓGICA PARA HABLAR CON EL BACKEND
+// BACKEND COMMUNICATION LOGIC
 // =========================
 
+/**
+ * Generic helper for calling JSON-based endpoints.
+ */
 async function callApi(url, payload) {
   const res = await fetch(url, {
     method: "POST",
@@ -571,6 +619,9 @@ async function callApi(url, payload) {
   }
 }
 
+/**
+ * Loads users from the backend and maps them to the internal "users" structure.
+ */
 async function cargarUsuarios() {
   try {
     const res = await fetch(`${API_URL}?accion=listar`);
@@ -633,25 +684,35 @@ async function cargarUsuarios() {
   }
 }
 
+/**
+ * Creates a new user via backend.
+ */
 function crearUsuario(payload) {
   return callApi(`${API_URL}?accion=crear`, payload);
 }
 
+/**
+ * Updates an existing user via backend.
+ */
 function actualizarUsuario(payload) {
   return callApi(`${API_URL}?accion=actualizar`, payload);
 }
 
-// 🔹 OPCIONAL: si tienes endpoint para estado
+/**
+ * Optional: dedicated endpoint for changing user status, if implemented.
+ */
 function cambiarEstadoUsuario(payload) {
   return callApi(`${API_URL}?accion=cambiar_estado`, payload);
 }
 
-// 🔹 toggleStatus hablando con backend (no toca diseño)
+/**
+ * Toggles the active/inactive status of a user and persists it in the backend.
+ */
 async function toggleStatus(userId) {
   const user = users.find((u) => String(u.id) === String(userId));
   if (!user) return;
 
-  const nuevoEstado = user.estado ? 0 : 1; // 1 = activo, 0 = inactivo
+  const nuevoEstado = user.estado ? 0 : 1; // 1 = active, 0 = inactive
 
   try {
     const data = await cambiarEstadoUsuario({
@@ -682,7 +743,13 @@ async function toggleStatus(userId) {
   }
 }
 
-// ====== Cambiar vista lista / tarjetas ======
+// =========================
+// – VIEW MODE SWITCH: TABLE / CARDS
+// =========================
+
+/**
+ * Activates the table view and re-renders the table.
+ */
 function setVistaTabla() {
   vistaTabla.classList.remove("hidden");
   vistaTarjetas.classList.add("hidden");
@@ -694,6 +761,9 @@ function setVistaTabla() {
   renderTable();
 }
 
+/**
+ * Activates the cards view and re-renders the cards.
+ */
 function setVistaTarjetas() {
   vistaTabla.classList.add("hidden");
   vistaTarjetas.classList.remove("hidden");
@@ -706,8 +776,12 @@ function setVistaTarjetas() {
 }
 
 // =========================
-// RENDER PAGINACIÓN (GENÉRICO)
+// GENERIC PAGINATION RENDER
 // =========================
+
+/**
+ * Renders pagination controls and wires them to the given "onPageChange" callback.
+ */
 function renderPaginationControls(container, totalItems, pageSize, currentPage, onPageChange) {
   if (!container) return;
 
@@ -758,25 +832,81 @@ function renderPaginationControls(container, totalItems, pageSize, currentPage, 
   container.appendChild(btnNext);
 }
 
-// ====== Render de la tabla + tarjetas ======
+// =========================
+// TABLE AND CARDS RENDERING
+// =========================
+
+/**
+ * Applies filters, handles empty states, and renders both table and cards with pagination.
+ * Distinguishes between:
+ *  - No users in the system
+ *  - No results for the current search/filter criteria
+ */
 function renderTable() {
   const search = inputBuscar.value.trim().toLowerCase();
   const rol = selectFiltroRol.value;
 
   const filtered = users.filter((u) => {
+    // Do not show the logged-in user in the list
+    if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
+      return false;
+    }
 
-  // 🚫 No mostrar el usuario logueado
-  if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
-    return false;
-  }
-
-  const matchName = u.nombre_completo.toLowerCase().includes(search);
-  const matchRol = rol ? u.cargo === rol : true;
-  return matchName && matchRol;
-});
-
+    const matchName = u.nombre_completo.toLowerCase().includes(search);
+    const matchRol = rol ? u.cargo === rol : true;
+    return matchName && matchRol;
+  });
 
   const totalItems = filtered.length;
+
+  // Reset lists and pagination content whenever we enter the empty-state logic
+  const clearRenderedContent = () => {
+    tbodyUsuarios.innerHTML = "";
+    cardsContainer.innerHTML = "";
+    if (paginationTabla) paginationTabla.innerHTML = "";
+  };
+
+  // Case 1: there are no users at all in the system
+  if (users.length === 0) {
+    clearRenderedContent();
+
+    // Hide views
+    vistaTabla.classList.add("hidden");
+    vistaTarjetas.classList.add("hidden");
+
+    // Show "no users registered" empty state
+    if (emptyStateContainer) emptyStateContainer.classList.remove("hidden");
+    if (emptySearchContainer) emptySearchContainer.classList.add("hidden");
+
+    return;
+  }
+
+  // Case 2: there are users, but the current search/filter yields zero results
+  if (totalItems === 0) {
+    clearRenderedContent();
+
+    // Hide views
+    vistaTabla.classList.add("hidden");
+    vistaTarjetas.classList.add("hidden");
+
+    // Show search-specific empty state instead of "no users registered"
+    if (emptyStateContainer) emptyStateContainer.classList.add("hidden");
+    if (emptySearchContainer) emptySearchContainer.classList.remove("hidden");
+
+    return;
+  }
+
+  // Case 3: there are results for the current search/filter
+  if (emptyStateContainer) emptyStateContainer.classList.add("hidden");
+  if (emptySearchContainer) emptySearchContainer.classList.add("hidden");
+
+  // Respect current view selection (table or cards)
+  if (btnVistaTabla.classList.contains("bg-muted")) {
+    vistaTabla.classList.remove("hidden");
+  }
+  if (btnVistaTarjetas.classList.contains("bg-muted")) {
+    vistaTarjetas.classList.remove("hidden");
+  }
 
   const totalPagesTable = Math.max(1, Math.ceil(totalItems / PAGE_SIZE_TABLE) || 1);
   const totalPagesCards = Math.max(1, Math.ceil(totalItems / PAGE_SIZE_CARDS) || 1);
@@ -792,7 +922,7 @@ function renderTable() {
   const endIndexCards = startIndexCards + PAGE_SIZE_CARDS;
   const pageItemsCards = filtered.slice(startIndexCards, endIndexCards);
 
-  // ====== TABLA ======
+  // Table rendering
   tbodyUsuarios.innerHTML = "";
 
   pageItemsTable.forEach((user) => {
@@ -921,7 +1051,7 @@ function renderTable() {
     tbodyUsuarios.appendChild(tr);
   });
 
-  // ====== TARJETAS ======
+  // Cards rendering
   cardsContainer.innerHTML = "";
 
   pageItemsCards.forEach((user) => {
@@ -1066,19 +1196,19 @@ function renderTable() {
 
         <div class="flex justify-end">
           <button
-  type="button"
-  class="switch-siga ${user.estado ? 'on' : 'off'}"
-  onclick="toggleStatus('${user.id}')"
->
-  <span class="thumb" style="transform: translateX(${user.estado ? '18px' : '0px'});"></span>
-</button>
-
+            type="button"
+            class="switch-siga ${user.estado ? "on" : "off"}"
+            onclick="toggleStatus('${user.id}')"
+          >
+            <span class="thumb" style="transform: translateX(${user.estado ? "18px" : "0px"});"></span>
+          </button>
         </div>
       `;
 
     cardsContainer.appendChild(card);
   });
 
+  // Attach dropdown menu behavior to the newly rendered items
   attachMenuEvents();
 
   const tablaVisible = !vistaTabla.classList.contains("hidden");
@@ -1108,8 +1238,15 @@ function renderTable() {
   }
 }
 
-// Manejo de dropdown menú
+// =========================
+// DROPDOWN MENU HANDLING
+// =========================
+
+/**
+ * Sets up global click handling for contextual menus in both table and card views.
+ */
 function attachMenuEvents() {
+  // Close all menus when clicking outside
   document.addEventListener("click", (e) => {
     if (
       !e.target.closest("[data-menu-trigger]") &&
@@ -1122,6 +1259,7 @@ function attachMenuEvents() {
     }
   });
 
+  // Toggle specific menu on trigger click
   document.querySelectorAll("[data-menu-trigger]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1153,6 +1291,7 @@ function attachMenuEvents() {
     });
   });
 
+  // Menu item actions
   document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1179,32 +1318,40 @@ function attachMenuEvents() {
   });
 }
 
-// ====== Eventos globales ======
+// =========================
+// GLOBAL EVENT LISTENERS
+// =========================
+
+// Search field filter
 inputBuscar.addEventListener("input", () => {
   currentPageTable = 1;
   currentPageCards = 1;
   renderTable();
 });
 
+// Role filter
 selectFiltroRol.addEventListener("change", () => {
   currentPageTable = 1;
   currentPageCards = 1;
   renderTable();
 });
 
+// Modal actions
 btnNuevoUsuario.addEventListener("click", () => openModalUsuario(null));
 btnCerrarModalUsuario.addEventListener("click", closeModalUsuario);
 btnCancelarModalUsuario.addEventListener("click", closeModalUsuario);
 
 btnCerrarModalVerUsuario.addEventListener("click", closeModalVerUsuario);
 
+// Role change handling for training program field
 inputCargo.addEventListener("change", actualizarVisibilidadPrograma);
 
+// View switch buttons
 btnVistaTabla.addEventListener("click", setVistaTabla);
 btnVistaTarjetas.addEventListener("click", setVistaTarjetas);
 
 // ================================
-// VALIDACIONES Y ENVÍO FORMULARIO
+// FORM VALIDATION AND SUBMISSION
 // ================================
 formUsuario.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1221,7 +1368,7 @@ formUsuario.addEventListener("submit", async (e) => {
     id_programa: inputPrograma ? inputPrograma.value : null,
   };
 
-  // 👇 normalizar id_programa
+  // Normalize program assignment: only valid for "Instructor"
   if (payload.cargo !== "Instructor" || !payload.id_programa) {
     payload.id_programa = null;
   }
@@ -1229,7 +1376,105 @@ formUsuario.addEventListener("submit", async (e) => {
   const isEdit = !!hiddenUserId.value;
   if (!validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
 
-  // Validación de cambios en edición
+  const allEmpty =
+    !payload.nombre_completo &&
+    !payload.numero_documento &&
+    !payload.telefono &&
+    !payload.correo &&
+    !payload.password &&
+    !payload.direccion &&
+    (!inputPrograma || !payload.id_programa);
+
+  if (allEmpty) {
+    toastError("Todos los campos son obligatorios.");
+    inputNombreCompleto.focus();
+    return;
+  }
+
+  if (!payload.nombre_completo) {
+    toastError("El nombre completo es obligatorio.");
+    inputNombreCompleto.focus();
+    return;
+  }
+
+  if (!payload.tipo_documento) {
+    toastError("Debe seleccionar un tipo de documento.");
+    inputTipoDocumento.focus();
+    return;
+  }
+
+  if (!payload.numero_documento) {
+    toastError("El número de documento es obligatorio.");
+    inputNumeroDocumento.focus();
+    return;
+  }
+
+  if (!numeroRegex.test(payload.numero_documento)) {
+    toastError("El número de documento solo puede contener números.");
+    inputNumeroDocumento.focus();
+    return;
+  }
+
+  if (!payload.telefono) {
+    toastError("El teléfono es obligatorio.");
+    inputTelefono.focus();
+    return;
+  }
+
+  if (!numeroRegex.test(payload.telefono)) {
+    toastError("El teléfono solo puede contener números.");
+    inputTelefono.focus();
+    return;
+  }
+
+  if (!payload.correo) {
+    toastError("El correo electrónico es obligatorio.");
+    inputCorreo.focus();
+    return;
+  }
+
+  if (!emailRegex.test(payload.correo)) {
+    toastError("Ingrese un correo electrónico válido (debe contener '@').");
+    inputCorreo.focus();
+    return;
+  }
+
+  if (!payload.cargo) {
+    toastError("Debe seleccionar un cargo.");
+    inputCargo.focus();
+    return;
+  }
+
+  if (!payload.direccion) {
+    toastError("La dirección es obligatoria.");
+    inputDireccion.focus();
+    return;
+  }
+
+  if (!isEdit && !payload.password) {
+    toastError("La contraseña es obligatoria para crear un usuario nuevo.");
+    inputPassword.focus();
+    return;
+  }
+
+  if (!VALID_TIPOS_DOCUMENTO.includes(payload.tipo_documento)) {
+    toastError("Tipo de documento no válido. Debe ser CC, TI o CE.");
+    return;
+  }
+
+  if (!VALID_CARGOS.includes(payload.cargo)) {
+    toastError(
+      "Cargo no válido. Debe ser Coordinador, Subcoordinador, Instructor, Pasante o Aprendiz."
+    );
+    return;
+  }
+
+  if (payload.cargo === "Instructor" && !payload.id_programa) {
+    toastError("Debe seleccionar un programa de formación para el Instructor.");
+    return;
+  }
+
+  // Additional validation in edit mode: prevent saving if there are no changes
   if (isEdit && originalEditData) {
     const currentData = {
       nombre_completo: payload.nombre_completo,
@@ -1264,7 +1509,6 @@ formUsuario.addEventListener("submit", async (e) => {
       ? await actualizarUsuario(payload)
       : await crearUsuario(payload);
 
-
     console.log("Respuesta procesada:", data);
 
     if (data.error) {
@@ -1285,7 +1529,24 @@ formUsuario.addEventListener("submit", async (e) => {
   }
 });
 
-// Render inicial
+// ================================
+// KEYBOARD SHORTCUTS: CLOSE MODALS WITH ESC
+// ================================
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" || e.key === "Esc" || e.keyCode === 27) {
+    if (modalUsuario && modalUsuario.classList.contains("active")) {
+      closeModalUsuario();
+    }
+
+    if (modalVerUsuario && modalVerUsuario.classList.contains("active")) {
+      closeModalVerUsuario();
+    }
+  }
+});
+
+// ================================
+// INITIAL LOAD
+// ================================
 cargarUsuarios();
 cargarProgramas();
 setVistaTabla();

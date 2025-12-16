@@ -126,10 +126,10 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             <table class="min-w-full divide-y divide-border text-sm">
               <thead class="bg-gray-100">
                 <tr>
+                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Código</th>
                   <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Nombre</th>
                   <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Descripción</th>
                   <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Clasificación</th>
-                  <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Código</th>
                   <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Unidad</th>
                   <th class="px-4 py-3 text-left font-medium text-xs text-muted-foreground">Estado</th>
                   <th class="px-4 py-3 text-right font-medium text-xs text-muted-foreground">Acciones</th>

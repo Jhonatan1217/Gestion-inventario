@@ -299,6 +299,8 @@ const icons = {
    ================================================= */
 function renderTable() {
   const dataToRender = getDataToRender()
+  const searchTerm = document.getElementById("inputBuscar")?.value.trim()
+  const filterValue = document.getElementById("selectFiltroRol")?.value
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
   const paginatedData = dataToRender.slice(start, end)
@@ -306,8 +308,21 @@ function renderTable() {
   const tableBody = document.getElementById("tableBody")
   tableBody.innerHTML = ""
 
+  if (!dataToRender.length) {
+    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
+    const row = document.createElement("tr")
+    row.innerHTML = `
+      <td class="px-4 py-6 text-center text-sm text-muted-foreground" colspan="7">${reason}</td>
+    `
+    tableBody.appendChild(row)
+    renderPagination()
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons(tableBody)
+    }
+    return
+  }
+
   paginatedData.forEach((material) => {
-    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
     const statusText = material.enabled ? "Disponible" : "Agotado"
     const codigoDisplay = material.codigo || "-"
 
@@ -316,10 +331,11 @@ function renderTable() {
     row.dataset.materialId = material.id
 
     row.innerHTML = `
+      <td class="px-4 py-3 align-middle text-sm font-medium">${codigoDisplay}</td>
       <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
-            ${icons.package}
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-avatar-secondary-39 text-secondary flex-shrink-0">
+            <i data-lucide="box" class="lucide lucide-box h-4 w-4 text-[#007832]"></i>
           </div>
           <div>
             <p class="font-medium text-sm">${material.name}</p>
@@ -332,10 +348,9 @@ function renderTable() {
           ${material.clasificacion}
         </span>
       </td>
-      <td class="px-4 py-3 align-middle text-sm font-medium">${codigoDisplay}</td>
       <td class="px-4 py-3 align-middle text-sm">${material.unit}</td>
       <td class="px-4 py-3 align-middle">
-        <span class="inline-flex items-center px-2 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${!material.enabled ? "inactive" : "active"}">
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full status-badge ${material.enabled ? "active" : "inactive"}">
           ${statusText}
         </span>
       </td>
@@ -386,10 +401,16 @@ function renderTable() {
   })
 
   renderPagination()
+    // Initialize Lucide icons in newly rendered table rows
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons(tableBody)
+    }
 }
 
 function renderCards() {
   const dataToRender = getDataToRender()
+  const searchTerm = document.getElementById("inputBuscar")?.value.trim()
+  const filterValue = document.getElementById("selectFiltroRol")?.value
   const start = (currentCardPage - 1) * cardsPerPage
   const end = start + cardsPerPage
   const paginatedData = dataToRender.slice(start, end)
@@ -397,8 +418,20 @@ function renderCards() {
   const cardsContainer = document.getElementById("cardsContainer")
   cardsContainer.innerHTML = ""
 
+  if (!dataToRender.length) {
+    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
+    const empty = document.createElement("div")
+    empty.className = "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground col-span-full"
+    empty.innerHTML = `
+      <p class="font-medium text-foreground">${reason}</p>
+      <p class="text-xs text-muted-foreground">Intenta crear un nuevo material o ajusta los filtros.</p>
+    `
+    cardsContainer.appendChild(empty)
+    renderPagination()
+    return
+  }
+
   paginatedData.forEach((material) => {
-    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
     const statusText = material.enabled ? "Disponible" : "Agotado"
     const codigoDisplay = material.codigo || "Sin código"
 
@@ -478,7 +511,7 @@ function renderCards() {
           <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium badge-clasificacion-base ${material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"}">
             ${material.clasificacion}
           </span>
-          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusClass}">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium status-badge ${material.enabled ? "active" : "inactive"}">
             ${statusText}
           </span>
         </div>
@@ -611,9 +644,6 @@ function openDetailsModal(id) {
   const material = materialsData.find((m) => m.id === id)
   if (!material) return
 
-  const estadoBadgeClass = material.enabled ? "badge-estado-activo" : "badge-estado-inactivo"
-  const clasificacionBadgeClass = material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"
-
   // Obtener iniciales del nombre del material
   const getInitials = (name) => {
     return name
@@ -625,11 +655,14 @@ function openDetailsModal(id) {
       .toUpperCase()
   }
 
+  const estadoBadgeClass = material.enabled ? "badge-estado-activo" : "badge-estado-inactivo"
+  const clasificacionBadgeClass = material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"
+
   const detailsContent = document.getElementById("detailsContent")
   detailsContent.innerHTML = `
     <div class="flex items-start gap-4 pb-4 border-b border-border">
-      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-lg font-semibold flex-shrink-0">
-        ${getInitials(material.name)}
+      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary flex-shrink-0">
+        <i data-lucide="box" class="lucide lucide-box h-5 w-5 text-[#007832]"></i>
       </div>
       <div class="flex-1">
         <h3 class="font-semibold text-lg">${material.name}</h3>
@@ -664,6 +697,9 @@ function openDetailsModal(id) {
   `
 
   document.getElementById("detailsModal").classList.add("active")
+  if (window.lucide && typeof lucide.createIcons === "function") {
+    lucide.createIcons(detailsContent)
+  }
 }
 
 function closeDetailsModal() {
@@ -753,6 +789,23 @@ async function updateMaterial() {
     codigo_inventario: document.getElementById("editCodigo").value.trim() || null,
     unidad_medida: document.getElementById("editUnidad").value,
     estado: materialsData.find((m) => m.id === id)?.enabled ? "Disponible" : "Agotado",
+  }
+
+  // Bloquear envío si no hay cambios respecto al original
+  const original = materialsData.find((m) => m.id === id)
+  if (original) {
+    const norm = (v) => (v ?? "").toString().trim()
+    const noChanges =
+      norm(original.name) === norm(materialData.nombre) &&
+      norm(original.description) === norm(materialData.descripcion) &&
+      norm(original.clasificacion) === norm(materialData.clasificacion) &&
+      norm(original.codigo) === norm(materialData.codigo_inventario) &&
+      norm(original.unit) === norm(materialData.unidad_medida)
+
+    if (noChanges) {
+      showAlert("No realizaste cambios. Usa Cancelar o cierra el modal.", "warning")
+      return
+    }
   }
 
   if (!validateMaterialPayload(materialData, { isEdit: true, id })) return
