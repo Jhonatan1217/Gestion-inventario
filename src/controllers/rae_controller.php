@@ -9,76 +9,51 @@ class RaeController {
 
     private $model;
 
+    // Constructor: receives the PDO connection and creates the model instance
     public function __construct(PDO $conn) {
         $this->model = new RaeModel($conn);
     }
 
-    /* ==========================
-       HELPERS
-    ========================== */
-
-    private function getJson() {
-        return json_decode(file_get_contents("php://input"), true);
-    }
-
-    private function jsonResponse($data, int $code = 200) {
-        http_response_code($code);
-        echo json_encode($data);
-    }
-
-    /* ==========================
-       LISTAR TODOS
-    ========================== */
+    /* List all RAEs */
     public function listar() {
-        $this->jsonResponse($this->model->listar());
+        // Get all RAEs from the model and return as JSON
+        echo json_encode($this->model->listar());
     }
 
-    /* ==========================
-       OBTENER POR ID
-    ========================== */
+    /* Get RAE by ID */
     public function obtener($id) {
+        // Validate that ID was provided
         if (!$id) {
-            $this->jsonResponse(['error' => 'id_rae requerido'], 400);
+            echo json_encode(['error' => 'id_rae requerido']);
             return;
         }
 
+        // Query the model for the specific RAE
         $data = $this->model->obtener($id);
-        $this->jsonResponse($data ?: ['error' => 'RAE no encontrada']);
+        
+        // Return the RAE data or error if not found
+        echo json_encode($data ?: ['error' => 'RAE no encontrada']);
     }
 
-    /* ==========================
-       CREAR
-    ========================== */
+    /* Create new RAE */
     public function crear() {
-        $input = $this->getJson();
+        // Decode the JSON input from the request body
+        $input = json_decode(file_get_contents("php://input"), true);
 
+        // Validate that valid JSON was received
         if (!$input) {
-            $this->jsonResponse(['error' => 'Datos inválidos'], 400);
+            echo json_encode(['error' => 'Datos inválidos']);
             return;
         }
 
-        // SOLO lo que existe en tu tabla
-        $required = ['codigo_rae', 'descripcion_rae', 'id_programa', 'estado'];
+        // Create the RAE in the database
+        $ok = $this->model->crear($input);
 
-        foreach ($required as $field) {
-            if (!isset($input[$field])) {
-                $this->jsonResponse(['error' => "Falta el campo: $field"], 400);
-                return;
-            }
-        }
-
-        $ok = $this->model->crear(
-            $input['codigo_rae'],
-            $input['descripcion_rae'],
-            intval($input['id_programa']),
-            $input['estado']
-        );
-
-        $this->jsonResponse(
-            $ok ? ["success" => true, "message" => "RAE creada correctamente"]
-               : ["error" => "Error al crear RAE"],
-            $ok ? 200 : 500
-        );
+        // Return success or error response
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? "RAE creada correctamente" : "Error al crear RAE"
+        ]);
     }
 
 /*Update*/
@@ -119,28 +94,63 @@ public function actualizar() {
             return;
         }
 
-        $ok = $this->model->cambiarEstado(
-            intval($data["id_rae"]),
-            $data["estado"]
-        );
+        // Update the RAE in the database
+        $ok = $this->model->actualizar($input);
 
-        $this->jsonResponse(
-            $ok ? ["mensaje" => "Estado actualizado correctamente"]
-                : ["error" => "No se pudo actualizar el estado"],
-            $ok ? 200 : 500
-        );
+        // Return success or error response
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? "RAE actualizada correctamente" : "Error al actualizar RAE"
+        ]);
+    }
+
+    /* Activate RAE */
+    public function activar($id) {
+        // Validate that ID was provided
+        if (!$id) {
+            echo json_encode(['error' => 'id_rae requerido']);
+            return;
+        }
+
+        // Change RAE status to active
+        $ok = $this->model->activar($id);
+
+        // Return success or error response
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? "RAE activada" : "Error al activar RAE"
+        ]);
+    }
+
+    /* Deactivate RAE */
+    public function inactivar($id) {
+        // Validate that ID was provided
+        if (!$id) {
+            echo json_encode(['error' => 'id_rae requerido']);
+            return;
+        }
+
+        // Change RAE status to inactive
+        $ok = $this->model->inactivar($id);
+
+        // Return success or error response
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? "RAE inactivada" : "Error al inactivar RAE"
+        ]);
     }
 }
 
-/* ==========================
-      ROUTER
-========================== */
+/* Router - Routes requests to controller methods */
 
+// Get the action and ID from query string
 $accion = $_GET['accion'] ?? null;
 $id = $_GET['id_rae'] ?? null;
 
+// Create controller instance with database connection
 $controller = new RaeController($conn);
 
+// Route the request to the appropriate controller method
 switch ($accion) {
 
     case "listar":
@@ -159,10 +169,15 @@ switch ($accion) {
         $controller->actualizar();
         break;
 
-    case "cambiar_estado":
-        $controller->cambiar_estado();
+    case "activar":
+        $controller->activar($id);
+        break;
+
+    case "inactivar":
+        $controller->inactivar($id);
         break;
 
     default:
+        // Invalid action requested
         echo json_encode(["error" => "Acción no válida"]);
 }

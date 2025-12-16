@@ -1,4 +1,5 @@
 <?php
+
 class Usuario {
     private $conn;
     private $table = "usuarios";
@@ -7,148 +8,190 @@ class Usuario {
         $this->conn = $db;
     }
 
-    //Function to list all users
-    public function listar() {
-        $sql = "SELECT * FROM " . $this->table;
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // MÉTODO COMPATIBLE CON PARÁMETROS INDIVIDUALES
+    public function crear(
+        $nombre,
+        $tipo_documento,
+        $numero_documento,
+        $telefono,
+        $cargo,
+        $correo,
+        $direccion,
+        $password,
+        $token, // Este parámetro no se usa aquí
+        $id_programa = null
+    ) {
+        // Convertir a array y llamar al nuevo método
+        return $this->crearConArray([
+            'nombre' => $nombre,
+            'tipo_documento' => $tipo_documento,
+            'numero_documento' => $numero_documento,
+            'telefono' => $telefono,
+            'cargo' => $cargo,
+            'correo' => $correo,
+            'direccion' => $direccion,
+            'password' => $password,
+            'id_programa' => $id_programa
+        ]);
     }
 
-    // Function to get a user by their ID
-    public function obtenerPorId($id) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id_usuario', $id);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Function to get a user by their email (for uniqueness validation or login later)
-    public function obtenerPorCorreo($correo) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE correo = :correo";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':correo', $correo);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Function to create a new user
-    public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $password, $id_programa = null) {
-        $stmt = $this->conn->prepare("
-            INSERT INTO usuarios 
-            (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, direccion, password, id_programa)
-            VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :direccion, :password, :id_programa)
-        ");
-
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':tipo_doc', $tipo_doc);
-        $stmt->bindParam(':num_doc', $num_doc);
-        $stmt->bindParam(':telefono', $telefono);
-        $stmt->bindParam(':cargo', $cargo);
-        $stmt->bindParam(':correo', $correo);
-        $stmt->bindParam(':direccion', $direccion);
-        $stmt->bindParam(':password', $password);
-
-        if ($id_programa === null) {
-            $stmt->bindValue(':id_programa', null, PDO::PARAM_NULL);
-        } else {
-            $stmt->bindValue(':id_programa', $id_programa, PDO::PARAM_INT);
+    // NUEVO MÉTODO CON ARRAY
+    public function crearConArray($data) {
+        try {
+            $sql = "INSERT INTO usuarios (
+                        nombre_completo,
+                        tipo_documento,
+                        numero_documento,
+                        telefono,
+                        cargo,
+                        correo,
+                        direccion,
+                        password,
+                        fecha_creacion,
+                        estado,
+                        id_programa,
+                        correo_verificado
+                    ) VALUES (
+                        :nombre_completo,
+                        :tipo_documento,
+                        :numero_documento,
+                        :telefono,
+                        :cargo,
+                        :correo,
+                        :direccion,
+                        :password,
+                        NOW(),
+                        'inactivo',
+                        :id_programa,
+                        0
+                    )";
+            
+            $stmt = $this->conn->prepare($sql);
+            
+            // Mapear nombres de campos
+            $params = [
+                ':nombre_completo' => $data['nombre'],
+                ':tipo_documento' => $data['tipo_documento'],
+                ':numero_documento' => $data['numero_documento'],
+                ':telefono' => $data['telefono'],
+                ':cargo' => $data['cargo'],
+                ':correo' => $data['correo'],
+                ':direccion' => $data['direccion'],
+                ':password' => password_hash($data['password'], PASSWORD_DEFAULT),
+                ':id_programa' => $data['id_programa'] ?? null
+            ];
+            
+            $stmt->execute($params);
+            
+            return $this->conn->lastInsertId();
+            
+        } catch (PDOException $e) {
+            error_log("Error creando usuario: " . $e->getMessage());
+            throw $e;
         }
-
-        return $stmt->execute();
     }
-
-
-    public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $password, $direccion, $id_programa = null) {
-
-    if ($password !== null && $password !== "") {
-        $sql = "UPDATE usuarios SET 
-                nombre_completo = :nombre,
-                tipo_documento = :tipo_doc,
-                numero_documento = :num_doc,
-                telefono = :telefono,
-                cargo = :cargo,
-                correo = :correo,
-                password = :password,
-                direccion = :direccion,
-                id_programa = :programa
-            WHERE id_usuario = :id_usuario";
-
-        $stmt = $this->conn->prepare($sql);
-
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt->bindParam(':password', $hash);
-
-    } else {
-        $sql = "UPDATE usuarios SET 
-                nombre_completo = :nombre,
-                tipo_documento = :tipo_doc,
-                numero_documento = :num_doc,
-                telefono = :telefono,
-                cargo = :cargo,
-                correo = :correo,
-                direccion = :direccion,
-                id_programa = :programa
-            WHERE id_usuario = :id_usuario";
-        $stmt = $this->conn->prepare($sql);
-    }
-
-    $stmt->bindParam(':id_usuario', $id_usuario);
-    $stmt->bindParam(':nombre', $nombre);
-    $stmt->bindParam(':tipo_doc', $tipo_doc);
-    $stmt->bindParam(':num_doc', $num_doc);
-    $stmt->bindParam(':telefono', $telefono);
-    $stmt->bindParam(':cargo', $cargo);
-    $stmt->bindParam(':correo', $correo);
-    $stmt->bindParam(':direccion', $direccion);
-    $stmt->bindParam(':programa', $id_programa);
-
-    return $stmt->execute();
-}
-
-
-    // Function to delete a user
-    public function eliminar($id) {
-        $sql = "DELETE FROM " . $this->table . " WHERE id_usuario = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute(); 
-    }
-
-    // Function to change the status of a user (active/inactive)
-    public function cambiarEstado($id_usuario, $estado) {
-        $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
-        $stmt = $this->conn->prepare($sql);
-
-        $estadoBD = $estado == 1 ? 'activo' : 'inactivo';
-
-        $stmt->bindParam(':estado', $estadoBD);
-        $stmt->bindParam(':id_usuario', $id_usuario);
-
-        return $stmt->execute();
-    }
-
     
-    // Function to get a user by their document number
-     
-    public function obtenerPorDocumento($documento) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE numero_documento = :documento";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':documento', $documento);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    // O puedes renombrar el método existente y crear uno nuevo compatible
+    public function crearUsuario($data) {
+        return $this->crearConArray($data);
     }
 
-    
-    // Function to handle user login
+    // GUARDAR TOKEN DE VERIFICACIÓN
+    public function crearTokenVerificacion($id_usuario, $token) {
+        $sql = "INSERT INTO tokens_correo (
+                    id_usuario,
+                    token,
+                    tipo,
+                    fecha_expiracion
+                ) VALUES (
+                    :id_usuario,
+                    :token,
+                    'verificar_correo',
+                    DATE_ADD(NOW(), INTERVAL 24 HOUR)
+                )";
+        
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            ':id_usuario' => $id_usuario,
+            ':token' => $token
+        ]);
+    }
+
+    // ACTIVAR CUENTA CON TOKEN
+    public function activarCuenta($token) {
+        try {
+            // 1. Verificar token válido
+            $sql = "SELECT t.id_usuario 
+                    FROM tokens_correo t
+                    WHERE t.token = :token 
+                    AND t.tipo = 'verificar_correo'
+                    AND t.usado = 0
+                    AND t.fecha_expiracion > NOW()";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':token', $token);
+            $stmt->execute();
+            
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$result) {
+                return false; // Token inválido o expirado
+            }
+            
+            $id_usuario = $result['id_usuario'];
+            
+            // 2. Activar usuario
+            $sql_activar = "UPDATE usuarios 
+                           SET estado = 'activo', 
+                               correo_verificado = 1
+                           WHERE id_usuario = :id_usuario";
+            
+            $stmt_activar = $this->conn->prepare($sql_activar);
+            $stmt_activar->bindParam(':id_usuario', $id_usuario);
+            $stmt_activar->execute();
+            
+            // 3. Marcar token como usado
+            $sql_usado = "UPDATE tokens_correo 
+                         SET usado = 1 
+                         WHERE token = :token";
+            
+            $stmt_usado = $this->conn->prepare($sql_usado);
+            $stmt_usado->bindParam(':token', $token);
+            $stmt_usado->execute();
+            
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Error activando cuenta: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // LOGIN
     public function login($correo, $password) {
-        $user = $this->obtenerPorCorreo($correo);
+        $sql = "SELECT * FROM usuarios
+                WHERE correo = :correo 
+                AND estado = 'activo'";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':correo', $correo);
+        $stmt->execute();
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if ($user && password_verify($password, $user['password'])) {
-            return $user; 
+            return $user;
         }
         return false;
     }
-
+    
+    // VERIFICAR SI CORREO EXISTE
+    public function correoExiste($correo) {
+        $sql = "SELECT id_usuario FROM usuarios WHERE correo = :correo";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':correo', $correo);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
+    }
 }
 ?>

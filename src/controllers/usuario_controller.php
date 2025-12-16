@@ -1,252 +1,222 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 
-include_once __DIR__ . '/../../Config/database.php';
-include_once __DIR__ . '/../models/usuario.php';
+// ⚠️ NO poner JSON global porque hay redirecciones
+// header('Content-Type: application/json; charset=utf-8');
 
-if (!isset($conn)) {
-    echo json_encode(['error' => 'No se pudo establecer conexión con la base de datos']);
-    exit;
-}
+// ================= PHPMailer =================
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-function validarSoloTexto($s) {
-    return preg_match('/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/u', $s) === 1;
-}
+require_once __DIR__ . '/../../libs/PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../../libs/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../../libs/PHPMailer/src/SMTP.php';
 
-function colapsarEspacios($s) {
-    return trim(preg_replace('/\s{2,}/u', ' ', (string)$s));
-}
+// ================= DB + MODEL =================
+require_once __DIR__ . '/../../Config/database.php';
+require_once __DIR__ . '/../models/usuario.php';
 
 $usuario = new Usuario($conn);
 
 $accion = $_GET['accion'] ?? null;
 if (!$accion) {
-    echo json_encode(['error' => 'Debe especificar la acción en la URL, por ejemplo: ?accion=listar']);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Debe especificar la acción']);
     exit;
 }
 
 switch ($accion) {
 
-    //List users
-    case 'listar':
-        echo json_encode($usuario->listar());
-    break;
-
-    //Get user by id
-    case 'obtener':
-        $id_usuario = $_GET['id_usuario'] ?? null;
-
-        if (!$id_usuario) {
-            echo json_encode(['error' => 'Debe enviar el parámetro id_usuario']);
-            exit;
-        }
-
-        $res = $usuario->obtenerPorId($id_usuario);
-
-        echo json_encode(
-            $res ? $res : ['error' => 'Usuario no encontrado']
-        );
-    break;
-
-    //Create user
+    // ================= CREAR USUARIO (CORREGIDO) =================
     case 'crear':
+
+        header('Content-Type: application/json');
+
         $data = json_decode(file_get_contents("php://input"), true);
 
-        $u = [
-            'nombre_completo'  => $data['nombre_completo']  ?? $_POST['nombre_completo']  ?? null,
-            'tipo_documento'   => $data['tipo_documento']   ?? $_POST['tipo_documento']   ?? null,
-            'numero_documento' => $data['numero_documento'] ?? $_POST['numero_documento'] ?? null,
-            'telefono'        => $data['telefono'] ?? $_POST['telefono'] ?? null,
-            'cargo'           => $data['cargo'] ?? $_POST['cargo'] ?? null,
-            'correo'          => $data['correo'] ?? $_POST['correo'] ?? null,
-            'direccion'       => $data['direccion'] ?? $_POST['direccion'] ?? null,
-            'password'        => $data['password'] ?? $_POST['password'] ?? null,
-        ];
+        $nombre      = $data['nombre_completo'] ?? null;
+        $tipo_documento    = $data['tipo_documento'] ?? null;
+        $numero_documento  = $data['numero_documento'] ?? null;
+        $telefono    = $data['telefono'] ?? null;
+        $cargo       = $data['cargo'] ?? null;
+        $correo      = $data['correo'] ?? null;
+        $direccion   = $data['direccion'] ?? null;
+        $password    = $data['password'] ?? null;
+        $id_programa = $data['id_programa'] ?? null;
 
-        $id_programa = $data['id_programa'] ?? $_POST['id_programa'] ?? null;
-
-        if (in_array(null, $u, true)) {
-            echo json_encode(['error' => 'Debe enviar todos los campos obligatorios']);
+        if (!$nombre || !$correo || !$password) {
+            echo json_encode(['error' => 'Datos incompletos']);
             exit;
         }
 
-        $u['nombre_completo'] = colapsarEspacios($u['nombre_completo']);
-        if ($u['nombre_completo'] === '' || !validarSoloTexto($u['nombre_completo'])) {
-
-            echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
-            exit;
-        }
-
-        $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
-        if (!in_array($u['cargo'], $cargosValidos, true)) {
-            echo json_encode(['error' => 'Cargo no válido']);
-            exit;
-        }
-
-        if ($usuario->obtenerPorCorreo($u['correo'])) {
-            echo json_encode(['error' => 'El correo ya está registrado']);
-            exit;
-        }
-
-        $usuario->crear(
-            $u['nombre_completo'],
-            $u['tipo_documento'],
-            $u['numero_documento'],
-            $u['telefono'],
-            $u['cargo'],
-            $u['correo'],
-            $u['direccion'],
-            $u['password'], 
-            $id_programa
-        );
-
-        echo json_encode(['mensaje' => 'Usuario creado correctamente']);
-    break;
-    
-    //Update user
-    case 'actualizar':
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        // Obtener ID desde JSON, POST o GET
-        $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
-
-        if (!$id_usuario) {
-            echo json_encode(['error' => 'Debe enviar id_usuario']);
-            exit;
-        }
-
-        // Obtener datos enviados
-        $nombre     = $data['nombre_completo']  ?? null;
-        $tipo_doc   = $data['tipo_documento']   ?? null;
-        $num_doc    = $data['numero_documento'] ?? null;
-        $telefono   = $data['telefono']         ?? null;
-        $cargo      = $data['cargo']            ?? null;
-        $correo     = $data['correo']           ?? null;
-        $direccion  = $data['direccion']        ?? null;
-        $password   = $data['password']         ?? null;
-        $id_programa = $data['id_programa']     ?? null;
-
-        // Obtener datos actuales del usuario
-        $usuarioActual = $usuario->obtenerPorId($id_usuario);
-        if (!$usuarioActual) {
-            echo json_encode(['error' => 'Usuario no encontrado']);
-            exit;
-        }
-
-        // Conservar valores anteriores si no se enviaron nuevos
-        $nombre     = $nombre     ?? $usuarioActual['nombre_completo'];
-        $tipo_doc   = $tipo_doc   ?? $usuarioActual['tipo_documento'];
-        $num_doc    = $num_doc    ?? $usuarioActual['numero_documento'];
-        $telefono   = $telefono   ?? $usuarioActual['telefono'];
-        $cargo      = $cargo      ?? $usuarioActual['cargo'];
-        $correo     = $correo     ?? $usuarioActual['correo'];
-        $direccion  = $direccion  ?? $usuarioActual['direccion'];
-        $id_programa = $id_programa ?? $usuarioActual['id_programa'];
-
-        // Validar nombre
-        $nombre = colapsarEspacios($nombre);
-        if ($nombre === '' || !validarSoloTexto($nombre)) {
-            echo json_encode(['error' => 'El nombre solo puede contener letras y espacios']);
-            exit;
-        }
-
-        // Validar cargo
-        $cargosValidos = ['Coordinador','subcoordinador','Instructor','Pasante','Aprendiz'];
-        if (!in_array($cargo, $cargosValidos, true)) {
-            echo json_encode(['error' => 'Cargo no válido']);
-            exit;
-        }
-
-        // Validar correo único
-        if ($correo !== $usuarioActual['correo'] && $usuario->obtenerPorCorreo($correo)) {
-            echo json_encode(['error' => 'El correo ya está registrado por otro usuario']);
-            exit;
-        }
-
-        echo json_encode(
-            $usuario->actualizar(
-                $id_usuario, 
-                $nombre, 
-                $tipo_doc, 
-                $num_doc, 
-                $telefono, 
-                $cargo, 
+        // 1. Primero crear usuario
+        try {
+            $token = bin2hex(random_bytes(32));
+            
+            // CORRECCIÓN: Enviar la contraseña SIN hashear
+            $lastId = $usuario->crear(
+                $nombre,
+                $tipo_documento,
+                $numero_documento,
+                $telefono,
+                $cargo,
                 $correo,
-                $password, 
-                $direccion, 
+                $direccion,
+                $password, // ← SIN password_hash() aquí
+                $token,
                 $id_programa
-            )
-            ? ['mensaje' => 'Usuario actualizado correctamente']
-            : ['error' => 'No se pudo actualizar el usuario']
-        );
-    break;
+            );
+            
+            if (!$lastId) {
+                echo json_encode(['error' => 'Error al crear usuario']);
+                exit;
+            }
 
+            // 2. Guardar token en tabla tokens_correo
+            if (!$usuario->crearTokenVerificacion($lastId, $token)) {
+                echo json_encode(['error' => 'Error creando token de verificación']);
+                exit;
+            }
+            
+            // 3. Enviar correo
+            try {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host       = 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = 'sigainvetario2025@gmail.com';
+                $mail->Password   = 'dwltqzowfouydwgf';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 587;
 
-    // Find by document number
-    case 'buscar_documento':
-        $doc = $_GET['numero_documento'] ?? null;
-        if (!$doc) {
-            echo json_encode(['error' => 'Debe enviar numero_documento']);
+                $mail->setFrom('sigainvetario2025@gmail.com', 'Gestion Inventario');
+                $mail->addAddress($correo, $nombre);
+
+                $link = "http://localhost/Gestion-inventario/src/controllers/usuario_controller.php?accion=activar&token=$token";
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Activación de cuenta - Sistema de Inventario';
+                $mail->Body = "
+                    <h2>Hola $nombre</h2>
+                    <p>Gracias por registrarte en el sistema de gestión de inventario.</p>
+                    <p>Por favor haz clic en el siguiente enlace para activar tu cuenta:</p>
+                    <p><a href='$link' style='background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;'>ACTIVAR MI CUENTA</a></p>
+                    <p>Si el botón no funciona, copia y pega esta URL en tu navegador:</p>
+                    <p><code>$link</code></p>
+                    <p>Este enlace expirará en 24 horas.</p>
+                ";
+                $mail->AltBody = "Hola $nombre,\n\nActiva tu cuenta aquí: $link\n\nEste enlace expirará en 24 horas.";
+
+                $mail->send();
+                echo json_encode([
+                    'success' => true,
+                    'mensaje' => 'Usuario creado. Revisa tu correo para activar la cuenta'
+                ]);
+                
+            } catch (Exception $e) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Usuario creado pero error enviando correo',
+                    'detalle' => $e->getMessage()
+                ]);
+            }
+            
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {
+                if (strpos($e->getMessage(), 'numero_documento') !== false) {
+                    echo json_encode(['error' => 'El número de documento ya está registrado']);
+                } elseif (strpos($e->getMessage(), 'correo') !== false) {
+                    echo json_encode(['error' => 'El correo ya está registrado']);
+                } else {
+                    echo json_encode(['error' => 'Error de duplicado en base de datos']);
+                }
+            } else {
+                echo json_encode(['error' => 'Error en base de datos: ' . $e->getMessage()]);
+            }
+        }
+        break;
+
+    // ================= ACTIVAR CUENTA =================
+    case 'activar':
+        session_start();
+
+        $token = $_GET['token'] ?? null;
+
+        if (!$token) {
+            echo "Token inválido";
             exit;
         }
-        echo json_encode(
-            $usuario->obtenerPorDocumento($doc) ?: ['error' => 'Usuario no encontrado']
-        );
-    break;
 
-    // Login
+        if ($usuario->activarCuenta($token)) {
+            // Cerrar sesión para evitar redirección al dashboard
+            session_unset();
+            session_destroy();
+
+            // Redirigir al login con mensaje de éxito
+            header("Location: http://localhost/Gestion-inventario/src/view/login/login.php?activacion=exito");
+            exit;
+        } else {
+            echo "Token inválido o expirado. Contacta al administrador.";
+        }
+        break;
+        
+    // ================= LOGIN =================
     case 'login':
+        session_start();
+        
         $data = json_decode(file_get_contents("php://input"), true);
-
-        $correo   = $data['correo'] ?? $_POST['correo'] ?? null;
-        $password = $data['password'] ?? $_POST['password'] ?? null;
-
+        
+        $correo = $data['correo'] ?? null;
+        $password = $data['password'] ?? null;
+        
         if (!$correo || !$password) {
-            echo json_encode(['error' => 'Debe enviar correo y password']);
+            echo json_encode(['error' => 'Credenciales incompletas']);
             exit;
         }
-
-        echo json_encode(
-            $usuario->login($correo, $password)
-                ? ['mensaje' => 'Login correcto']
-                : ['error' => 'Credenciales incorrectas']
-        );
-    break;
-
-     //Change user status
-    case 'cambiar_estado':
-    $data = json_decode(file_get_contents("php://input"), true);
-
-    $id_usuario = $data['id_usuario'] ?? $_POST['id_usuario'] ?? $_GET['id_usuario'] ?? null;
-    $estado     = $data['estado']     ?? $_POST['estado']     ?? $_GET['estado']     ?? null;
-
-    if ($id_usuario === null || $estado === null) {
-        echo json_encode(['error' => 'Debe enviar id_usuario y estado (1 o 0)']);
+        
+        $user = $usuario->login($correo, $password);
+        
+        if ($user) {
+            $_SESSION['usuario'] = [
+                'id' => $user['id_usuario'],
+                'nombre' => $user['nombre_completo'],
+                'correo' => $user['correo'],
+                'cargo' => $user['cargo'],
+                'es_sistema' => $user['es_sistema']
+            ];
+            
+            echo json_encode([
+                'success' => true,
+                'mensaje' => 'Login exitoso',
+                'usuario' => [
+                    'id' => $user['id_usuario'],
+                    'nombre' => $user['nombre_completo'],
+                    'cargo' => $user['cargo']
+                ]
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Credenciales incorrectas o cuenta inactiva'
+            ]);
+        }
+        break;
+        
+    // ================= CERRAR SESIÓN =================
+    case 'logout':
+        session_start();
+        session_unset();
+        session_destroy();
+        
+        header("Location: http://localhost/Gestion-inventario/src/view/login/login.php");
         exit;
-    }
-
-    if ($estado != 1 && $estado != 0) {
-        echo json_encode(['error' => 'El estado debe ser 1 (activo) o 0 (inactivo)']);
-        exit;
-    }
-
-    if (!$usuario->obtenerPorId($id_usuario)) {
-        echo json_encode(['error' => 'Usuario no encontrado']);
-        exit;
-    }
-
-    echo json_encode(
-        $usuario->cambiarEstado($id_usuario, $estado)
-            ? ['mensaje' => 'Estado del usuario actualizado correctamente']
-            : ['error' => 'No se pudo actualizar el estado']
-    );
-    break;
-
+        break;
+        
     default:
+        header('Content-Type: application/json');
         echo json_encode(['error' => 'Acción no válida']);
-    break;
+        break;
 }
+?>
