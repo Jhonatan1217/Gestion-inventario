@@ -149,7 +149,7 @@ function showFlowbiteAlert(type, message) {
     titleText = "Error"
     iconSVG = `
       <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293-2.293 1.414 1.414L11.414 10l2.293 2.293z"/>
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293-2.293 1.414 1.414-2.293 2.293 2.293 2.293z"/>
       </svg>
     `
   }
@@ -203,7 +203,7 @@ function showAlert(message, type = "success") {
 }
 
 function validateMaterialPayload(data, { isEdit = false, id = null } = {}) {
-  const nameRegex = /^[A-Za-zÁÉÍÓÚÜÑñáéíóúüñ\s\-.]{3,80}$/
+  const nameRegex = /^[A-Za-z0-9ÁÉÍÓÚÜÑñáéíóúüñ\s\-.]{3,80}$/
   const codeRegex = /^[A-Za-z0-9_-]{3,30}$/
 
   if (!data.nombre) {
@@ -281,9 +281,11 @@ function getDataToRender() {
 const icons = {
   eye: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
   edit: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
+  check: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+  x: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
   trash:
     '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
-  menu: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>',
+  menu: '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>',
   package:
     '<svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>',
   email:
@@ -297,6 +299,8 @@ const icons = {
    ================================================= */
 function renderTable() {
   const dataToRender = getDataToRender()
+  const searchTerm = document.getElementById("inputBuscar")?.value.trim()
+  const filterValue = document.getElementById("selectFiltroRol")?.value
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
   const paginatedData = dataToRender.slice(start, end)
@@ -304,59 +308,89 @@ function renderTable() {
   const tableBody = document.getElementById("tableBody")
   tableBody.innerHTML = ""
 
+  if (!dataToRender.length) {
+    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
+    const row = document.createElement("tr")
+    row.innerHTML = `
+      <td class="px-4 py-6 text-center text-sm text-muted-foreground" colspan="7">${reason}</td>
+    `
+    tableBody.appendChild(row)
+    renderPagination()
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons(tableBody)
+    }
+    return
+  }
+
   paginatedData.forEach((material) => {
-    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
     const statusText = material.enabled ? "Disponible" : "Agotado"
-    const rowClass = !material.enabled ? "disabled-row" : ""
     const codigoDisplay = material.codigo || "-"
 
     const row = document.createElement("tr")
-    row.className = `hover:bg-muted transition-colors ${rowClass}`
+    row.className = "hover:bg-muted/40"
     row.dataset.materialId = material.id
 
     row.innerHTML = `
-      <td class="px-4 py-3">
+      <td class="px-4 py-3 align-middle text-sm font-medium">${codigoDisplay}</td>
+      <td class="px-4 py-3 align-middle">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
-            ${icons.package}
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-avatar-secondary-39 text-secondary flex-shrink-0">
+            <i data-lucide="box" class="lucide lucide-box h-4 w-4 text-[#007832]"></i>
           </div>
           <div>
-            <p class="font-medium">${material.name}</p>
+            <p class="font-medium text-sm">${material.name}</p>
           </div>
         </div>
       </td>
-      <td class="px-4 py-3 text-sm max-w-xs truncate" title="${material.description}">${material.description}</td>
-      <td class="px-4 py-3">
-        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+      <td class="px-4 py-3 align-middle text-sm max-w-xs truncate" title="${material.description}">${material.description}</td>
+      <td class="px-4 py-3 align-middle">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium badge-clasificacion-base ${material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"}">
           ${material.clasificacion}
         </span>
       </td>
-      <td class="px-4 py-3 text-sm font-medium">${codigoDisplay}</td>
-      <td class="px-4 py-3 text-sm">${material.unit}</td>
-      <td class="px-4 py-3">
-        <span class="inline-flex items-center gap-1 px-3 py-1 ${statusClass} text-xs font-medium rounded-full status-badge ${!material.enabled ? "inactive" : "active"}">
-          <span class="w-2 h-2 ${!material.enabled ? "bg-red-700" : "bg-green-500"} rounded-full"></span>
+      <td class="px-4 py-3 align-middle text-sm">${material.unit}</td>
+      <td class="px-4 py-3 align-middle">
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full status-badge ${material.enabled ? "active" : "inactive"}">
           ${statusText}
         </span>
       </td>
-      <td class="px-4 py-3 text-right">
-        <div class="relative">
-          <button class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-muted card-menu-btn" onclick="toggleMenu(event)">
+      <td class="px-4 py-3 align-middle text-right">
+        <div class="relative inline-block text-left">
+          <button 
+            type="button"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted text-slate-800"
+            onclick="toggleMenu(event)"
+          >
             ${icons.menu}
           </button>
           
-          <div class="hidden absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50 dropdown-menu">
-            <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground rounded-t-lg text-sm" onclick="openDetailsModal(${material.id})">
+          <div 
+            class="dropdown-menu hidden absolute right-0 mt-2 w-48 rounded-xl border border-border bg-popover shadow-md py-1 z-50"
+          >
+            <button 
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
+              onclick="openDetailsModal(${material.id})"
+            >
               ${icons.eye}
-              Ver detalle
+              <span class="ml-2">Ver detalles</span>
             </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-foreground text-sm" onclick="openEditModal(${material.id})">
+            <button 
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted"
+              onclick="openEditModal(${material.id})"
+            >
               ${icons.edit}
-              Editar
+              <span class="ml-2">Editar</span>
             </button>
-            <button class="w-full px-4 py-2 text-left transition-colors flex items-center gap-2 text-sm rounded-b-lg toggle-status-table-btn" data-id="${material.id}" onclick="toggleMaterialStatus(${material.id}, event)" style="color: ${!material.enabled ? "#16a34a" : "#dc2626"}; background-color: ${!material.enabled ? "#dcfce7" : "#fee2e2"}; border-radius: 0 0 0.5rem 0.5rem;">
-              ${icons.trash}
-              <span class="toggle-text">${!material.enabled ? "Activar" : "Desactivar"}</span>
+            <hr class="border-border my-1">
+            <button 
+              type="button"
+              class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted rounded-b-xl"
+              onclick="toggleMaterialStatus(${material.id}, event)"
+            >
+              ${!material.enabled ? icons.check : icons.x}
+              <span class="ml-2">${!material.enabled ? "Disponible" : "Agotado"}</span>
             </button>
           </div>
         </div>
@@ -367,10 +401,16 @@ function renderTable() {
   })
 
   renderPagination()
+    // Initialize Lucide icons in newly rendered table rows
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons(tableBody)
+    }
 }
 
 function renderCards() {
   const dataToRender = getDataToRender()
+  const searchTerm = document.getElementById("inputBuscar")?.value.trim()
+  const filterValue = document.getElementById("selectFiltroRol")?.value
   const start = (currentCardPage - 1) * cardsPerPage
   const end = start + cardsPerPage
   const paginatedData = dataToRender.slice(start, end)
@@ -378,15 +418,25 @@ function renderCards() {
   const cardsContainer = document.getElementById("cardsContainer")
   cardsContainer.innerHTML = ""
 
+  if (!dataToRender.length) {
+    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
+    const empty = document.createElement("div")
+    empty.className = "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground col-span-full"
+    empty.innerHTML = `
+      <p class="font-medium text-foreground">${reason}</p>
+      <p class="text-xs text-muted-foreground">Intenta crear un nuevo material o ajusta los filtros.</p>
+    `
+    cardsContainer.appendChild(empty)
+    renderPagination()
+    return
+  }
+
   paginatedData.forEach((material) => {
-    const statusClass = material.enabled ? "bg-success text-success-foreground" : "bg-gray-300 text-gray-600"
     const statusText = material.enabled ? "Disponible" : "Agotado"
     const codigoDisplay = material.codigo || "Sin código"
 
     const card = document.createElement("div")
-    card.className = `rounded-2xl border border-border bg-card p-3 shadow-sm flex flex-col gap-2 ${
-      !material.enabled ? "disabled" : ""
-    }`
+    card.className = "rounded-2xl border border-border bg-card p-2.5 shadow-sm flex flex-col gap-1.5"
     card.dataset.materialId = material.id
 
     card.innerHTML = `
@@ -405,7 +455,6 @@ function renderCards() {
           <button
             type="button"
             class="inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-muted text-slate-800"
-            data-menu-trigger="${material.id}"
             onclick="toggleCardMenu(event)"
           >
             <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -415,8 +464,7 @@ function renderCards() {
             </svg>
           </button>
           <div
-            class="dropdown-menu hidden absolute right-0 mt-2 w-40 rounded-xl border border-border bg-popover shadow-md py-1"
-            data-menu="${material.id}"
+            class="dropdown-menu hidden absolute right-0 mt-2 w-40 rounded-xl border border-border bg-popover shadow-md py-1 z-50"
           >
             <button
               type="button"
@@ -424,7 +472,7 @@ function renderCards() {
               onclick="event.stopPropagation(); openDetailsModal(${material.id})"
             >
               ${icons.eye}
-              Ver detalles
+              <span class="ml-2">Ver detalles</span>
             </button>
             <button
               type="button"
@@ -432,26 +480,25 @@ function renderCards() {
               onclick="event.stopPropagation(); openEditModal(${material.id})"
             >
               ${icons.edit}
-              Editar
+              <span class="ml-2">Editar</span>
             </button>
             <hr class="border-border my-1">
             <button
               type="button"
-              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted toggle-status-card-btn"
-              data-id="${material.id}"
+              class="flex w-full items-center px-3 py-2 text-xs text-slate-700 hover:bg-muted rounded-b-xl"
               onclick="event.stopPropagation(); toggleMaterialStatus(${material.id}, event)"
             >
-              ${icons.trash}
-              ${material.enabled ? "Desactivar" : "Activar"}
+              ${material.enabled ? icons.x : icons.check}
+              <span class="ml-2">${material.enabled ? "Agotado" : "Disponible"}</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="space-y-1 text-[11px] sm:text-xs text-muted-foreground">
+      <div class="space-y-0.5 text-[11px] sm:text-xs text-muted-foreground">
         <div class="flex items-center gap-2">
           ${icons.email}
-          <span>${material.description}</span>
+          <span class="truncate">${material.description}</span>
         </div>
         <div class="flex items-center gap-2">
           ${icons.ruler}
@@ -459,18 +506,18 @@ function renderCards() {
         </div>
       </div>
 
-      <div class="flex items-center justify-between mt-1">
-        <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${material.clasificacion === "Inventariado" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-1.5">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium badge-clasificacion-base ${material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"}">
             ${material.clasificacion}
           </span>
-          <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusClass}">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium status-badge ${material.enabled ? "active" : "inactive"}">
             ${statusText}
           </span>
         </div>
       </div>
 
-      <hr class="border-border my-1" />
+      <hr class="border-border my-0.5" />
 
       <div class="flex justify-end">
         <button
@@ -478,7 +525,7 @@ function renderCards() {
           class="switch-siga ${material.enabled ? "on" : "off"}"
           onclick="toggleMaterialStatus(${material.id}, event)"
         >
-          <span class="thumb" style="transform: translateX(${material.enabled ? "18px" : "0px"});"></span>
+          <span class="slider-siga"></span>
         </button>
       </div>
     `
@@ -597,17 +644,62 @@ function openDetailsModal(id) {
   const material = materialsData.find((m) => m.id === id)
   if (!material) return
 
-  document.getElementById("detailName").textContent = material.name
-  document.getElementById("detailCode").textContent = material.codigo || "Sin código"
-  document.getElementById("detailDescription").textContent = material.description
-  document.getElementById("detailClasificacion").textContent = material.clasificacion
-  document.getElementById("detailUnidad").textContent = material.unit
-  document.getElementById("detailStatus").textContent = material.enabled ? "Disponible" : "Agotado"
-  document.getElementById("detailStatus").className = material.enabled
-    ? "inline-block px-2 py-1 rounded text-xs font-medium bg-success text-success-foreground"
-    : "inline-block px-2 py-1 rounded text-xs font-medium bg-gray-300 text-gray-600"
+  // Obtener iniciales del nombre del material
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase()
+  }
+
+  const estadoBadgeClass = material.enabled ? "badge-estado-activo" : "badge-estado-inactivo"
+  const clasificacionBadgeClass = material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"
+
+  const detailsContent = document.getElementById("detailsContent")
+  detailsContent.innerHTML = `
+    <div class="flex items-start gap-4 pb-4 border-b border-border">
+      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary flex-shrink-0">
+        <i data-lucide="box" class="lucide lucide-box h-5 w-5 text-[#007832]"></i>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-semibold text-lg">${material.name}</h3>
+        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-clasificacion-base ${clasificacionBadgeClass}">
+          ${material.clasificacion}
+        </span>
+      </div>
+    </div>
+    
+    <div class="grid gap-3 text-sm">
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Código:</span>
+        <span class="col-span-2 font-medium">${material.codigo || "Sin código"}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Descripción:</span>
+        <span class="col-span-2">${material.description}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Unidad:</span>
+        <span class="col-span-2">${material.unit}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Estado:</span>
+        <div class="col-span-2">
+          <span class="badge-estado-base ${estadoBadgeClass}">
+            ${material.enabled ? "Disponible" : "Agotado"}
+          </span>
+        </div>
+      </div>
+    </div>
+  `
 
   document.getElementById("detailsModal").classList.add("active")
+  if (window.lucide && typeof lucide.createIcons === "function") {
+    lucide.createIcons(detailsContent)
+  }
 }
 
 function closeDetailsModal() {
@@ -699,6 +791,23 @@ async function updateMaterial() {
     estado: materialsData.find((m) => m.id === id)?.enabled ? "Disponible" : "Agotado",
   }
 
+  // Bloquear envío si no hay cambios respecto al original
+  const original = materialsData.find((m) => m.id === id)
+  if (original) {
+    const norm = (v) => (v ?? "").toString().trim()
+    const noChanges =
+      norm(original.name) === norm(materialData.nombre) &&
+      norm(original.description) === norm(materialData.descripcion) &&
+      norm(original.clasificacion) === norm(materialData.clasificacion) &&
+      norm(original.codigo) === norm(materialData.codigo_inventario) &&
+      norm(original.unit) === norm(materialData.unidad_medida)
+
+    if (noChanges) {
+      showAlert("No realizaste cambios. Usa Cancelar o cierra el modal.", "warning")
+      return
+    }
+  }
+
   if (!validateMaterialPayload(materialData, { isEdit: true, id })) return
 
   const result = await updateMaterialAPI(id, materialData)
@@ -726,8 +835,9 @@ async function toggleMaterialStatus(id, event) {
 }
 
 /* =========================
-   MENU TOGGLES
+   MENU TOGGLES - Sistema simplificado basado en el módulo de usuarios
    ========================= */
+
 function toggleMenu(event) {
   event.stopPropagation()
   const button = event.currentTarget
@@ -748,23 +858,25 @@ function toggleMenu(event) {
 function toggleCardMenu(event) {
   event.stopPropagation()
   const button = event.currentTarget
-  const menuId = button.getAttribute("data-menu-trigger")
-  const dropdown = document.querySelector(`[data-menu="${menuId}"]`)
+  const dropdown = button.nextElementSibling
 
   document.querySelectorAll(".dropdown-menu").forEach((menu) => {
     if (menu !== dropdown) menu.classList.add("hidden")
   })
 
-  if (dropdown) {
-    dropdown.classList.toggle("hidden")
+  dropdown.classList.toggle("hidden")
+  if (!dropdown.classList.contains("hidden")) {
+    dropdown.classList.add("show")
+  } else {
+    dropdown.classList.remove("show")
   }
 }
 
 document.addEventListener("click", (event) => {
   if (
     !event.target.closest(".dropdown-menu") &&
-    !event.target.closest("button[data-menu-trigger]") &&
-    !event.target.closest(".card-menu-btn")
+    !event.target.closest("button[onclick*='toggleMenu']") &&
+    !event.target.closest("button[onclick*='toggleCardMenu']")
   ) {
     document.querySelectorAll(".dropdown-menu").forEach((menu) => {
       menu.classList.add("hidden")
@@ -774,29 +886,35 @@ document.addEventListener("click", (event) => {
 })
 
 /* =========================
-   VIEW TOGGLE
+   VIEW TOGGLES
    ========================= */
-function switchToTableView() {
+document.getElementById("tableViewBtn")?.addEventListener("click", () => {
   currentView = "table"
   document.getElementById("tableView").classList.remove("hidden")
   document.getElementById("cardView").classList.add("hidden")
+
   document.getElementById("tableViewBtn").classList.add("bg-muted", "text-foreground")
   document.getElementById("tableViewBtn").classList.remove("text-muted-foreground")
+
   document.getElementById("cardViewBtn").classList.remove("bg-muted", "text-foreground")
   document.getElementById("cardViewBtn").classList.add("text-muted-foreground")
-  renderTable()
-}
 
-function switchToCardView() {
+  renderTable()
+})
+
+document.getElementById("cardViewBtn")?.addEventListener("click", () => {
   currentView = "card"
-  document.getElementById("tableView").classList.add("hidden")
   document.getElementById("cardView").classList.remove("hidden")
+  document.getElementById("tableView").classList.add("hidden")
+
   document.getElementById("cardViewBtn").classList.add("bg-muted", "text-foreground")
   document.getElementById("cardViewBtn").classList.remove("text-muted-foreground")
+
   document.getElementById("tableViewBtn").classList.remove("bg-muted", "text-foreground")
   document.getElementById("tableViewBtn").classList.add("text-muted-foreground")
+
   renderCards()
-}
+})
 
 /* =========================
    SEARCH & FILTER
@@ -825,14 +943,15 @@ function applyFilters() {
 }
 
 /* =========================
-   EVENT LISTENERS
+   INIT
    ========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  fetchMaterials()
-
-  document.getElementById("tableViewBtn").addEventListener("click", switchToTableView)
-  document.getElementById("cardViewBtn").addEventListener("click", switchToCardView)
-
-  document.getElementById("inputBuscar").addEventListener("input", applyFilters)
-  document.getElementById("selectFiltroRol").addEventListener("change", applyFilters)
+document.addEventListener("DOMContentLoaded", async () => {
+  await fetchMaterials()
+  setupEventListeners()
+  // await cargarProgramas() // This line seems to be from another module and might be a leftover
 })
+
+function setupEventListeners() {
+  document.getElementById("inputBuscar")?.addEventListener("input", applyFilters)
+  document.getElementById("selectFiltroRol")?.addEventListener("change", applyFilters)
+}
