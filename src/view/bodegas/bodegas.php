@@ -212,14 +212,13 @@ $bodegas = [
               data-tipo="<?= htmlspecialchars($b[4]) ?>"
               data-estado="<?= htmlspecialchars($b[5]) ?>"
             >
-              <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+              <i data-lucide="more-horizontal" class="w-4 h-4"></i><p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
             </button>
           </div>
 
           <!-- Main -->
           <div>
             <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
-            <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
           </div>
 
           <!-- Location -->
