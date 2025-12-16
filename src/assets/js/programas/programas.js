@@ -162,36 +162,93 @@ function closeEditModal() {
   modal.classList.remove("flex")
 }
 
-// Open view program details modal
-function openViewModal(index) {
-  const modal = document.getElementById("viewProgramModal")
-  const row =
-    document.querySelector(`tr[data-index="${index}"]`) || document.querySelector(`div[data-index="${index}"]`)
-
-  if (row) {
-    document.getElementById("view_name").textContent = row.dataset.nombre
-    document.getElementById("view_code").textContent = row.dataset.codigo
-    document.getElementById("view_description").textContent = row.dataset.descripcion
-    document.getElementById("view_nivel").textContent = row.dataset.nivel
-    document.getElementById("view_duracion").textContent = row.dataset.duracion
-
-    // Normalize state and display human-friendly badge (Activo / Inactivo)
-    const estadoAttrView = String(row.dataset.estado ?? '').trim()
-    const estadoHuman = (estadoAttrView === '1' || estadoAttrView === '0')
-      ? (estadoAttrView === '1' ? 'Activo' : 'Inactivo')
-      : (estadoAttrView.toLowerCase() === 'activo' ? 'Activo' : 'Inactivo')
-
-    const viewEstadoEl = document.getElementById('view_estado')
-    viewEstadoEl.textContent = estadoHuman
-    if (estadoHuman === 'Activo') {
-      viewEstadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#22c55e26] text-success'
+// ========== FUNCIÓN PARA ASIGNAR COLORES SEGÚN NIVEL ==========
+function getLevelStyles(nivel) {
+    const nivelLower = nivel.toLowerCase();
+    
+    if (nivelLower.includes('técnico') || nivelLower.includes('tecnico')) {
+        return {
+            bgColor: 'bg-[#007832]',
+            textColor: 'text-primary',
+            badgeClass: 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-estado-activo'
+        };
+    } else if (nivelLower.includes('tecnólogo') || nivelLower.includes('tecnologo')) {
+        return {
+            bgColor: 'bg-[#00304D]',
+            textColor: 'text-info',
+            badgeClass: 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-role-parendiz'
+        };
     } else {
-      viewEstadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400'
+        return {
+            bgColor: 'bg-muted',
+            textColor: 'text-muted-foreground',
+            badgeClass: 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400'
+        };
     }
-  }
+}
 
-  modal.classList.remove("hidden")
-  modal.classList.add("flex")
+// Modifica la función openViewModal para usar los estilos según nivel
+function openViewModal(index) {
+    const modal = document.getElementById("viewProgramModal");
+    const row =
+        document.querySelector(`tr[data-index="${index}"]`) || document.querySelector(`div[data-index="${index}"]`);
+
+    if (row) {
+        document.getElementById("view_name").textContent = row.dataset.nombre;
+        document.getElementById("view_code").textContent = row.dataset.codigo;
+        document.getElementById("view_description").textContent = row.dataset.descripcion;
+        document.getElementById("view_nivel").textContent = row.dataset.nivel;
+        document.getElementById("view_duracion").textContent = row.dataset.duracion;
+
+        // Normalize state and display human-friendly badge (Activo / Inactivo)
+        const estadoAttrView = String(row.dataset.estado ?? '').trim();
+        const estadoHuman = (estadoAttrView === '1' || estadoAttrView === '0')
+            ? (estadoAttrView === '1' ? 'Activo' : 'Inactivo')
+            : (estadoAttrView.toLowerCase() === 'activo' ? 'Activo' : 'Inactivo');
+
+        const viewEstadoEl = document.getElementById('view_estado');
+        viewEstadoEl.textContent = estadoHuman;
+        if (estadoHuman === 'Activo') {
+            viewEstadoEl.className = 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-estado-activo';
+        } else {
+            viewEstadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400';
+        }
+
+        // ========== APLICAR ESTILOS SEGÚN NIVEL ==========
+        const nivel = row.dataset.nivel;
+        const levelStyles = getLevelStyles(nivel);
+        
+        // 1. Cambiar fondo del icono circular
+        const iconContainer = modal.querySelector('.w-12.h-12');
+        if (iconContainer) {
+            // Remover clases anteriores de color
+            iconContainer.className = iconContainer.className.replace(/bg-\[[^\]]*\]/g, '').replace(/bg-[a-z-]+/g, '');
+            // Agregar nueva clase
+            iconContainer.classList.add(levelStyles.bgColor);
+        }
+        
+        // 2. Cambiar color del icono
+        const icon = modal.querySelector('.fa-graduation-cap');
+        if (icon) {
+            // Remover clases anteriores de color
+            icon.className = icon.className.replace(/text-[a-z-]+/g, '');
+            // Agregar nueva clase según nivel
+            if (nivel.toLowerCase().includes('técnico') || nivel.toLowerCase().includes('tecnico')) {
+                icon.classList.add('text-primary');
+            } else {
+                icon.classList.add('text-info');
+            }
+        }
+        
+        // 3. Cambiar estilo del badge de nivel
+        const nivelBadge = document.getElementById('view_nivel');
+        if (nivelBadge) {
+            nivelBadge.className = levelStyles.badgeClass;
+        }
+    }
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
 }
 
 // Close view program details modal
@@ -292,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Normalize level
       const nivelSelect = document.getElementById("edit_nivel").value
-      const nivelNormalized = nivelSelect === "Técnico" || nivelSelect === "Tecnico" ? "Tecnico" : "Tecnologo"
+      const nivelNormalized = nivelSelect.toLowerCase().includes("técnico") ? "Técnico" : "Tecnólogo"
 
       // Duration
       const duracionText = document.getElementById("edit_duracion").value

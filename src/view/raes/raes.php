@@ -113,7 +113,7 @@ $raes = [
                     <input 
                         type="text" 
                         placeholder="Buscar por nombre..." 
-                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                        class="pl-10 pr-4 py-2 w-full border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                     >
                 </div>
                 
