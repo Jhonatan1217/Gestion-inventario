@@ -9,7 +9,7 @@ class EvidenciaModel {
         $this->conn = $db;
     }
 
-    /* Listar todas las evidencias */
+    /* List evidences */
     public function listar() {
         $sql = "SELECT * FROM {$this->table}";
         $stmt = $this->conn->prepare($sql);
@@ -17,7 +17,7 @@ class EvidenciaModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /* Obtener evidencia por ID */
+    /* Get evidence by ID */
     public function obtenerPorId($id) {
         $sql = "SELECT * FROM {$this->table} WHERE id_evidencia = :id";
         $stmt = $this->conn->prepare($sql);
@@ -26,7 +26,7 @@ class EvidenciaModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /* Crear evidencia */
+    /* Create evidence */
     public function crear($data) {
         $sql = "INSERT INTO {$this->table}
                 (id_movimiento_salida, id_usuario, foto, descripcion_obra)
@@ -40,30 +40,6 @@ class EvidenciaModel {
         $stmt->bindParam(":foto", $data["foto"]);
         $stmt->bindParam(":descripcion_obra", $data["descripcion_obra"]);
 
-        return $stmt->execute();
-    }
-
-    /* Actualizar evidencia */
-    public function actualizar($id, $data) {
-        $sql = "UPDATE {$this->table}
-                SET foto = :foto,
-                    descripcion_obra = :descripcion_obra
-                WHERE id_evidencia = :id";
-
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->bindParam(":foto", $data["foto"]);
-        $stmt->bindParam(":descripcion_obra", $data["descripcion_obra"]);
-        $stmt->bindParam(":id", $id);
-
-        return $stmt->execute();
-    }
-
-    /* Eliminar evidencia */
-    public function eliminar($id) {
-        $sql = "DELETE FROM {$this->table} WHERE id_evidencia = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(":id", $id);
         return $stmt->execute();
     }
 }
