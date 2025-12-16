@@ -166,7 +166,7 @@ const hiddenFichaId = document.getElementById("hiddenFichaId")
 const modalFichaTitulo = document.getElementById("modalFichaTitulo")
 const modalFichaDescripcion = document.getElementById("modalFichaDescripcion")
 
-// Inputs del formulario de Fichas
+// Inputs of the Fichas form
 const inputNumeroFicha = document.getElementById("numero_ficha");
 const inputPrograma = document.getElementById("id_programa");
 const inputJornada = document.getElementById("jornada");
@@ -318,7 +318,7 @@ function openModalFicha(editFicha = null) {
     modalFichaDescripcion.textContent = "Modifica la información de la ficha"
     hiddenFichaId.value = editFicha.id
 
-    // Cargar datos al formulario
+    // Upload data to the form
     inputNumeroFicha.value = editFicha.numero_ficha || ""
     inputPrograma.value = editFicha.id_programa || ""
     inputJornada.value = editFicha.jornada || ""
@@ -326,7 +326,7 @@ function openModalFicha(editFicha = null) {
     inputFechaInicio.value = editFicha.fecha_inicio || ""
     inputFechaFin.value = editFicha.fecha_fin || ""
 
-    // Datos originales para comparar cambios
+    // Original data for comparing changes
     originalEditData = {
       numero_ficha: String(editFicha.numero_ficha ?? "").trim(),
       id_programa: editFicha.id_programa ? String(editFicha.id_programa) : "",
@@ -341,7 +341,7 @@ function openModalFicha(editFicha = null) {
     modalFichaDescripcion.textContent = "Complete los datos para registrar una nueva ficha de formación"
     hiddenFichaId.value = ""
 
-    // Limpiar el formulario
+    // Clear the form
     inputNumeroFicha.value = ""
     inputPrograma.value = ""
     inputJornada.value = ""
@@ -498,7 +498,7 @@ function actualizarFicha(payload) {
 }
 
 // =========================
-// FUNCIONES PARA CAMBIAR ESTADO
+// FUNCTIONS TO CHANGE STATE
 // =========================
 
 async function cambiarEstadoFicha(id, accion) {
@@ -507,21 +507,21 @@ async function cambiarEstadoFicha(id, accion) {
         return;
     }
 
-    // Validar acciones permitidas según tu controlador
+    // Validate allowed actions according to your controller
     const accionesPermitidas = ['activar', 'finalizar', 'cancelar'];
     if (!accionesPermitidas.includes(accion)) {
         toastError("Acción no válida");
         return;
     }
     try {
-        // Llamar al endpoint correspondiente según la acción
+        // Call the corresponding endpoint according to the action
         const res = await fetch(`${API_URL}?accion=${accion}&id_ficha=${id}`, {
-            method: "GET" // Tu controlador usa GET con parámetros en la URL
+            method: "GET"  
         });
 
         const text = await res.text();
         
-        // Parsear la respuesta
+        // Parse the response
         let data;
         try {
             const start = text.indexOf("{");
@@ -538,7 +538,7 @@ async function cambiarEstadoFicha(id, accion) {
         if (data.error) {
             toastError(data.error);
         } else if (data.success) {
-            // Mensajes según la acción
+            // Messages based on action
             const mensajesExito = {
                 'activar': 'Ficha activada correctamente',
                 'finalizar': 'Ficha finalizada correctamente',
@@ -546,7 +546,7 @@ async function cambiarEstadoFicha(id, accion) {
             };
             
             toastSuccess(data.message || mensajesExito[accion]);
-            await cargarFichas(); // Recargar la lista
+            await cargarFichas(); // Reload the list
         } else {
             toastError(data.message || `Error al ${accion} la ficha`);
         }
@@ -556,7 +556,7 @@ async function cambiarEstadoFicha(id, accion) {
     }
 }
 
-// Funciones específicas para compatibilidad
+// Specific features for compatibility
 async function activarFicha(id) {
     await cambiarEstadoFicha(id, 'activar');
 }
@@ -627,7 +627,7 @@ function renderPaginationControls(container, totalItems, pageSize, currentPage, 
     btn.textContent = i
     btn.className =
       "px-3 py-1 text-sm rounded-lg border border-border " +
-      (i === currentPage ? "bg-emerald-500 text-white" : "bg-card hover:bg-muted")
+      (i === currentPage ? "bg-primary text-white" : "bg-card hover:bg-muted")
     btn.addEventListener("click", () => {
       if (i !== currentPage) onPageChange(i)
     })
@@ -721,7 +721,7 @@ function renderTable() {
 
     const nivelNombre = ficha.nivel || "N/A";
 
-    // Determinar qué acciones mostrar según el estado
+    // Determine which actions to display based on the status
     let accionesHTML = '';
     if (ficha.estado === 'Activa') {
         accionesHTML = `
@@ -873,7 +873,7 @@ function renderTable() {
 
     const nivelNombre = ficha.nivel || "N/A";
 
-    // Determinar qué acciones mostrar según el estado (para tarjetas)
+    // Determine which actions to show based on the status (for cards)
     let accionesHTML = '';
     if (ficha.estado === 'Activa') {
         accionesHTML = `
@@ -1098,14 +1098,14 @@ function attachActionEvents() {
       
       if (!id || !action) return
 
-      // Cerrar el menú
+      // Close menu
       const menu = btn.closest("[data-menu]")
       if (menu) {
         menu.classList.add("hidden")
         menu.classList.remove("show")
       }
 
-      // Manejar diferentes acciones
+      // Manage different actions
       if (action === "ver") {
         const ficha = fichas.find((f) => String(f.id) === String(id))
         if (ficha) openModalVerFicha(ficha)
@@ -1113,7 +1113,7 @@ function attachActionEvents() {
         const ficha = fichas.find((f) => String(f.id) === String(id))
         if (ficha) openModalFicha(ficha)
       } else if (['activar', 'finalizar', 'cancelar'].includes(action)) {
-        // Usar la nueva función unificada
+        // Use the new unified feature
         await cambiarEstadoFicha(id, action)
       }
     })
@@ -1151,7 +1151,7 @@ btnVistaTarjetas.addEventListener("click", setVistaTarjetas)
 formFicha.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Determinar si es edición o creación
+    // Determine if it is editing or creation
     const isEdit = hiddenFichaId.value !== "" && hiddenFichaId.value !== null && hiddenFichaId.value !== undefined;
 
     const payload = {
@@ -1161,12 +1161,12 @@ formFicha.addEventListener("submit", async (e) => {
         modalidad: inputModalidad.value || null,
         fecha_inicio: inputFechaInicio.value || null,
         fecha_fin: inputFechaFin.value || null,
-        estado: "Activa" // Siempre se crea como Activa
+        estado: "Activa" // It is always created as "Activa"
     };
 
     const numeroRegex = /^[0-9]+$/;
 
-    // VALIDACIONES BÁSICAS
+    // BASIC VALIDATIONS
     if (!payload.numero_ficha) {
         toastError("El número de ficha es obligatorio.");
         inputNumeroFicha.focus();
@@ -1215,7 +1215,7 @@ formFicha.addEventListener("submit", async (e) => {
         return;
     }
 
-    // Agregar ID si es edición
+    // Add ID if it's an edit
     if (isEdit) {
         payload.id_ficha = hiddenFichaId.value;
     }
@@ -1262,11 +1262,11 @@ document.addEventListener("keydown", (e) => {
 
 async function inicializar() {
   await Promise.all([
-      cargarProgramas(),  // Cargar programas primero
-      cargarFichas()      // Cargar fichas en paralelo
+      cargarProgramas(),  // Load programs first
+      cargarFichas()      // Load chips in parallel
   ]);
-  setVistaTabla();        // Renderizar después de que ambos hayan cargado
+  setVistaTabla();        // Render after both have loaded
 }
 
-// Iniciar
+// Start
 inicializar();
