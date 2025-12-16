@@ -11,29 +11,11 @@ const mockEvidences = [
     id: 1,
     fecha: "2024-04-06",
     ficha: "2896441",
-    imagen: "/images/image.png",
+    imagen: "src/uploads/evidencias/prueba.jpg",
     titulo: "Técnico en Instalaciones Eléctricas Residenciales",
     descripcion: "Trabajo de cimentación realizado por los aprendices de la ficha 2567890",
     materiales: ["Cemento Gris", "Arena de Río"],
-  },
-  {
-    id: 2,
-    fecha: "2024-11-24",
-    ficha: "2896441",
-    imagen: "/images/image.png",
-    titulo: "Instalación Eléctrica Residencial",
-    descripcion: "Instalación eléctrica residencial completada exitosamente",
-    materiales: ["Cable Eléctrico #12"],
-  },
-  {
-    id: 3,
-    fecha: "2024-11-24",
-    ficha: "2896441",
-    imagen: "/images/image.png",
-    titulo: "Formación de Procesos Constructivos",
-    descripcion: "Instalación eléctrica residencial completada exitosamente",
-    materiales: ["Cable Eléctrico #12"],
-  },
+  }
 ]
 
 /* =========================
@@ -42,6 +24,8 @@ const mockEvidences = [
 document.addEventListener("DOMContentLoaded", () => {
   evidencesData = [...mockEvidences]
   renderEvidenceCards()
+  setupUploadArea()
+  setupButtonListeners()
 })
 
 /* =========================
@@ -70,15 +54,17 @@ function renderEvidenceCards() {
 
     card.innerHTML = `
       <div class="relative">
-        <img src="${evidence.imagen}" alt="Evidencia" class="w-full h-48 object-cover bg-muted">
+        <img src="${evidence.imagen}" alt="Evidencia" class="w-full h-72 object-cover bg-muted">
         <div class="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm">
-          ${icons.calendar}
-          <span class="text-xs font-medium">Ficha ${evidence.ficha}</span>
         </div>
-      </div>
-      <div class="p-4">
+        </div>
+        <div class="p-4">
         <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium">Ficha ${evidence.ficha}</span>
+        <div class="flex items-center gap-1">
+          ${icons.calendar}
           <span class="text-xs text-muted-foreground">${evidence.fecha}</span>
+        </div>
         </div>
         <p class="text-sm text-foreground line-clamp-2 mb-3">${evidence.descripcion}</p>
         <div class="flex flex-wrap gap-2">
@@ -109,15 +95,18 @@ function openDetailsModal(id) {
 
   // Actualizar contenido del modal
   document.getElementById("detailImage").src = evidence.imagen
-  document.getElementById("detailTitle").textContent = evidence.titulo
-  document.getElementById("detailDate").textContent = evidence.fecha
+  document.getElementById("detailFicha").textContent = evidence.ficha
+  document.getElementById("detailDate").innerHTML = `
+    <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
+    ${evidence.fecha}
+  `
   document.getElementById("detailDescription").textContent = evidence.descripcion
 
   const materialsContainer = document.getElementById("detailMaterials")
   materialsContainer.innerHTML = evidence.materiales
     .map(
       (material) => `
-    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-badge-secondary text-badge-secondary">
+    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary border border-secondary/20">
       ${icons.tag}
       ${material}
     </span>
@@ -152,71 +141,240 @@ function closeCreateModal() {
   document.body.style.overflow = "auto"
 
   // Limpiar formulario
-  document.getElementById("fecha").value = ""
   document.getElementById("descripcion").value = ""
-  document.getElementById("materiales").value = ""
   document.getElementById("photoInput").value = ""
+  document.getElementById("imagePreview").classList.add("hidden")
+  document.getElementById("uploadArea").style.display = "flex"
+}
+
+/* =========================
+   Upload de Imagen
+   ========================= */
+function setupUploadArea() {
+  const uploadArea = document.getElementById("uploadArea")
+  const photoInput = document.getElementById("photoInput")
+  const imagePreview = document.getElementById("imagePreview")
+  const previewImg = document.getElementById("previewImg")
+
+  // Click en el área de upload
+  uploadArea.addEventListener("click", () => {
+    photoInput.click()
+  })
+
+  // Drag and drop
+  uploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault()
+    uploadArea.style.borderColor = "var(--primary)"
+    uploadArea.style.backgroundColor = "color-mix(in srgb, var(--primary) 5%, transparent)"
+  })
+
+  uploadArea.addEventListener("dragleave", () => {
+    uploadArea.style.borderColor = "var(--border)"
+    uploadArea.style.backgroundColor = "var(--muted)"
+  })
+
+  uploadArea.addEventListener("drop", (e) => {
+    e.preventDefault()
+    uploadArea.style.borderColor = "var(--border)"
+    uploadArea.style.backgroundColor = "var(--muted)"
+    
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      handleImageUpload(files[0])
+    }
+  })
+
+  // Cambio de archivo
+  photoInput.addEventListener("change", (e) => {
+    if (e.target.files.length > 0) {
+      handleImageUpload(e.target.files[0])
+    }
+  })
+
+  function handleImageUpload(file) {
+    // Validar tipo de archivo
+    if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
+      showFlowbiteAlert("error", "Solo se permiten archivos PNG, JPG o JPEG")
+      return
+    }
+
+    // Validar tamaño (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showFlowbiteAlert("error", "La imagen no debe superar los 5MB")
+      return
+    }
+
+    // Mostrar preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewImg.src = e.target.result
+      imagePreview.classList.remove("hidden")
+      uploadArea.style.display = "none"
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+function removeImage() {
+  document.getElementById("photoInput").value = ""
+  document.getElementById("imagePreview").classList.add("hidden")
+  document.getElementById("uploadArea").style.display = "flex"
 }
 
 /* =========================
    Crear evidencia
    ========================= */
 function createEvidence() {
-  const fecha = document.getElementById("fecha").value
   const descripcion = document.getElementById("descripcion").value
-  const materiales = document.getElementById("materiales").value
+  const photoInput = document.getElementById("photoInput")
 
-  if (!fecha || !descripcion || !materiales) {
-    alert("Por favor complete todos los campos obligatorios")
+  // Validaciones
+  if (!descripcion || !photoInput.files.length) {
+    showFlowbiteAlert("error", "Por favor complete todos los campos obligatorios")
     return
   }
 
-  // Simulación de creación
-  const newEvidence = {
-    id: evidencesData.length + 1,
-    fecha: fecha,
-    ficha: "2896441",
-    imagen: "/images/image.png",
-    titulo: "Nueva Evidencia",
-    descripcion: descripcion,
-    materiales: [materiales],
+  // Obtener la imagen
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    // Simulación de creación
+    const newEvidence = {
+      id: evidencesData.length + 1,
+      fecha: new Date().toISOString().split('T')[0],
+      ficha: "2896441", // Por defecto
+      imagen: e.target.result,
+      titulo: `Evidencia ${new Date().toLocaleDateString()}`,
+      descripcion: descripcion,
+      materiales: ["Material"],
+    }
+
+    evidencesData.push(newEvidence)
+    renderEvidenceCards()
+    closeCreateModal()
+
+    showFlowbiteAlert("success", "Evidencia creada exitosamente")
   }
-
-  evidencesData.push(newEvidence)
-  renderEvidenceCards()
-  closeCreateModal()
-
-  showAlert("Evidencia creada exitosamente", "success")
+  reader.readAsDataURL(photoInput.files[0])
 }
 
 /* =========================
-   Helper: Alertas
+   Setup Button Listeners
    ========================= */
-function showAlert(message, type = "success") {
-  // Simulación simple de alerta
-  alert(message)
+function setupButtonListeners() {
+  const btnNuevaEvidencia = document.getElementById("btnNuevaEvidencia")
+  if (btnNuevaEvidencia) {
+    btnNuevaEvidencia.addEventListener("click", openCreateModal)
+  }
+}
+
+/* =========================
+   Helper: Alertas (Flowbite style)
+   ========================= */
+function getOrCreateFlowbiteContainer() {
+  let container = document.getElementById("flowbite-alert-container")
+
+  if (!container) {
+    container = document.createElement("div")
+    container.id = "flowbite-alert-container"
+    container.className =
+      "fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none"
+    document.body.appendChild(container)
+  }
+
+  return container
+}
+
+function showFlowbiteAlert(type, message) {
+  const container = getOrCreateFlowbiteContainer()
+  const wrapper = document.createElement("div")
+
+  let borderColor = "border-amber-500"
+  let textColor = "text-amber-900"
+  let titleText = "Advertencia"
+
+  let iconSVG = `
+    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
+      <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
+    </svg>
+  `
+
+  if (type === "success") {
+    borderColor = "border-emerald-500"
+    textColor = "text-emerald-900"
+    titleText = "Éxito"
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm-1 15-4-4 1.414-1.414L9 12.172l4.586-4.586L15 9z"/>
+      </svg>
+    `
+  }
+
+  if (type === "error") {
+    borderColor = "border-red-500"
+    textColor = "text-red-900"
+    titleText = "Error"
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm3.707 12.293-1.414 1.414L10 11.414l-2.293 2.293-1.414-1.414L8.586 10 6.293 7.707l1.414-1.414L10 8.586l2.293-2.293 1.414 1.414-2.293 2.293 2.293 2.293z"/>
+      </svg>
+    `
+  }
+
+  wrapper.className = `
+    relative flex items-center w-full mx-auto pointer-events-auto
+    rounded-2xl border-l-4 ${borderColor} bg-white shadow-md
+    px-4 py-3 text-sm ${textColor}
+    opacity-0 -translate-y-2
+    transition-all duration-300 ease-out
+  `
+
+  wrapper.innerHTML = `
+    <div class="flex-shrink-0 mr-3 text-current">
+      ${iconSVG}
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold">${titleText}</p>
+      <p class="mt-0.5 text-sm">${message}</p>
+    </div>
+  `
+
+  container.appendChild(wrapper)
+
+  requestAnimationFrame(() => {
+    wrapper.classList.remove("opacity-0", "-translate-y-2")
+    wrapper.classList.add("opacity-100", "translate-y-0")
+  })
+
+  setTimeout(() => {
+    wrapper.classList.add("opacity-0", "-translate-y-2")
+    wrapper.classList.remove("opacity-100", "translate-y-0")
+    setTimeout(() => wrapper.remove(), 250)
+  }, 4000)
 }
 
 /* =========================
    Event Listeners
    ========================= */
 // Cerrar modales al hacer clic en el overlay
-document.getElementById("detailsModal").addEventListener("click", function (e) {
-  if (e.target === this) {
-    closeDetailsModal()
-  }
-})
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("detailsModal").addEventListener("click", function (e) {
+    if (e.target === this) {
+      closeDetailsModal()
+    }
+  })
 
-document.getElementById("createModal").addEventListener("click", function (e) {
-  if (e.target === this) {
-    closeCreateModal()
-  }
-})
+  document.getElementById("createModal").addEventListener("click", function (e) {
+    if (e.target === this) {
+      closeCreateModal()
+    }
+  })
 
-// Cerrar con tecla Escape
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeDetailsModal()
-    closeCreateModal()
-  }
+  // Cerrar con tecla Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeDetailsModal()
+      closeCreateModal()
+    }
+  })
 })
