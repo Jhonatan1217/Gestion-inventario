@@ -533,37 +533,6 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
         <div>
           <h3 class="mb-3 text-sm font-semibold text-slate-800">Datos personales</h3>
           <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="text-xs font-medium text-slate-400 block mb-1">Nombre completo</label>
-              <input
-                type="text"
-                name="nombre_completo"
-                value="<?php echo htmlspecialchars($profileData["nombre_completo"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-
-            <div>
-              <label class="text-xs font-medium text-slate-400 block mb-1">Tipo Documento</label>
-              <select
-                name="tipo_documento"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              >
-                <option value="CC" <?php echo ($profileData["tipo_documento"] === "CC") ? "selected" : ""; ?>>CC</option>
-                <option value="TI" <?php echo ($profileData["tipo_documento"] === "TI") ? "selected" : ""; ?>>TI</option>
-                <option value="CE" <?php echo ($profileData["tipo_documento"] === "CE") ? "selected" : ""; ?>>CE</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="text-xs font-medium text-slate-400 block mb-1">N° de Documento</label>
-              <input
-                type="text"
-                name="numero_documento"
-                value="<?php echo htmlspecialchars($profileData["numero_documento"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
 
             <div>
               <label class="text-xs font-medium text-slate-400 block mb-1">Teléfono</label>
@@ -581,21 +550,6 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
                 type="text"
                 name="direccion"
                 value="<?php echo htmlspecialchars($profileData["direccion"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="mb-3 text-sm font-semibold text-slate-800">Datos de la cuenta</h3>
-          <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="text-xs font-medium text-slate-400 block mb-1">Correo</label>
-              <input
-                type="email"
-                name="correo"
-                value="<?php echo htmlspecialchars($profileData["correo"], ENT_QUOTES, 'UTF-8'); ?>"
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>

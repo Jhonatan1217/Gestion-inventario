@@ -172,9 +172,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="flex items-center justify-between">
             <label for="password" class="text-sm font-medium">Contraseña</label>
 
-            <a href="/recuperar-contrasena" class="text-xs text-secondary hover:underline">
+            <a href="<?= BASE_URL ?>recuperar_contrasena.php" class="text-xs text-secondary hover:underline">
               ¿Olvidaste tu contraseña?
             </a>
+
           </div>
 
           <div class="relative">
