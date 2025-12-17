@@ -102,16 +102,18 @@ try {
             <!-- Right-side controls: view switch and "Nuevo Programa" -->
             <div class="flex items-center gap-3">
                 <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-                    <button type="button" id="viewTableBtn" onclick="toggleView('table')" class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground" title="Vista tabla">
-
-                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4 6h16M4 12h16M4 18h16" />
+                    <button 
+                        type="button" 
+                        id="viewTableBtn" 
+                        onclick="toggleView('table')" 
+                        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground" 
+                        title="Vista tabla"
+                    >
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-
+                    
                     <button
                         type="button"
                         id="viewGridBtn"
@@ -119,8 +121,7 @@ try {
                         class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
                         title="Vista tarjetas"
                     >
-                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <rect x="4" y="4" width="7" height="7" rx="1"></rect>
                             <rect x="13" y="4" width="7" height="7" rx="1"></rect>
                             <rect x="4" y="13" width="7" height="7" rx="1"></rect>
@@ -203,7 +204,7 @@ try {
             </div>
 
             <!-- TABLE VIEW -->
-            <div id="tableView" class="border border-border rounded-lg">
+            <div id="tableView" class="border border-border rounded-lg <?php echo empty($programas) ? 'hidden' : ''; ?>">
                 <table class="w-full border-collapse">
                     
                     <!-- Table headers -->
@@ -358,7 +359,7 @@ try {
             </div>
 
             <!-- GRID VIEW -->
-            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 <?php echo empty($programas) ? 'hidden' : ''; ?>">
 
                 <?php foreach ($programas as $index => $programa): ?>
                 <?php $isActive = (isset($programa['estado']) && (strtolower(trim((string)$programa['estado'])) === 'activo' || (string)$programa['estado'] === '1' || $programa['estado'] == 1)); ?>
