@@ -453,13 +453,27 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
       <i data-lucide="x" class="h-4 w-4 text-slate-600"></i>
     </button>
 
-    <button
-      id="btnAbrirCambiarPassword"
-      type="button"
-      class="absolute right-20 top-5 inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-    >
-      Cambiar contraseña
-    </button>
+    <!-- ✅ NUEVO: (i) + tu botón de cambiar contraseña, sin dañar tu base -->
+   <div class="absolute right-20 top-5 inline-flex items-center gap-2">
+  <button
+    id="btnInfoDatosSensibles"
+    type="button"
+    title="Cambiar datos sensibles"
+    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+  >
+    <i data-lucide="info" class="h-4 w-4"></i>
+    <span class="whitespace-nowrap">Editar datos sensibles</span>
+  </button>
+
+  <button
+    id="btnAbrirCambiarPassword"
+    type="button"
+    class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+  >
+    Cambiar contraseña
+  </button>
+</div>
+
 
     <div class="p-6 md:p-8">
       <div class="flex items-center gap-4 mb-6">
@@ -533,37 +547,6 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
         <div>
           <h3 class="mb-3 text-sm font-semibold text-slate-800">Datos personales</h3>
           <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="text-xs font-medium text-slate-400 block mb-1">Nombre completo</label>
-              <input
-                type="text"
-                name="nombre_completo"
-                value="<?php echo htmlspecialchars($profileData["nombre_completo"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-
-            <div>
-              <label class="text-xs font-medium text-slate-400 block mb-1">Tipo Documento</label>
-              <select
-                name="tipo_documento"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              >
-                <option value="CC" <?php echo ($profileData["tipo_documento"] === "CC") ? "selected" : ""; ?>>CC</option>
-                <option value="TI" <?php echo ($profileData["tipo_documento"] === "TI") ? "selected" : ""; ?>>TI</option>
-                <option value="CE" <?php echo ($profileData["tipo_documento"] === "CE") ? "selected" : ""; ?>>CE</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="text-xs font-medium text-slate-400 block mb-1">N° de Documento</label>
-              <input
-                type="text"
-                name="numero_documento"
-                value="<?php echo htmlspecialchars($profileData["numero_documento"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
 
             <div>
               <label class="text-xs font-medium text-slate-400 block mb-1">Teléfono</label>
@@ -587,21 +570,6 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
           </div>
         </div>
 
-        <div>
-          <h3 class="mb-3 text-sm font-semibold text-slate-800">Datos de la cuenta</h3>
-          <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-            <div class="md:col-span-2">
-              <label class="text-xs font-medium text-slate-400 block mb-1">Correo</label>
-              <input
-                type="email"
-                name="correo"
-                value="<?php echo htmlspecialchars($profileData["correo"], ENT_QUOTES, 'UTF-8'); ?>"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-            </div>
-          </div>
-        </div>
-
         <div class="flex justify-end pt-2 gap-3">
           <button
             type="button"
@@ -616,6 +584,120 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
             class="inline-flex items-center justify-center rounded-lg bg-secondary px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-secondary/90 transition"
           >
             Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ NUEVO: MODAL DATOS SENSIBLES -->
+<div
+  id="modalDatosSensibles"
+  class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4"
+>
+  <div class="relative w-full max-w-lg rounded-2xl bg-white shadow-xl">
+    <button
+      id="btnCerrarDatosSensibles"
+      type="button"
+      class="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white"
+    >
+      <i data-lucide="x" class="h-4 w-4 text-slate-600"></i>
+    </button>
+
+    <div class="p-6 space-y-4">
+      <h2 class="text-lg font-semibold text-slate-900">Cambiar datos sensibles</h2>
+      <p class="text-xs text-slate-500">
+        Si requieres cambiar datos sensibles, selecciona cuáles y escribe el dato correcto.
+      </p>
+
+      <div class="rounded-xl border border-slate-200 p-4">
+        <p class="text-xs font-semibold text-slate-700 mb-3">Selecciona los datos a cambiar</p>
+
+        <div class="space-y-2 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="rounded border-slate-300" data-sensible="nombre" />
+            <span>Nombre</span>
+          </label>
+
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="rounded border-slate-300" data-sensible="tipo_documento" />
+            <span>Tipo de documento</span>
+          </label>
+
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="rounded border-slate-300" data-sensible="numero_documento" />
+            <span>Número de documento</span>
+          </label>
+
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="rounded border-slate-300" data-sensible="correo" />
+            <span>Correo</span>
+          </label>
+        </div>
+      </div>
+
+      <form id="formDatosSensibles" class="space-y-3" method="post" action="#">
+        <div id="field_nombre" class="hidden">
+          <label class="text-xs font-medium text-slate-400 block mb-1">Nombre correcto</label>
+          <input
+            type="text"
+            name="nombre_completo"
+            value="<?php echo htmlspecialchars($profileData["nombre_completo"], ENT_QUOTES, 'UTF-8'); ?>"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div id="field_tipo_documento" class="hidden">
+          <label class="text-xs font-medium text-slate-400 block mb-1">Tipo de documento correcto</label>
+          <select
+            name="tipo_documento"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            <?php
+              $tipoActual = $profileData["tipo_documento"] ?? "CC";
+              $tipos = ["CC", "TI", "CE"];
+              foreach ($tipos as $t) {
+                $sel = ($t === $tipoActual) ? "selected" : "";
+                echo "<option value=\"{$t}\" {$sel}>{$t}</option>";
+              }
+            ?>
+          </select>
+        </div>
+
+        <div id="field_numero_documento" class="hidden">
+          <label class="text-xs font-medium text-slate-400 block mb-1">Número de documento correcto</label>
+          <input
+            type="text"
+            name="numero_documento"
+            value="<?php echo htmlspecialchars($profileData["numero_documento"], ENT_QUOTES, 'UTF-8'); ?>"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div id="field_correo" class="hidden">
+          <label class="text-xs font-medium text-slate-400 block mb-1">Correo correcto</label>
+          <input
+            type="email"
+            name="correo"
+            value="<?php echo htmlspecialchars($profileData["correo"], ENT_QUOTES, 'UTF-8'); ?>"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div class="mt-4 flex justify-end gap-3">
+          <button
+            type="button"
+            id="btnCancelarDatosSensibles"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-secondary/90 transition"
+          >
+            Continuar
           </button>
         </div>
       </form>
