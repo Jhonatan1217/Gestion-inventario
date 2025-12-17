@@ -115,7 +115,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
          El estado vacío DEBE vivir aquí dentro
     ============================================= -->
     <div id="sol-cards"
-         class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+         class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-4">
 
         <!-- ============================
              ESTADO VACÍO (DENTRO DEL GRID)

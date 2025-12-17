@@ -68,7 +68,7 @@
    ============================================================ */
 
 .sol-filtros-wrapper {
-    background: #e5e5e5;
+    background: #f5f5f5;
     padding: 6px;
     border-radius: 12px;
     display: inline-flex;
@@ -100,8 +100,9 @@
 
 .sol-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
+    max-width: 1400px;
 }
 
 
@@ -238,11 +239,13 @@
 }
 
 .sol-chip {
-    margin-left: auto;
-    padding: 3px 8px;
+    margin-left: 12px; 
+    padding: 4px 10px;
     font-size: 12px;
     background: #f3f4f6;
     border-radius: 999px;
+    white-space: nowrap; 
+    flex-shrink: 0;   
 }
 
 
