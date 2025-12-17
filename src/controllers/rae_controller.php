@@ -56,14 +56,41 @@ class RaeController {
         ]);
     }
 
-    /* Update existing RAE */
-    public function actualizar() {
-        // Decode the JSON input from the request body
-        $input = json_decode(file_get_contents("php://input"), true);
+/*Update*/
+public function actualizar() {
 
-        // Validate that the RAE ID is present in the input
-        if (!isset($input['id_rae'])) {
-            echo json_encode(['error' => 'id_rae requerido']);
+    $data = $this->getJson();
+
+    if (!isset($data["id_rae"])) {
+        return $this->jsonResponse(["error" => "id_rae es obligatorio"], 400);
+    }
+
+    $ok = $this->model->actualizar(
+        (int)$data["id_rae"],
+        $data["codigo_rae"] ?? null,
+        isset($data["id_programa"]) ? (int)$data["id_programa"] : null,
+        $data["descripcion_rae"] ?? null,
+        $data["estado"] ?? null
+    );
+
+    return $this->jsonResponse(
+        $ok ? ["mensaje" => "RAE actualizado correctamente"]
+            : ["error" => "No hay datos para actualizar"],
+        $ok ? 200 : 400
+    );
+}
+
+
+
+    /* ==========================
+       CAMBIAR ESTADO (ACTIVAR/INACTIVAR)
+    ========================== */
+    public function cambiar_estado() {
+
+        $data = $this->getJson();
+
+        if (!isset($data["id_rae"], $data["estado"])) {
+            $this->jsonResponse(["error" => "Datos incompletos"], 400);
             return;
         }
 

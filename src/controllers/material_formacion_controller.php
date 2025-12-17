@@ -1,8 +1,5 @@
 <?php
 
-require_once __DIR__ . "/../models/material_formacion.php";
-require_once __DIR__ . "/../../Config/database.php";
-
 class MaterialFormacionController {
 
     private $model;
@@ -14,147 +11,134 @@ class MaterialFormacionController {
         header("Content-Type: application/json; charset=utf-8");
     }
 
-    /* List all materials */
-    public function listar() {
-        $data = $this->model->getAll();
-        echo json_encode($data);
+    // Get all materials
+    public function listar()
+    {
+        return $this->model->getAll();
     }
 
-    /* Get material by ID */
-    public function obtener() {
-        $id = $_GET["id"] ?? null;
-
+    // Get material by ID
+    public function obtener($id)
+    {
         if (!$id) {
-            echo json_encode(["error" => "ID requerido"]);
-            return;
+            return null;
         }
 
-        $data = $this->model->getById($id);
-        echo json_encode($data ?: ["error" => "Material no encontrado"]);
+        return $this->model->getById($id);
     }
 
-    /* Create new material */
-    public function crear() {
-        $input = json_decode(file_get_contents("php://input"), true);
-
-        if (!$input) {
-            echo json_encode(["error" => "Datos inválidos"]);
-            return;
+    // Create new material
+    public function crear($data)
+    {
+        if (!$data) {
+            return [
+                "status" => "error",
+                "message" => "No se recibieron datos para crear el material."
+            ];
         }
 
-        $ok = $this->model->create($input);
+        // Model returns false when validation fails
+        $ok = $this->model->create($data);
 
-        echo json_encode([
-            "success" => $ok,
-            "message" => $ok ? "Material creado correctamente" : "Error al crear material. Verifica la clasificación y el código de inventario."
-        ]);
+        if (!$ok) {
+            return [
+                "status" => "error",
+                "message" => "El material no fue creado. Verifique la clasificación y el código de inventario."
+            ];
+        }
+
+        return [
+            "status" => "success",
+            "message" => "El material fue creado correctamente."
+        ];
     }
 
-    /* Update existing material */
-    public function actualizar() {
-        $id = $_GET["id"] ?? null;
+    // Update material
+    public function actualizar($id, $data)
+    {
+        if (!$id || !$data) {
+            return [
+                "status" => "error",
+                "message" => "Datos inválidos para actualizar el material."
+            ];
+        }
 
+        $ok = $this->model->update($id, $data);
+
+        if (!$ok) {
+            return [
+                "status" => "error",
+                "message" => "El material no fue actualizado. Verifique la clasificación y el código de inventario."
+            ];
+        }
+
+        return [
+            "status" => "success",
+            "message" => "El material fue actualizado correctamente."
+        ];
+    }
+
+    // // Delete material
+    // public function eliminar($id)
+    // {
+    //     if (!$id) {
+    //         return [
+    //             "status" => "error",
+    //             "message" => "ID de material no válido."
+    //         ];
+    //     }
+
+    //     // Model returns false if material is used
+    //     $ok = $this->model->delete($id);
+
+    //     if (!$ok) {
+    //         return [
+    //             "status" => "error",
+    //             "message" => "El material no se puede eliminar porque está siendo usado en otras tablas."
+    //         ];
+    //     }
+
+    //     return [
+    //         "status" => "success",
+    //         "message" => "El material fue eliminado correctamente."
+    //     ];
+    // }
+
+    // Search material
+    public function buscar($term)
+    {
+        return $this->model->search($term);
+    }
+
+    // Get total stock
+    public function stock($id)
+    {
         if (!$id) {
-            echo json_encode(["error" => "ID requerido"]);
-            return;
+            return [
+                "stock_bodega" => 0,
+                "stock_subbodega" => 0
+            ];
         }
 
-        $input = json_decode(file_get_contents("php://input"), true);
-
-        if (!$input) {
-            echo json_encode(["error" => "Datos inválidos"]);
-            return;
-        }
-
-        $ok = $this->model->update($id, $input);
-
-        echo json_encode([
-            "success" => $ok,
-            "message" => $ok ? "Material actualizado correctamente" : "Error al actualizar material. Verifica la clasificación y el código de inventario."
-        ]);
-    }
-
-    /* Delete material */
-    public function eliminar() {
-        $id = $_GET["id"] ?? null;
-
-        if (!$id) {
-            echo json_encode(["error" => "ID requerido"]);
-            return;
-        }
-
-        $ok = $this->model->delete($id);
-
-        echo json_encode([
-            "success" => $ok,
-            "message" => $ok ? "Material eliminado correctamente" : "No se puede eliminar el material porque está en uso en otras tablas."
-        ]);
-    }
-
-    /* Toggle material status (enable/disable) */
-    public function toggleEstado() {
-        $id = $_GET["id"] ?? null;
-
-        if (!$id) {
-            echo json_encode(["error" => "ID requerido"]);
-            return;
-        }
-
-        // Get current material
-        $material = $this->model->getById($id);
-        
-        if (!$material) {
-            echo json_encode(["error" => "Material no encontrado"]);
-            return;
-        }
-
-        // Toggle status
-        $nuevoEstado = $material['estado'] === 'Disponible' ? 'Agotado' : 'Disponible';
-        
-        $ok = $this->model->update($id, [
-            'nombre' => $material['nombre'],
-            'descripcion' => $material['descripcion'],
-            'unidad_medida' => $material['unidad_medida'],
-            'clasificacion' => $material['clasificacion'],
-            'codigo_inventario' => $material['codigo_inventario'],
-            'estado' => $nuevoEstado
-        ]);
-
-        echo json_encode([
-            "success" => $ok,
-            "message" => $ok ? "Estado actualizado correctamente" : "Error al actualizar estado"
-        ]);
-    }
-
-    /* Search material by name or code */
-    public function buscar() {
-        $term = $_GET["term"] ?? "";
-        $data = $this->model->search($term);
-        echo json_encode($data);
-    }
-
-    /* Get material stock */
-    public function stock() {
-        $id = $_GET["id"] ?? null;
-
-        if (!$id) {
-            echo json_encode(["error" => "ID requerido"]);
-            return;
-        }
-
-        $data = $this->model->getStockTotal($id);
-        echo json_encode($data);
+        return $this->model->getStockTotal($id);
     }
 }
 
-/* Router - Routes requests to controller methods */
+/* =====================================
+   Action handler (switch)
+   ===================================== */
 
-// Get the action from the query string
-$accion = $_GET["accion"] ?? null;
+$controller = new MaterialFormacionController($conn);
 
-// Validate that an action was specified
-if (!$accion) {
-    echo json_encode(["error" => "Acción requerida"]);
+// Read action
+$accion = $_GET['accion'] ?? null;
+
+// Send JSON response
+function sendJSON($data, $code = 200)
+{
+    header("Content-Type: application/json");
+    http_response_code($code);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -180,24 +164,16 @@ switch ($accion) {
         $controller->actualizar();
         break;
 
-    case "eliminar":
-        $controller->eliminar();
-        break;
-
-    case "toggleEstado":
-        $controller->toggleEstado();
-        break;
-
-    case "buscar":
-        $controller->buscar();
-        break;
-
-    case "stock":
-        $controller->stock();
-        break;
+    // case "eliminar":
+    //     sendJSON($controller->eliminar($_GET['id'] ?? null));
+    //     break;
 
     default:
-        echo json_encode(["error" => "Acción no válida"]);
+        sendJSON([
+            "status" => "error",
+            "message" => "La acción solicitada no es válida."
+        ], 400);
+        break;
 }
 
 ?>
