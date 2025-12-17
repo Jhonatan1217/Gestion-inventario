@@ -578,8 +578,8 @@ try {
                         <div>
                             <label class="block text-xs text-muted-foreground mb-1">Nivel *</label>
                             <select id="create_nivel" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga">
-                                <option value="Tecnico">Técnico</option>
-                                <option value="Tecnologo">Tecnólogo</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Tecnólogo">Tecnólogo</option>
                             </select>
                         </div>
                     </div>

@@ -431,9 +431,14 @@ function validateProgramData(data, isEdit = false) {
     return false;
   }
 
-  // Validate level
-  const validLevels = ['Técnico', 'Tecnólogo'];
-  if (!validLevels.includes(data.nivel_programa)) {
+  // Validate level - acepta versiones con y sin acentos
+  const nivelNormalizado = data.nivel_programa.toLowerCase();
+  const esValido = nivelNormalizado.includes('técnico') || 
+                   nivelNormalizado.includes('tecnico') ||
+                   nivelNormalizado.includes('tecnólogo') || 
+                   nivelNormalizado.includes('tecnologo');
+  
+  if (!esValido) {
     toastError("El nivel debe ser 'Técnico' o 'Tecnólogo'.");
     return false;
   }
@@ -567,7 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const duracionText = document.getElementById("edit_duracion").value.trim();
       
       // Normalize level
-      const nivelNormalized = nivelSelect.toLowerCase().includes("técnico") ? "Técnico" : "Tecnólogo";
+      const nivelNormalized = document.getElementById("edit_nivel").value;
       
       // Extract hours number from text
       const duracionHoras = Number.parseInt(duracionText.replace(/[^\d]/g, "")) || 0;
