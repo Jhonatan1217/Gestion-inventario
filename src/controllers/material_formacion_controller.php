@@ -6,6 +6,33 @@ class MaterialFormacionController {
 
     private $model;
 
+    // Save uploaded material photo
+    private function savePhoto($file)
+    {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+
+        if (!in_array($file['type'], $allowedTypes)) {
+            return null;
+        }
+
+        if ($file['size'] > $maxSize) {
+            return null;
+        }
+
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'material_' . time() . '.' . $extension;
+
+        $path = __DIR__ . '../../public/uploads/materiales/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $path)) {
+            return null;
+        }
+
+        return $filename; // This is what is stored in DB
+    }
+
+
     public function __construct($conn)
     {
         $this->model = new MaterialFormacionModel($conn);
@@ -30,28 +57,28 @@ class MaterialFormacionController {
     // Create new material
     public function crear($data)
     {
-        if (!$data) {
-            return [
-                "status" => "error",
-                "message" => "No se recibieron datos para crear el material."
-            ];
+    // Handle optional photo upload
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $data['foto'] = $this->savePhoto($_FILES['foto']);
+        } else {
+            $data['foto'] = null;
         }
 
-        // Model returns false when validation fails
         $ok = $this->model->create($data);
 
         if (!$ok) {
             return [
                 "status" => "error",
-                "message" => "El material no fue creado. Verifique la clasificación y el código de inventario."
+                "message" => "No se pudo crear el material."
             ];
         }
 
         return [
             "status" => "success",
-            "message" => "El material fue creado correctamente."
+            "message" => "Material creado correctamente."
         ];
     }
+
 
     // Update material
     public function actualizar($id, $data)
