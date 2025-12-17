@@ -143,6 +143,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 
     </div>
 
+    <div id="sol-pagination" class="flex justify-center gap-2 mt-6"></div>
+
 </main>
 
 <!-- ============================================================
