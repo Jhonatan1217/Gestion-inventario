@@ -204,7 +204,7 @@ try {
             </div>
 
             <!-- TABLE VIEW -->
-            <div id="tableView" class="border border-border rounded-lg <?php echo empty($programas) ? 'hidden' : ''; ?>">
+            <div id="tableView" class="border border-border rounded-lg">
                 <table class="w-full border-collapse">
                     
                     <!-- Table headers -->
@@ -359,7 +359,7 @@ try {
             </div>
 
             <!-- GRID VIEW -->
-            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 <?php echo empty($programas) ? 'hidden' : ''; ?>">
+            <div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
 
                 <?php foreach ($programas as $index => $programa): ?>
                 <?php $isActive = (isset($programa['estado']) && (strtolower(trim((string)$programa['estado'])) === 'activo' || (string)$programa['estado'] === '1' || $programa['estado'] == 1)); ?>
