@@ -270,11 +270,123 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // =====================================================
+  // ✅ NUEVO: MODAL DATOS SENSIBLES (INFO i + checklist + inputs)
+  // (NO borra nada de tu base, solo agrega funcionalidad)
+  // =====================================================
+  const btnInfoDatosSensibles       = document.getElementById("btnInfoDatosSensibles");
+  const modalDatosSensibles         = document.getElementById("modalDatosSensibles");
+  const btnCerrarDatosSensibles     = document.getElementById("btnCerrarDatosSensibles");
+  const btnCancelarDatosSensibles   = document.getElementById("btnCancelarDatosSensibles");
+  const formDatosSensibles          = document.getElementById("formDatosSensibles");
+
+  const openDatosSensibles = () => {
+    if (!modalDatosSensibles) return;
+    openModal(modalDatosSensibles);
+
+    // Re-render lucide por si el icono no aparece
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
+  };
+
+  const closeDatosSensibles = () => {
+    if (!modalDatosSensibles) return;
+    closeModal(modalDatosSensibles);
+  };
+
+  if (btnInfoDatosSensibles) {
+    btnInfoDatosSensibles.addEventListener("click", (e) => {
+      e.preventDefault();
+      openDatosSensibles();
+    });
+  }
+
+  if (btnCerrarDatosSensibles) {
+    btnCerrarDatosSensibles.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDatosSensibles();
+    });
+  }
+
+  if (btnCancelarDatosSensibles) {
+    btnCancelarDatosSensibles.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeDatosSensibles();
+    });
+  }
+
+  if (modalDatosSensibles) {
+    modalDatosSensibles.addEventListener("click", (e) => {
+      if (e.target === modalDatosSensibles) closeDatosSensibles();
+    });
+  }
+
+  // Checklist -> mostrar/ocultar inputs
+  const sensibleChecks = modalDatosSensibles
+    ? modalDatosSensibles.querySelectorAll('input[type="checkbox"][data-sensible]')
+    : [];
+
+  const setFieldVisible = (key, show) => {
+    const el = document.getElementById("field_" + key);
+    if (!el) return;
+    if (show) el.classList.remove("hidden");
+    else el.classList.add("hidden");
+  };
+
+  if (sensibleChecks && sensibleChecks.length > 0) {
+    sensibleChecks.forEach((chk) => {
+      chk.addEventListener("change", () => {
+        const key = chk.getAttribute("data-sensible");
+        setFieldVisible(key, chk.checked);
+      });
+    });
+  }
+
+  if (formDatosSensibles) {
+    formDatosSensibles.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const selected = Array.from(sensibleChecks || []).filter((c) => c.checked);
+
+      if (selected.length === 0) {
+        toastError("Selecciona al menos un dato sensible para continuar.");
+        return;
+      }
+
+      // Validación básica: si selecciona un campo, que no quede vacío
+      for (const chk of selected) {
+        const key = chk.getAttribute("data-sensible");
+        const fieldWrap = document.getElementById("field_" + key);
+        if (!fieldWrap) continue;
+
+        const input = fieldWrap.querySelector("input, select, textarea");
+        if (!input) continue;
+
+        const value = String(input.value ?? "").trim();
+        if (!value) {
+          toastError("Completa todos los campos seleccionados antes de continuar.");
+          return;
+        }
+      }
+
+      // Por ahora: solo cerrar modal (sin tocar tu base/backend)
+      toastSuccess("Datos sensibles listos para enviar.");
+      closeDatosSensibles();
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       // ✅ primero cierra dropdown si está abierto
       if (userMenuDropdown && !userMenuDropdown.classList.contains("hidden")) {
         closeUserMenu();
+        return;
+      }
+
+      // ✅ NUEVO: si modal datos sensibles está abierto, ciérralo primero
+      if (modalDatosSensibles && !modalDatosSensibles.classList.contains("hidden")) {
+        closeDatosSensibles();
         return;
       }
 
