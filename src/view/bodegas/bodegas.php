@@ -48,7 +48,7 @@ $bodegas = [
 <div class="flex items-center gap-2">
 
   <!-- Grupo: Switch Lista / Grid -->
-  <div class="inline-flex rounded-full border border-gray-200 bg-white overflow-hidden shadow-sm">
+  <div class="inline-flex rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
 
     <!-- Lista -->
     <button
@@ -83,7 +83,7 @@ $bodegas = [
   <!-- Botón Nueva Bodega (grupo independiente) -->
   <button
     id="btnNuevaBodega"
-    class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+    class="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
   >
     <i data-lucide="plus" class="w-4 h-4"></i>
     Nueva Bodega
@@ -96,7 +96,7 @@ $bodegas = [
 <div class="flex items-center justify-between w-full gap-4 mb-4 -mt-4">
 
   <!-- BUSCADOR (ESTILO ORIGINAL) -->
-  <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[330px] bg-gray-100">
+  <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm w-full sm:w-[330px] bg-gray-100">
     <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
     <input
       type="text"
@@ -110,7 +110,7 @@ $bodegas = [
 
     <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
 
-    <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-1 shadow-sm min-w-[150px] bg-gray-100">
+    <div class="relative bg-white border border-gray-200 rounded-lg px-4 py-1 shadow-sm min-w-[150px] bg-gray-100">
       <select
         id="bodegasFilter"
         class="w-full appearance-none bg-transparent outline-none text-sm text-gray-700 pr-6"
@@ -127,7 +127,7 @@ $bodegas = [
   <div class="w-full">
     <!-- ========= VISTA LISTA ========= -->
     <div id="view-list">
-      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <table class="w-full text-sm">
           <thead class="bg-gray-100 text-gray-600">
             <tr>
@@ -218,6 +218,10 @@ $bodegas = [
             <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
               <i data-lucide="warehouse" class="w-5 h-5"></i>
             </div>
+            <div>
+              <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
+              <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
+            </div>
 
             <button
               class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
@@ -230,12 +234,6 @@ $bodegas = [
             >
               <i data-lucide="more-horizontal" class="w-4 h-4"></i>
             </button>
-          </div>
-
-          <!-- Main -->
-          <div>
-            <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
-            <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
           </div>
 
           <!-- Location -->
@@ -295,7 +293,7 @@ $bodegas = [
 <!-- ========= MENÚ CONTEXTUAL ========= -->
 <div
   id="context-menu"
-  class="hidden absolute z-50 w-56 rounded-xl bg-white border border-gray-200 shadow-md"
+  class="hidden absolute z-50 w-56 rounded-lg bg-white border border-gray-200 shadow-md"
 >
   <ul class="py-2 text-sm text-gray-800">
     
@@ -576,31 +574,40 @@ $bodegas = [
       <!-- DATOS BODEGA -->
       <div class="grid gap-4 text-sm">
 
-        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
-          <span class="text-gray-600">Clasificación:</span>
-          <span id="detalleClasificacion" class="detalle-chip">Insumos</span>
+        <!-- FILA 1: CLASIFICACIÓN + TIPO -->
+        <div class="grid grid-cols-2 gap-6 items-center">
+          <div class="grid grid-cols-[120px_auto] gap-3 items-center">
+            <span class="text-gray-600">Clasificación:</span>
+            <span id="detalleClasificacion" class="detalle-chip">Insumos</span>
+          </div>
+
+          <div class="grid grid-cols-[120px_auto] gap-3 items-center">
+            <span class="text-gray-600">Tipo:</span>
+            <span id="detalleTipo" class="detalle-chip">Bodega</span>
+          </div>
         </div>
 
-        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
-          <span class="text-gray-600">Tipo:</span>
-          <span id="detalleTipo" class="detalle-chip">Bodega</span>
-        </div>
+        <!-- FILA 2: UBICACIÓN + ESTADO -->
+        <div class="grid grid-cols-2 gap-6 items-center">
+          <div class="grid grid-cols-[120px_auto] gap-3 items-center">
+            <span class="text-gray-600">Ubicación:</span>
+            <span
+              id="detalleUbicacion"
+              class="font-medium text-gray-800"
+            >
+              Bloque A, Piso 1
+            </span>
+          </div>
 
-        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
-          <span class="text-gray-600">Ubicación:</span>
-          <span id="detalleUbicacion" class="font-medium text-gray-800">
-            Bloque A, Piso 1
-          </span>
-        </div>
-
-        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
-          <span class="text-gray-600">Estado:</span>
-          <span
-            id="detalleEstado"
-            class="badge-estado-activo"
-          >
-            Activo
-          </span>
+          <div class="grid grid-cols-[120px_auto] gap-3 items-center">
+            <span class="text-gray-600">Estado:</span>
+            <span
+              id="detalleEstado"
+              class="badge-estado-activo"
+            >
+              Activo
+            </span>
+          </div>
         </div>
 
       </div>
@@ -620,21 +627,25 @@ $bodegas = [
         </p>
 
         <!-- LISTA MATERIALES -->
-        <div class="space-y-4">
+        <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50">
 
-          <!-- MATERIAL OK -->
-          <div class="border border-gray-200 rounded-xl p-4">
-            <div class="flex justify-between items-start">
+          <div class="flex gap-4">
+
+            <!-- ICONO / IMAGEN DEL MATERIAL -->
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="box" class="w-5 h-5"></i>
+              <!-- si luego usas imagen real: <img src="ruta-imagen.png" class="w-6 h-6" /> -->
+            </div>
+
+            <!-- CONTENIDO -->
+            <div class="flex-1">
+
+              <div class="flex justify-between items-start">
               <div>
                 <h5 class="font-medium text-gray-900">Taladro Percutor</h5>
-                <p class="text-xs text-gray-500">
-                  HER-001 • Herramientas
-                </p>
+                <p class="text-xs text-gray-500">HER-001 • Herramientas</p>
               </div>
-
-              <span class="badge-material-disponible">
-                Disponible
-              </span>
+              <span class="badge-material-disponible">Disponible</span>
             </div>
 
             <div class="mt-3 text-sm font-medium text-gray-900">
@@ -642,43 +653,19 @@ $bodegas = [
             </div>
 
             <div class="mt-2">
-              <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
-                <div class="h-full rounded-full bg-emerald-600 w-full"></div>
+              <!-- BARRA -->
+              <div class="mt-2">
+                <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div class="h-full rounded-full bg-emerald-600 w-full"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Min: 3</p>
               </div>
-              <p class="text-xs text-gray-500 mt-1">Min: 3</p>
-            </div>
-          </div>
-
-          <!-- MATERIAL ALERTA -->
-          <div class="border border-gray-200 rounded-xl p-4">
-            <div class="flex justify-between items-start">
-              <div>
-                <h5 class="font-medium text-gray-900">Nivel Láser</h5>
-                <p class="text-xs text-gray-500">
-                  HER-002 • Herramientas
-                </p>
-              </div>
-
-              <span class="badge-material-prestado">
-                Prestado
-              </span>
             </div>
 
-            <div class="mt-3 text-sm font-medium text-red-600">
-              <strong>2</strong> unidad
-            </div>
-
-            <div class="mt-2">
-              <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
-                <div class="h-full rounded-full bg-red-600 w-full"></div>
-              </div>
-              <p class="text-xs text-gray-500 mt-1">Min: 2</p>
-            </div>
           </div>
 
         </div>
       </div>
-
     </div>
   </div>
 </div>
