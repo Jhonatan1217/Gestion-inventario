@@ -95,7 +95,7 @@ try {
         <!-- Page title + controls (aligned) -->
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Programas de Formación</h1>
+                <h1 class="text-3xl font-bold">Programas de Formación</h1>
                 <p class="text-muted-foreground">Gestiona los programas técnicos y tecnológicos</p>
             </div>
 
@@ -341,18 +341,10 @@ try {
                                         
                                         <button data-action="toggle-estado" class="flex w-full items-center px-3 py-2 text-sm text-slate-700 hover:bg-muted transition-colors">
                                             <?php if($isActive): ?>
-                                                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                                    <circle cx="9" cy="7" r="3"></circle>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 21v-1a4 4 0 0 1 4-4h2"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 17l4 4m0-4l-4 4"/>
-                                                </svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-power-icon lucide-power mr-2 h-4 w-4"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
                                                 Deshabilitar
                                             <?php else: ?>
-                                                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                                    <circle cx="9" cy="7" r="3"></circle>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 21v-1a4 4 0 0 1 4-4h2"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 19l2 2 4-4"/>
-                                                </svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-power-icon lucide-power mr-2 h-4 w-4"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
                                                 Habilitar
                                             <?php endif; ?>
                                         </button>
@@ -405,7 +397,9 @@ try {
                         <!-- Changed link to button that opens edit modal -->
                         <button onclick="openEditModal(<?php echo $index; ?>)" 
                         class="text-muted-foreground hover:text-foreground transition flex-shrink-0 ml-2">
-                            <i class="fas fa-edit text-lg"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
                         </button>
                     </div>
 
@@ -511,7 +505,7 @@ try {
                         </div>
                     </div>
                     <div class="flex items-center justify-end gap-3 mt-4">
-                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-border rounded-lg">Cancelar</button>
                         <button type="submit" class="inline-flex items-center justify-center rounded-sm bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">Guardar Cambios</button>
                     </div>
                 </form>
@@ -606,8 +600,8 @@ try {
                     </div>
 
                     <div class="flex items-center justify-end gap-3 mt-4">
-                        <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-border rounded">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-secondary text-primary-foreground rounded">Crear Programa</button>
+                        <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-border rounded-lg">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-secondary text-primary-foreground rounded-lg">Crear Programa</button>
                     </div>
                 </form>
             </div>
@@ -615,5 +609,9 @@ try {
     </main>
     <!-- Changed script src from toggle-view.js to programas.js -->
     <script src="<?= ASSETS_URL ?>js/programas/programas.js"></script>
+    <!-- ========================================= -->
+    <!-- ALERT CONTAINER (FLOWBITE-LIKE TOASTS)    -->
+    <!-- ========================================= -->
+    <div id="flowbite-alert-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 w-full max-w-md"></div>
 </body>
 </html>

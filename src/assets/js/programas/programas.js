@@ -1,3 +1,123 @@
+// =========================
+// FLOWBITE-STYLE ALERTS (WHITE BACKGROUND, WARNING, NO PROGRESS BAR)
+// =========================
+
+/**
+ * Returns the existing Flowbite-style alert container or creates it if it does not exist.
+ */
+function getOrCreateFlowbiteContainer() {
+  let container = document.getElementById("flowbite-alert-container");
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "flowbite-alert-container";
+
+    container.className =
+      "fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none";
+
+    document.body.appendChild(container);
+  }
+
+  return container;
+}
+
+/**
+ * Generic alert renderer using a Flowbite-like appearance.
+ * type: "warning" | "success" | "info"
+ * message: string to be displayed to the user
+ */
+function showFlowbiteAlert(type, message) {
+  const container = getOrCreateFlowbiteContainer();
+  const wrapper = document.createElement("div");
+
+  // Default style: warning
+  let borderColor = "border-amber-500";
+  let textColor = "text-amber-900";
+  let titleText = "Advertencia";
+
+  // Default icon: warning triangle
+  let iconSVG = `
+    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+         fill="currentColor" viewBox="0 0 20 20">
+      <path d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.518 11.59A1.75 1.75 0 0 1 16.768 17H3.232a1.75 1.75 0 0 1-1.492-2.311L8.257 3.1z"/>
+      <path d="M11 13H9V9h2zm0 3H9v-2h2z" fill="#fff"/>
+    </svg>
+  `;
+
+  if (type === "success") {
+    borderColor = "border-emerald-500";
+    textColor = "text-emerald-900";
+    titleText = "Éxito";
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+           fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm-1 15-4-4 1.414-1.414L9 12.172l4.586-4.586L15 9z"/>
+      </svg>
+    `;
+  }
+
+  if (type === "info") {
+    borderColor = "border-blue-500";
+    textColor = "text-blue-900";
+    titleText = "Información";
+    iconSVG = `
+      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg"
+           fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm1 15H9v-5h2Zm0-7H9V6h2Z"/>
+      </svg>
+    `;
+  }
+
+  // Entry animation and base visual configuration
+  wrapper.className = `
+    relative flex items-center w-full mx-auto pointer-events-auto
+    rounded-2xl border-l-4 ${borderColor} bg-white shadow-md
+    px-4 py-3 text-sm ${textColor}
+    opacity-0 -translate-y-2
+    transition-all duration-300 ease-out
+    animate-fade-in-up
+  `;
+
+  wrapper.innerHTML = `
+    <div class="flex-shrink-0 mr-3 text-current">
+      ${iconSVG}
+    </div>
+
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold">${titleText}</p>
+      <p class="mt-0.5 text-sm">${message}</p>
+    </div>
+  `;
+
+  container.appendChild(wrapper);
+
+  // Smooth fade-in using CSS transition
+  requestAnimationFrame(() => {
+    wrapper.classList.remove("opacity-0", "-translate-y-2");
+    wrapper.classList.add("opacity-100", "translate-y-0");
+  });
+
+  // Automatic fade-out and removal
+  setTimeout(() => {
+    wrapper.classList.add("opacity-0", "-translate-y-2");
+    wrapper.classList.remove("opacity-100", "translate-y-0");
+    setTimeout(() => wrapper.remove(), 250);
+  }, 4000);
+}
+
+// Public API used by the rest of the module
+function toastError(message) {
+  showFlowbiteAlert("warning", message);
+}
+
+function toastSuccess(message) {
+  showFlowbiteAlert("success", message);
+}
+
+function toastInfo(message) {
+  showFlowbiteAlert("info", message);
+}
+
 // ========== HELPER FUNCTION: Filter and show/hide empty states ==========
 function applyFilterAndUpdateEmptyStates() {
   const searchInput = document.querySelector('input[placeholder="Buscar por nombre..."]')
@@ -272,6 +392,62 @@ function closeCreateModal() {
   modal.classList.remove("flex")
 }
 
+// =========================
+// VALIDATION FUNCTIONS
+// =========================
+
+/**
+ * Validates program data before sending to server
+ */
+function validateProgramData(data, isEdit = false) {
+  // Check required fields
+  if (!data.codigo_programa || !data.nombre_programa || !data.nivel_programa || 
+      !data.descripcion_programa || !data.duracion_horas) {
+    toastError("Todos los campos marcados con * son obligatorios.");
+    return false;
+  }
+
+  // Validate duration (must be a positive number)
+  if (isNaN(data.duracion_horas) || data.duracion_horas <= 0) {
+    toastError("La duración debe ser un número positivo de horas.");
+    return false;
+  }
+
+  // Validate code format (optional: can be customized)
+  if (data.codigo_programa.trim().length < 3) {
+    toastError("El código del programa debe tener al menos 3 caracteres.");
+    return false;
+  }
+
+  // Validate name length
+  if (data.nombre_programa.trim().length < 5) {
+    toastError("El nombre del programa debe tener al menos 5 caracteres.");
+    return false;
+  }
+
+  // Validate description length
+  if (data.descripcion_programa.trim().length < 10) {
+    toastError("La descripción debe tener al menos 10 caracteres.");
+    return false;
+  }
+
+  // Validate level
+  const validLevels = ['Técnico', 'Tecnólogo'];
+  if (!validLevels.includes(data.nivel_programa)) {
+    toastError("El nivel debe ser 'Técnico' o 'Tecnólogo'.");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Check if there are any changes between original and current data (for edit mode)
+ */
+function hasChanges(originalData, currentData) {
+  return JSON.stringify(originalData) !== JSON.stringify(currentData);
+}
+
 // ************************************** Programs Creation ***********************************************
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -288,16 +464,31 @@ document.addEventListener("DOMContentLoaded", () => {
     createForm.addEventListener("submit", async (e) => {
       e.preventDefault()
 
+      // Get form data
+      const codigo = document.getElementById("create_codigo").value.trim();
+      const nombre = document.getElementById("create_nombre").value.trim();
+      const nivel = document.getElementById("create_nivel").value;
+      const descripcion = document.getElementById("create_descripcion").value.trim();
+      const duracionText = document.getElementById("create_duracion").value.trim();
+      
+      // Extract hours number from text
+      const duracionHoras = Number.parseInt(duracionText.replace(/[^\d]/g, "")) || 0;
+      
       const data = {
-        codigo_programa: document.getElementById("create_codigo").value,
-        nombre_programa: document.getElementById("create_nombre").value,
-        nivel_programa: document.getElementById("create_nivel").value,
-        descripcion_programa: document.getElementById("create_descripcion").value,
-        duracion_horas: Number.parseInt(document.getElementById("create_duracion").value.replace(/[^\d]/g, "")),
+        codigo_programa: codigo,
+        nombre_programa: nombre,
+        nivel_programa: nivel,
+        descripcion_programa: descripcion,
+        duracion_horas: duracionHoras,
         estado: 1,
       }
 
       console.log("[v0] Creating program with data:", data)
+
+      // Validate data
+      if (!validateProgramData(data, false)) {
+        return;
+      }
 
       try {
         const response = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=crear`, {
@@ -310,15 +501,17 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("[v0] Create response:", result)
 
         if (result.mensaje) {
-          alert("Programa creado correctamente")
-          closeCreateModal()
-          location.reload()
+          toastSuccess("Programa creado correctamente");
+          closeCreateModal();
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
         } else {
-          alert("Error: " + (result.error || "No se pudo crear"))
+          toastError("Error: " + (result.error || "No se pudo crear el programa"));
         }
       } catch (error) {
-        console.error("[v0] Error creating program:", error)
-        alert("Error al crear el programa")
+        console.error("[v0] Error creating program:", error);
+        toastError("Error de conexión al crear el programa");
       }
     })
   }
@@ -328,6 +521,25 @@ document.addEventListener("DOMContentLoaded", () => {
   // Edit Program Form
   const editForm = document.getElementById("editProgramForm")
   if (editForm) {
+    let originalEditData = null; // Store original data for change detection
+
+    // Store original data when opening edit modal
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('button[onclick^="openEditModal"]') || 
+          e.target.closest('button[onclick^="toggleActionMenu"] + [data-action="editar"]')) {
+        const row = e.target.closest('tr') || e.target.closest('div[data-index]');
+        if (row) {
+          originalEditData = {
+            codigo: row.dataset.codigo,
+            nombre: row.dataset.nombre,
+            descripcion: row.dataset.descripcion,
+            nivel: row.dataset.nivel,
+            duracion: row.dataset.duracion
+          };
+        }
+      }
+    });
+
     editForm.addEventListener("submit", async (e) => {
       e.preventDefault()
 
@@ -336,24 +548,29 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector(`tr[data-index="${index}"]`) || document.querySelector(`div[data-index="${index}"]`)
 
       if (!row) {
-        alert("Error: No se encontró el programa")
+        toastError("No se encontró el programa para editar");
         return
       }
 
       const idPrograma = row.dataset.idPrograma
       if (!idPrograma) {
         console.error("[v0] No id_programa found in row:", row)
-        alert("Error: No se pudo obtener el ID del programa")
+        toastError("No se pudo obtener el ID del programa");
         return
       }
 
+      // Get form values
+      const codigo = document.getElementById("edit_codigo").value.trim();
+      const nombre = document.getElementById("edit_nombre").value.trim();
+      const nivelSelect = document.getElementById("edit_nivel").value;
+      const descripcion = document.getElementById("edit_descripcion").value.trim();
+      const duracionText = document.getElementById("edit_duracion").value.trim();
+      
       // Normalize level
-      const nivelSelect = document.getElementById("edit_nivel").value
-      const nivelNormalized = nivelSelect.toLowerCase().includes("técnico") ? "Técnico" : "Tecnólogo"
-
-      // Duration
-      const duracionText = document.getElementById("edit_duracion").value
-      const duracionHoras = Number.parseInt(duracionText.replace(/[^\d]/g, ""))
+      const nivelNormalized = nivelSelect.toLowerCase().includes("técnico") ? "Técnico" : "Tecnólogo";
+      
+      // Extract hours number from text
+      const duracionHoras = Number.parseInt(duracionText.replace(/[^\d]/g, "")) || 0;
 
       // Actual State from the dataset (supports '1'/'0' or 'Active'/'Inactive')
       const estadoAttrEdit = String(row.dataset.estado ?? '').trim()
@@ -361,13 +578,38 @@ document.addEventListener("DOMContentLoaded", () => {
         ? Number(estadoAttrEdit)
         : (estadoAttrEdit.toLowerCase() === 'activo' ? 1 : 0)
 
+      const currentData = {
+        codigo_programa: codigo,
+        nombre_programa: nombre,
+        nivel_programa: nivelNormalized,
+        descripcion_programa: descripcion,
+        duracion_horas: duracionHoras,
+      }
+
+      // Validate data
+      if (!validateProgramData({...currentData, estado: estadoValue}, true)) {
+        return;
+      }
+
+      // Check if there are any changes (only for editing)
+      if (originalEditData) {
+        const currentDataForComparison = {
+          codigo: codigo,
+          nombre: nombre,
+          descripcion: descripcion,
+          nivel: nivelNormalized,
+          duracion: duracionText
+        };
+
+        if (!hasChanges(originalEditData, currentDataForComparison)) {
+          toastInfo("Para actualizar el programa es necesario modificar al menos un dato.");
+          return;
+        }
+      }
+
       const data = {
         id_programa: idPrograma,
-        codigo_programa: document.getElementById("edit_codigo").value,
-        nombre_programa: document.getElementById("edit_nombre").value,
-        nivel_programa: nivelNormalized,
-        descripcion_programa: document.getElementById("edit_descripcion").value,
-        duracion_horas: duracionHoras,
+        ...currentData,
         estado: estadoValue
       }
 
@@ -387,15 +629,17 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("[v0] Update response:", result)
 
         if (result.mensaje) {
-          alert("Programa actualizado correctamente")
-          closeEditModal()
-          location.reload()
+          toastSuccess("Programa actualizado correctamente");
+          closeEditModal();
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
         } else {
-          alert("Error: " + (result.error || "No se pudo actualizar"))
+          toastError("Error: " + (result.error || "No se pudo actualizar el programa"));
         }
       } catch (error) {
-        console.error("[v0] Error updating program:", error)
-        alert("Error al actualizar el programa")
+        console.error("[v0] Error updating program:", error);
+        toastError("Error de conexión al actualizar el programa");
       }
     })
   }
@@ -413,6 +657,12 @@ document.addEventListener("DOMContentLoaded", () => {
         : (estadoAttr.toLowerCase() === 'activo' ? 1 : 0)
       const nuevoEstado = estadoActual ? 0 : 1
 
+      const actionText = nuevoEstado ? "activar" : "desactivar";
+      
+      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
+        return;
+      }
+
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {
           method: 'POST',
@@ -420,11 +670,17 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ id_programa: idPrograma, estado: nuevoEstado })
         })
         const result = await res.json()
-        if(result.mensaje) location.reload()
-        else alert(result.error || 'No se pudo cambiar estado')
+        if(result.mensaje) {
+          toastSuccess(nuevoEstado ? "Programa activado correctamente." : "Programa desactivado correctamente.");
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          toastError(result.error || 'No se pudo cambiar el estado del programa');
+        }
       } catch(err) {
-        console.error(err)
-        alert('Error al cambiar estado')
+        console.error(err);
+        toastError('Error de conexión al cambiar el estado');
       }
     })
   })
@@ -469,6 +725,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = e.target.closest('div[data-index]')
       const idPrograma = card.dataset.idPrograma
       const nuevoEstado = e.target.checked ? 1 : 0
+      
+      const actionText = nuevoEstado ? "activar" : "desactivar";
+      
+      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
+        // Revert checkbox if user cancels
+        e.target.checked = !e.target.checked;
+        return;
+      }
 
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {
@@ -477,11 +741,21 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ id_programa: idPrograma, estado: nuevoEstado })
         })
         const result = await res.json()
-        if(result.mensaje) location.reload()
-        else alert(result.error || 'No se pudo cambiar estado')
+        if(result.mensaje) {
+          toastSuccess(nuevoEstado ? "Programa activado correctamente." : "Programa desactivado correctamente.");
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          toastError(result.error || 'No se pudo cambiar el estado del programa');
+          // Revert checkbox on error
+          e.target.checked = !e.target.checked;
+        }
       } catch(err) {
-        console.error(err)
-        alert('Error al cambiar estado')
+        console.error(err);
+        toastError('Error de conexión al cambiar el estado');
+        // Revert checkbox on error
+        e.target.checked = !e.target.checked;
       }
     })
   })
@@ -501,4 +775,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial call to check empty states on page load
   applyFilterAndUpdateEmptyStates()
+  
+  // ========== ESC KEY TO CLOSE MODALS ==========
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.key === "Esc" || e.keyCode === 27) {
+      const editModal = document.getElementById("editProgramModal");
+      const viewModal = document.getElementById("viewProgramModal");
+      const createModal = document.getElementById("createProgramModal");
+      
+      if (editModal && !editModal.classList.contains("hidden")) {
+        closeEditModal();
+      }
+      
+      if (viewModal && !viewModal.classList.contains("hidden")) {
+        closeViewModal();
+      }
+      
+      if (createModal && !createModal.classList.contains("hidden")) {
+        closeCreateModal();
+      }
+    }
+  });
 })
