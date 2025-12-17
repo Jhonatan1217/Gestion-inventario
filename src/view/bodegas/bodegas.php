@@ -19,7 +19,13 @@ $bodegas = [
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- CSS globals -->
   <link rel="stylesheet" href="src/assets/css/globals.css" />
+
+  <!-- CSS bodegas -->
+  <link rel="stylesheet" href="src/assets/css/bodegas/bodegas.css" />
+
+  <!-- JS bodegas -->
   <script src="src/assets/js/bodegas/bodegas.js" defer></script>
 </head>
 
@@ -28,8 +34,9 @@ $bodegas = [
   style="margin-left: <?= isset($_GET['coll']) && $_GET['coll'] == "1" ? '70px' : '260px' ?>;"
 >
 
-  <!-- HEADER: TÍTULO (izq) + BOTONES (der) -->
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+  <!-- TÍTULO -->
   <div>
     <h1 class="text-3xl font-bold">Gestión Bodegas</h1>
     <p class="text-sm text-gray-500">
@@ -37,55 +44,59 @@ $bodegas = [
     </p>
   </div>
 
-  <!-- Botones al frente del título (arriba a la derecha) -->
-  <div class="flex items-center gap-3">
-    <!-- Switch Lista/Grid -->
-    <div class="inline-flex rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-      <button
-        type="button"
-        id="btnVistaTabla"
-        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 bg-muted text-foreground"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
+  <!-- CONTROLES DERECHA -->
+<div class="flex items-center gap-2">
 
-      <button
-        type="button"
-        id="btnVistaTarjetas"
-        class="px-3 py-2 text-xs sm:text-sm flex items-center gap-1 text-muted-foreground"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <rect x="4" y="4" width="7" height="7" rx="1"></rect>
-          <rect x="13" y="4" width="7" height="7" rx="1"></rect>
-          <rect x="4" y="13" width="7" height="7" rx="1"></rect>
-          <rect x="13" y="13" width="7" height="7" rx="1"></rect>
-        </svg>
-      </button>
-    </div>
+  <!-- Grupo: Switch Lista / Grid -->
+  <div class="inline-flex rounded-full border border-gray-200 bg-white overflow-hidden shadow-sm">
 
-    <!-- Nueva Bodega -->
+    <!-- Lista -->
     <button
-      id="btnNuevaBodega"
       type="button"
-      class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+      id="btnVistaTabla"
+      class="px-3 py-2 text-sm flex items-center gap-1 bg-muted text-foreground"
     >
       <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
-      Nueva Bodega
     </button>
+
+    <!-- Grid -->
+    <button
+      type="button"
+      id="btnVistaTarjetas"
+      class="px-3 py-2 text-sm flex items-center gap-1 text-muted-foreground"
+    >
+      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <rect x="4" y="4" width="7" height="7" rx="1"></rect>
+        <rect x="13" y="4" width="7" height="7" rx="1"></rect>
+        <rect x="4" y="13" width="7" height="7" rx="1"></rect>
+        <rect x="13" y="13" width="7" height="7" rx="1"></rect>
+      </svg>
+    </button>
+
   </div>
+
+  <!-- Botón Nueva Bodega (grupo independiente) -->
+  <button
+    id="btnNuevaBodega"
+    class="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+  >
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Nueva Bodega
+  </button>
+
 </div>
 
-<!-- CONTROLES (abajo): BUSCADOR (izq) + FILTRO (der) -->
-<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-  <!-- Buscador -->
-  <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[360px] bg-gray-100">
+</div>
+<!-- BUSCADOR + FILTRO -->
+<div class="flex items-center justify-between w-full gap-4 mb-4 -mt-4">
+
+  <!-- BUSCADOR (ESTILO ORIGINAL) -->
+  <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm w-full sm:w-[330px] bg-gray-100">
     <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
     <input
       type="text"
@@ -94,11 +105,12 @@ $bodegas = [
     />
   </div>
 
-  <!-- Filtro -->
-  <div class="flex items-center gap-2 sm:justify-end">
+  <!-- FILTRO -->
+  <div class="flex items-center gap-2">
+
     <i data-lucide="filter" class="w-4 h-4 text-gray-600"></i>
 
-    <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-2 shadow-sm min-w-[160px]">
+    <div class="relative bg-white border border-gray-200 rounded-2xl px-4 py-1 shadow-sm min-w-[150px] bg-gray-100">
       <select
         id="bodegasFilter"
         class="w-full appearance-none bg-transparent outline-none text-sm text-gray-700 pr-6"
@@ -107,85 +119,89 @@ $bodegas = [
         <option value="Activo">Activos</option>
         <option value="Inactivo">Inactivos</option>
       </select>
-      <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
     </div>
   </div>
+
 </div>
 
-
-  <!-- ========= VISTA LISTA ========= -->
-  <div id="view-list">
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-100 text-gray-600">
-          <tr>
-            <th class="px-4 py-3 text-left font-semibold">ID</th>
-            <th class="px-4 py-3 text-left font-semibold">Nombre</th>
-            <th class="px-4 py-3 text-left font-semibold">Clasificación</th>
-            <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
-            <th class="px-4 py-3 text-left font-semibold">Tipo</th>
-            <th class="px-4 py-3 text-left font-semibold">Estado</th>
-            <th class="px-4 py-3 text-left font-semibold">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody class="divide-y divide-gray-200">
-          <?php foreach ($bodegas as $b): ?>
-            <?php $activo = $b[5] === "Activo"; ?>
-            <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3">#<?= $b[0] ?></td>
-
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                    <i data-lucide="warehouse" class="w-4 h-4"></i>
-                  </div>
-                  <span class="font-medium text-gray-900"><?= htmlspecialchars($b[1]) ?></span>
-                </div>
-              </td>
-
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                  <?= htmlspecialchars($b[2]) ?>
-                </span>
-              </td>
-
-              <td class="px-4 py-3 text-gray-700">
-                <i data-lucide="map-pin" class="w-4 h-4 inline-block text-gray-500 mr-1"></i>
-                <?= htmlspecialchars($b[3]) ?>
-              </td>
-
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
-                  <?= htmlspecialchars($b[4]) ?>
-                </span>
-              </td>
-
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
-                  <?= $activo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100' ?>">
-                  <?= htmlspecialchars($b[5]) ?>
-                </span>
-              </td>
-
-              <td class="px-4 py-3">
-                <button
-                  class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
-                  data-id="<?= $b[0] ?>"
-                  data-nombre="<?= htmlspecialchars($b[1]) ?>"
-                  data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
-                  data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
-                  data-tipo="<?= htmlspecialchars($b[4]) ?>"
-                  data-estado="<?= htmlspecialchars($b[5]) ?>"
-                >
-                  <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                </button>
-              </td>
+  <div class="w-full">
+    <!-- ========= VISTA LISTA ========= -->
+    <div id="view-list">
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100 text-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold">ID</th>
+              <th class="px-4 py-3 text-left font-semibold">Nombre</th>
+              <th class="px-4 py-3 text-left font-semibold">Clasificación</th>
+              <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
+              <th class="px-4 py-3 text-left font-semibold">Tipo</th>
+              <th class="px-4 py-3 text-left font-semibold">Estado</th>
+              <th class="px-4 py-3 text-left font-semibold">Acciones</th>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody class="divide-y divide-gray-200">
+            <?php foreach ($bodegas as $b): ?>
+              <?php $activo = $b[5] === "Activo"; ?>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3">#<?= $b[0] ?></td>
+
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                      <i data-lucide="warehouse" class="w-4 h-4"></i>
+                    </div>
+                    <span class="font-medium text-gray-900"><?= htmlspecialchars($b[1]) ?></span>
+                  </div>
+                </td>
+
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700">
+                    <?= htmlspecialchars($b[2]) ?>
+                  </span>
+
+                </td>
+
+                <td class="px-4 py-3 text-gray-700">
+                  <i data-lucide="map-pin" class="w-4 h-4 inline-block text-gray-500 mr-1"></i>
+                  <?= htmlspecialchars($b[3]) ?>
+                </td>
+
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700">
+                    <?= htmlspecialchars($b[4]) ?>
+                  </span>
+                </td>
+                
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+                    <?= $activo ? 'badge-estado-activo' : 'badge-estado-inactivo' ?>">
+                    <?= htmlspecialchars($b[5]) ?>
+                  </span>
+                </td>
+
+
+                <td class="px-4 py-3">
+                  <button
+                    class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
+                    data-id="<?= $b[0] ?>"
+                    data-nombre="<?= htmlspecialchars($b[1]) ?>"
+                    data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
+                    data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
+                    data-tipo="<?= htmlspecialchars($b[4]) ?>"
+                    data-estado="<?= htmlspecialchars($b[5]) ?>"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
+
   </div>
 
   <!-- ========= VISTA GRID ========= -->
@@ -212,13 +228,14 @@ $bodegas = [
               data-tipo="<?= htmlspecialchars($b[4]) ?>"
               data-estado="<?= htmlspecialchars($b[5]) ?>"
             >
-              <i data-lucide="more-horizontal" class="w-4 h-4"></i><p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
+              <i data-lucide="more-horizontal" class="w-4 h-4"></i>
             </button>
           </div>
 
           <!-- Main -->
           <div>
             <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
+            <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
           </div>
 
           <!-- Location -->
@@ -248,7 +265,7 @@ $bodegas = [
 
             <div class="flex items-center gap-3">
               <span
-                class="estado-text text-sm font-medium <?= $estadoActivo  ?>"
+                class="estado-text text-sm font-medium <?= $estadoActivo ? 'text-emerald-700' : 'text-red-700' ?>"
               >
                 <?= $estadoActivo ? "Activa" : "Inactiva" ?>
               </span>
@@ -275,18 +292,51 @@ $bodegas = [
     </div>
   </div>
 
-  <!-- ========= MENÚ CONTEXTUAL ========= -->
-  <div id="context-menu" class="hidden absolute bg-white border border-gray-200 rounded-xl shadow-lg p-2 w-52 z-50">
-    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="ver">
-      <i data-lucide="eye" class="w-4 h-4"></i> <span>Ver detalles</span>
-    </button>
-    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="editar">
-      <i data-lucide="square-pen" class="w-4 h-4"></i> <span>Editar</span>
-    </button>
-    <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm bodegas-ctx-btn" data-action="deshabilitar">
-      <i data-lucide="power" class="w-4 h-4"></i> <span>Deshabilitar</span>
-    </button>
-  </div>
+<!-- ========= MENÚ CONTEXTUAL ========= -->
+<div
+  id="context-menu"
+  class="hidden absolute z-50 w-56 rounded-xl bg-white border border-gray-200 shadow-md"
+>
+  <ul class="py-2 text-sm text-gray-800">
+    
+    <!-- Ver detalles -->
+    <li>
+      <button
+        class="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 bodegas-ctx-btn"
+        data-action="ver"
+      >
+        <i data-lucide="eye" class="w-5 h-5 text-gray-600"></i>
+        <span>Ver detalles</span>
+      </button>
+    </li>
+
+    <!-- Editar -->
+    <li>
+      <button
+        class="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 bodegas-ctx-btn"
+        data-action="editar"
+      >
+        <i data-lucide="square-pen" class="w-5 h-5 text-gray-600"></i>
+        <span>Editar</span>
+      </button>
+    </li>
+
+    <!-- Separador -->
+    <li class="my-2 border-t border-gray-200"></li>
+
+    <!-- Desactivar -->
+    <li>
+      <button
+        class="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 bodegas-ctx-btn"
+        data-action="deshabilitar"
+      >
+        <i data-lucide="power" class="w-5 h-5 text-gray-600"></i>
+        <span>Desactivar</span>
+      </button>
+    </li>
+
+  </ul>
+</div>
 
   <!-- ========= MODAL CREAR (DISEÑO TIPO MOVIMIENTOS) ========= -->
 <div id="modalCrear" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -433,8 +483,11 @@ $bodegas = [
           <select
             id="editClasificacion"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Insumos</option>
-            <option>Equipos</option>
+            <option>Eléctrico</option>
+            <option>Construcción</option>
+            <option>Sanitario</option>
+            <option>Herramientas</option>
+            <option>Ejemplo</option>
           </select>
         </div>
 
@@ -478,49 +531,157 @@ $bodegas = [
 </div>
 
 
-  <!-- ========= MODAL DETALLE ========= -->
-  <div id="modalDetalle" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 items-center justify-center bodegas-modal">
-    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-semibold">Detalles de la bodega</h2>
-        <button id="cerrarDetalle" class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
+<!-- ========= MODAL DETALLE ========= -->
+<div
+  id="modalDetalle"
+  class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
+>
+  <div
+    class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col"
+  >
 
-      <div class="flex items-center gap-3 mt-4">
-        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-          <i data-lucide="warehouse" class="w-5 h-5"></i>
+    <!-- HEADER -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-900">
+        Detalles de la Bodega
+      </h2>
+
+      <button
+        id="cerrarDetalle"
+        class="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+      >
+        <i data-lucide="x" class="w-4 h-4 text-gray-600"></i>
+      </button>
+    </div>
+
+    <!-- CONTENIDO CON SCROLL -->
+    <div class="overflow-y-auto px-6 py-5 space-y-6">
+
+      <!-- INFO PRINCIPAL -->
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="warehouse" class="w-6 h-6"></i>
         </div>
+
         <div>
-          <h3 id="detalleNombre" class="text-base font-semibold"></h3>
-          <p class="text-xs text-gray-500">ID: <span id="detalleId"></span></p>
+          <h3 id="detalleNombre" class="text-base font-semibold text-gray-900">
+            Bodega Principal - Eléctrico
+          </h3>
+          <p class="text-xs text-gray-500">
+            ID: <span id="detalleId">1</span>
+          </p>
         </div>
       </div>
 
-      <div class="mt-4 space-y-3 text-sm">
-        <div class="flex items-center justify-between gap-3">
-          <span class="font-medium text-gray-700">Clasificación:</span>
-          <span id="detalleClasificacion" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700"></span>
+      <!-- DATOS BODEGA -->
+      <div class="grid gap-4 text-sm">
+
+        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
+          <span class="text-gray-600">Clasificación:</span>
+          <span id="detalleClasificacion" class="detalle-chip">Insumos</span>
         </div>
 
-        <div class="flex items-center justify-between gap-3">
-          <span class="font-medium text-gray-700">Tipo:</span>
-          <span id="detalleTipo" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700"></span>
+        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
+          <span class="text-gray-600">Tipo:</span>
+          <span id="detalleTipo" class="detalle-chip">Bodega</span>
         </div>
 
-        <div class="flex items-center justify-between gap-3">
-          <span class="font-medium text-gray-700">Ubicación:</span>
-          <span id="detalleUbicacion" class="text-gray-700"></span>
+        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
+          <span class="text-gray-600">Ubicación:</span>
+          <span id="detalleUbicacion" class="font-medium text-gray-800">
+            Bloque A, Piso 1
+          </span>
         </div>
 
-        <div class="flex items-center justify-between gap-3">
-          <span class="font-medium text-gray-700">Estado:</span>
-          <span id="detalleEstado" class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-emerald-100 text-emerald-700"></span>
+        <div class="grid grid-cols-[140px_auto] gap-4 items-center">
+          <span class="text-gray-600">Estado:</span>
+          <span
+            id="detalleEstado"
+            class="badge-estado-activo"
+          >
+            Activo
+          </span>
+        </div>
+
+      </div>
+
+      <!-- SECCIÓN MATERIALES -->
+      <div class="pt-5 border-t border-gray-200">
+
+        <div class="flex items-center gap-2 mb-2">
+          <i data-lucide="box" class="w-4 h-4 text-gray-600"></i>
+          <h4 class="font-semibold text-gray-900">
+            Materiales en esta Bodega
+          </h4>
+        </div>
+
+        <p class="text-sm text-gray-500 mb-4">
+          Total: <strong>3</strong> material(es)
+        </p>
+
+        <!-- LISTA MATERIALES -->
+        <div class="space-y-4">
+
+          <!-- MATERIAL OK -->
+          <div class="border border-gray-200 rounded-xl p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h5 class="font-medium text-gray-900">Taladro Percutor</h5>
+                <p class="text-xs text-gray-500">
+                  HER-001 • Herramientas
+                </p>
+              </div>
+
+              <span class="badge-material-disponible">
+                Disponible
+              </span>
+            </div>
+
+            <div class="mt-3 text-sm font-medium text-gray-900">
+              <strong>5</strong> unidad
+            </div>
+
+            <div class="mt-2">
+              <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+                <div class="h-full rounded-full bg-emerald-600 w-full"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Min: 3</p>
+            </div>
+          </div>
+
+          <!-- MATERIAL ALERTA -->
+          <div class="border border-gray-200 rounded-xl p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h5 class="font-medium text-gray-900">Nivel Láser</h5>
+                <p class="text-xs text-gray-500">
+                  HER-002 • Herramientas
+                </p>
+              </div>
+
+              <span class="badge-material-prestado">
+                Prestado
+              </span>
+            </div>
+
+            <div class="mt-3 text-sm font-medium text-red-600">
+              <strong>2</strong> unidad
+            </div>
+
+            <div class="mt-2">
+              <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+                <div class="h-full rounded-full bg-red-600 w-full"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Min: 2</p>
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
   </div>
+</div>
 
 </main>
 
@@ -676,7 +837,9 @@ document.addEventListener("DOMContentLoaded", () => {
       est.textContent = selectedData.estado;
       est.className =
         "inline-flex items-center rounded-full px-3 py-1 text-xs " +
-        (selectedData.estado === "Activo");
+        (selectedData.estado === "Activo"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-red-100 text-red-700");
 
       openModal(modalDetalle);
       closeContextMenu();
@@ -732,8 +895,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const estadoText = card.querySelector(".estado-text");
     if (estadoText) {
       estadoText.textContent = textoNuevo;
-      estadoText.classList.toggle(sw.checked);
-      estadoText.classList.toggle(!sw.checked);
+      estadoText.classList.toggle("text-emerald-700", sw.checked);
+      estadoText.classList.toggle("text-red-700", !sw.checked);
     }
 
     // Guardar estado
