@@ -18,7 +18,7 @@ const btnVolver = document.getElementById("sol-btn-volver");
 const btnGuardar = document.getElementById("sol-btn-guardar");
 
 const contenedorCards = document.getElementById("sol-cards");
-const paginationContainer = document.getElementById("sol-pagination"); // 🔹 PAGINACIÓN
+const paginationContainer = document.getElementById("sol-pagination");
 const filtros = document.querySelectorAll(".sol-filtro-btn");
 
 
@@ -154,8 +154,8 @@ let filtroActivo = "todas";
 // =========================
 // PAGINACIÓN
 // =========================
-let currentPage = 1;            // 🔹 PAGINACIÓN
-const PAGE_SIZE = 9;            // 🔹 PAGINACIÓN (3x3)
+let currentPage = 1;            // PAGINACIÓN
+const PAGE_SIZE = 9;            // PAGINACIÓN (3x3)
 
 
 // ============================================================
@@ -173,7 +173,7 @@ function renderEmptyState() {
       </p>
     </div>
   `;
-  if (paginationContainer) paginationContainer.innerHTML = ""; // 🔹 PAGINACIÓN
+  if (paginationContainer) paginationContainer.innerHTML = ""; // PAGINACIÓN
 }
 
 
@@ -196,7 +196,7 @@ function renderSolicitudes() {
     return;
   }
 
-  // 🔹 PAGINACIÓN
+  // PAGINACIÓN
   const totalItems = lista.length;
   const start = (currentPage - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
@@ -268,7 +268,7 @@ function renderSolicitudes() {
     contenedorCards.appendChild(card);
   });
 
-  // 🔹 PAGINACIÓN
+  // PAGINACIÓN
   renderPaginationControls(
     paginationContainer,
     totalItems,
@@ -292,8 +292,7 @@ function aprobarSolicitud(id) {
   if (!sol) return;
 
   sol.estado = "aprobada";
-  currentPage = 1; // 🔹 PAGINACIÓN
-  actualizarContadores();
+  currentPage = 1; // PAGINACIÓN
   renderSolicitudes();
 }
 
@@ -302,8 +301,7 @@ function rechazarSolicitud(id) {
   if (!sol) return;
 
   sol.estado = "rechazada";
-  currentPage = 1; // 🔹 PAGINACIÓN
-  actualizarContadores();
+  currentPage = 1; // PAGINACIÓN
   renderSolicitudes();
 }
 
@@ -320,7 +318,7 @@ filtros.forEach((btn) => {
     btn.classList.add("sol-filtro-btn-activo");
 
     filtroActivo = btn.dataset.filtro;
-    currentPage = 1; // 🔹 PAGINACIÓN
+    currentPage = 1; // PAGINACIÓN
     renderSolicitudes();
   });
 });
@@ -411,9 +409,45 @@ function renderPaginationControls(container, totalItems, pageSize, currentPage, 
   container.appendChild(btnNext);
 }
 
+// ============================================================
+//  MODAL – NUEVA SOLICITUD
+// ============================================================
+if (btnNueva && modal) {
+  btnNueva.onclick = () => {
+    modal.classList.add("sol-modal-show");
+    if (paso1) paso1.classList.remove("hidden");
+    if (paso2) paso2.classList.add("hidden");
+  };
+}
+
+if (btnCerrarModal && modal) {
+  btnCerrarModal.onclick = () => {
+    modal.classList.remove("sol-modal-show");
+  };
+}
+
+if (btnPaso2) {
+  btnPaso2.onclick = () => {
+    if (paso1) paso1.classList.add("hidden");
+    if (paso2) paso2.classList.remove("hidden");
+  };
+}
+
+if (btnVolver) {
+  btnVolver.onclick = () => {
+    if (paso2) paso2.classList.add("hidden");
+    if (paso1) paso1.classList.remove("hidden");
+  };
+}
+
+if (btnGuardar && modal) {
+  btnGuardar.onclick = () => {
+    modal.classList.remove("sol-modal-show");
+  };
+}
+
 
 // ============================================================
 //  INIT
 // ============================================================
-//actualizarContadores();
 renderSolicitudes();
