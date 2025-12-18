@@ -297,13 +297,122 @@ if (!emptySearchContainer && vistaTabla && vistaTabla.parentNode) {
  * Returns the initials of a full name.
  */
 function getInitials(nombre) {
-  return nombre
+  return String(nombre || "")
     .split(" ")
     .filter(Boolean)
     .map((n) => n[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+// =========================
+// ✅ NUEVO: helpers para mostrar foto_perfil sin tocar tu base
+// =========================
+function getBaseUrlFromApi() {
+  try {
+    const u = new URL(API_URL, window.location.href);
+    const idx = u.pathname.indexOf("/src/");
+    const basePath = idx !== -1 ? u.pathname.slice(0, idx + 1) : u.pathname.replace(/\/[^/]*$/, "/");
+    return u.origin + basePath; // termina en "/"
+  } catch (e) {
+    return window.location.origin + "/";
+  }
+}
+
+function resolveFotoUrl(path) {
+  if (!path) return null;
+
+  const raw = String(path).trim();
+  if (!raw) return null;
+
+  // ya es url completa
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  // normaliza: quita "/" inicial para concatenar bien
+  const clean = raw.replace(/^\/+/, "");
+  return getBaseUrlFromApi() + clean;
+}
+
+/**
+ * Render de avatar: si hay foto -> <img>, si no -> iniciales
+ */
+function renderAvatarHTML(user, sizeClass = "h-9 w-9", textClass = "text-sm") {
+  const fotoUrl = resolveFotoUrl(user?.foto_perfil);
+
+  if (fotoUrl) {
+    // fallback a iniciales si el <img> falla
+    const initials = getInitials(user?.nombre_completo || "");
+    const safeName = String(user?.nombre_completo || "usuario").replace(/"/g, "&quot;");
+
+    return `
+      <img
+        src="${fotoUrl}"
+        alt="Foto de ${safeName}"
+        class="rounded-full ${sizeClass} object-cover border border-border"
+        onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend','<div class=\\'flex ${sizeClass} items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary ${textClass}\\'>${initials}</div>');"
+      />
+    `;
+  }
+
+  return `
+    <div class="flex ${sizeClass} items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary ${textClass}">
+      ${getInitials(user?.nombre_completo || "")}
+    </div>
+  `;
+}
+
+// =========================
+// ✅ FIX: REGEX DEFINITIONS (evita ReferenceError en validaciones)
+// =========================
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const numeroRegex = /^\d+$/;
+
+// =========================
+// ✅ FIX: validateUserPayload (evita ReferenceError al submit)
+// =========================
+function validateUserPayload(payload, opts = {}) {
+  const { isEdit = false, currentId = null } = opts;
+
+  const doc = String(payload.numero_documento || "").trim();
+  const mail = String(payload.correo || "").trim().toLowerCase();
+
+  // Evitar duplicados en memoria (mejora UX antes de pegarle al backend)
+  if (doc) {
+    const dupDoc = users.find(
+      (u) =>
+        String(u.id) !== String(currentId) &&
+        String(u.numero_documento || "").trim() === doc
+    );
+    if (dupDoc) {
+      toastError("El número de documento ya está registrado.");
+      return false;
+    }
+  }
+
+  if (mail) {
+    const dupMail = users.find(
+      (u) =>
+        String(u.id) !== String(currentId) &&
+        String(u.correo || "").trim().toLowerCase() === mail
+    );
+    if (dupMail) {
+      toastError("El correo ya está registrado.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// =========================
+// ✅ FIX EXTRA: "Guard" global para evitar ReferenceError si el browser ejecuta un JS viejo
+// (NO toca tu lógica, solo asegura que exista la función)
+// =========================
+if (typeof window.validateUserPayload !== "function") {
+  window.validateUserPayload = validateUserPayload;
+} else {
+  // si ya existía, mantenemos la del window (no sobreescribimos nada)
 }
 
 /**
@@ -594,47 +703,51 @@ function openModalVerUsuario(user) {
 
   detalleUsuarioContent.innerHTML = `
       <div class="flex items-center gap-4">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-xl">
-          ${getInitials(user.nombre_completo)}
-        </div>
+        ${renderAvatarHTML(user, "h-16 w-16", "text-xl")}
         <div>
           <h3 class="font-semibold text-lg">${user.nombre_completo}</h3>
-          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            roleBadgeStyles[user.cargo] || "badge-role-default"
-          }">
-            ${roleLabels[user.cargo] || user.cargo}
-          </span>
+
+          <!-- ✅ AHORA ROL + ESTADO AL LADO -->
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+              roleBadgeStyles[user.cargo] || "badge-role-default"
+            }">
+              ${roleLabels[user.cargo] || user.cargo}
+            </span>
+
+            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
+              ${user.estado ? "Activo" : "Inactivo"}
+            </span>
+          </div>
         </div>
       </div>
+
       <div class="grid gap-3 text-sm">
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Documento:</span>
           <span class="col-span-2">${user.tipo_documento} ${user.numero_documento}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Teléfono:</span>
           <span class="col-span-2">${user.telefono}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Correo:</span>
           <span class="col-span-2">${user.correo}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Dirección:</span>
           <span class="col-span-2">${user.direccion}</span>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Estado:</span>
-          <div class="col-span-2">
-            <span class="badge-estado-base ${estadoBadgeClass}">
-              ${user.estado ? "Activo" : "Inactivo"}
-            </span>
-          </div>
-        </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Registrado:</span>
-          <span class="col-span-2">${user.created_at || ""}</span>
+          <span class="col-span-2">${user.fecha_creacion || ""}</span>
         </div>
+
         ${
           programaNombre
             ? `
@@ -739,8 +852,17 @@ async function cargarUsuarios() {
           correo: u.correo,
           direccion: u.direccion,
           estado: estadoBool,
-          created_at: u.created_at || "",
+
+          // ✅ FIX SIN TOCAR TU BASE:
+          // El backend trae fecha_creacion (no created_at), por eso el modal quedaba vacío.
+          // Guardamos ambos por compatibilidad.
+          fecha_creacion: u.fecha_creacion || u.created_at || "",
+          created_at: u.created_at || u.fecha_creacion || "",
+
           id_programa: u.id_programa ?? null,
+
+          // ✅ NUEVO: foto perfil (si viene del backend)
+          foto_perfil: u.foto_perfil ?? null,
         };
       });
     }
@@ -934,15 +1056,25 @@ function renderTable() {
   const rol = selectFiltroRol.value;
 
   const filtered = users.filter((u) => {
-    // Do not show the logged-in user in the list
-    if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
-      return false;
-    }
+  // ✅ 1) No mostrar el usuario "Sistema Interno" (id 1) si NO estás logueado con esa cuenta
+  if (
+    typeof AUTH_USER_ID !== "undefined" &&
+    String(AUTH_USER_ID) !== "1" &&
+    String(u.id) === "1"
+  ) {
+    return false;
+  }
 
-    const matchName = u.nombre_completo.toLowerCase().includes(search);
-    const matchRol = rol ? u.cargo === rol : true;
-    return matchName && matchRol;
-  });
+  // ✅ 2) No mostrar el usuario logueado en la lista (tu regla actual)
+  if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
+    return false;
+  }
+
+  const matchName = u.nombre_completo.toLowerCase().includes(search);
+  const matchRol = rol ? u.cargo === rol : true;
+  return matchName && matchRol;
+});
+
 
   const totalItems = filtered.length;
 
@@ -1023,9 +1155,7 @@ function renderTable() {
     tr.innerHTML = `
         <td class="px-4 py-3 align-middle">
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-sm">
-              ${getInitials(user.nombre_completo)}
-            </div>
+            ${renderAvatarHTML(user, "h-9 w-9", "text-sm")}
             <div>
               <p class="font-medium text-sm">${user.nombre_completo}</p>
               <p class="text-xs text-muted-foreground">${user.correo}</p>
@@ -1093,7 +1223,7 @@ function renderTable() {
                   <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 20h9"/>
                   <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.5 3.5a2.121 2.121 0 0 1 3 3L9 17l-4 1 1-4 10.5-10.5z"/>
+                        d="M16.5 3.5a2.121 2 0 0 1 3 3L9 17l-4 1 1-4 10.5-10.5z"/>
                 </svg>
                 Editar
               </button>
@@ -1153,9 +1283,7 @@ function renderTable() {
     card.innerHTML = `
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-xs">
-              ${getInitials(user.nombre_completo)}
-            </div>
+            ${renderAvatarHTML(user, "h-10 w-10", "text-xs")}
             <div class="space-y-0.5">
               <p class="font-semibold text-xs sm:text-sm leading-snug">${user.nombre_completo}</p>
               <p class="text-[11px] sm:text-xs text-muted-foreground">${user.tipo_documento} ${user.numero_documento}</p>
@@ -1480,7 +1608,9 @@ formUsuario.addEventListener("submit", async (e) => {
   }
 
   const isEdit = !!hiddenUserId.value;
-  if (!validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
+
+  // ✅ FIX: usa la función global garantizada (evita ReferenceError si corre un JS viejo/caché)
+  if (!window.validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
 
   const allEmpty =
     !payload.nombre_completo &&

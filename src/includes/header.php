@@ -453,34 +453,35 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
       <i data-lucide="x" class="h-4 w-4 text-slate-600"></i>
     </button>
 
-    <!-- ✅ NUEVO: MÁS ESPACIO + LÍNEA DEBAJO DE LOS BOTONES (SIN DAÑAR TU BASE) -->
-    <div class="absolute left-0 right-0 top-0 px-6 pt-5 md:px-8 z-10">
-      <div class="flex items-center justify-end gap-2 pr-12">
-        <button
-          id="btnInfoDatosSensibles"
-          type="button"
-          title="Cambiar datos sensibles"
-          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          <i data-lucide="info" class="h-4 w-4"></i>
-          <span class="whitespace-nowrap">Editar datos sensibles</span>
-        </button>
+    <!-- ✅ FIX: QUITAR ABSOLUTE para que la línea NO se atraviese -->
+    <div class="px-6 pt-8 md:px-8">
+  <div class="flex items-center justify-end gap-2 pr-12 mt-1">
+    <button
+      id="btnInfoDatosSensibles"
+      type="button"
+      title="Cambiar datos sensibles"
+      class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+    >
+      <i data-lucide="info" class="h-4 w-4"></i>
+      <span class="whitespace-nowrap">Editar datos sensibles</span>
+    </button>
 
-        <button
-          id="btnAbrirCambiarPassword"
-          type="button"
-          class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Cambiar contraseña
-        </button>
-      </div>
+    <button
+      id="btnAbrirCambiarPassword"
+      type="button"
+      class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+    >
+      Cambiar contraseña
+    </button>
+  </div>
 
-      <!-- ✅ Línea debajo de los botones -->
-      <div class="mt-4 border-b border-slate-200"></div>
-    </div>
+  <!-- Línea debajo de los botones -->
+  <div class="mt-5 border-b border-slate-200"></div>
+</div>
 
-    <!-- ✅ Más padding arriba para separar botones de la info del usuario -->
-    <div class="p-6 pt-24 md:p-8 md:pt-28">
+
+    <!-- ✅ FIX: padding normal (ya no necesitamos “pt” gigante) -->
+    <div class="p-6 pt-6 md:p-8 md:pt-8">
       <div class="flex items-center gap-4 mb-6">
         <div class="relative h-16 w-16 cursor-pointer" id="avatarPerfilEditar">
           <div
@@ -732,36 +733,81 @@ $esInstructor = strtolower($profileData["cargo"]) === 'instructor';
 
       <form id="formCambiarPassword" method="post" action="#">
         <div class="space-y-4 text-sm">
-          <div>
-            <label class="text-xs font-medium text-slate-400 block mb-1">Contraseña actual</label>
-            <input
-              type="password"
-              name="password_actual"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="••••••••"
-            />
-          </div>
 
-          <div>
-            <label class="text-xs font-medium text-slate-400 block mb-1">Nueva contraseña</label>
-            <input
-              type="password"
-              name="password_nueva"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="••••••••"
-            />
-          </div>
+  <!-- Contraseña actual -->
+  <div>
+    <label class="text-xs font-medium text-slate-400 block mb-1">Contraseña actual</label>
 
-          <div>
-            <label class="text-xs font-medium text-slate-400 block mb-1">Confirmar nueva contraseña</label>
-            <input
-              type="password"
-              name="password_confirmar"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
+    <div class="relative">
+      <input
+        type="password"
+        name="password_actual"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+        placeholder="••••••••"
+      />
+
+      <button
+        type="button"
+        data-toggle-password="true"
+        aria-label="Mostrar/Ocultar contraseña actual"
+        class="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-50"
+      >
+        <i data-lucide="eye" class="h-4 w-4 text-slate-500"></i>
+        <i data-lucide="eye-off" class="h-4 w-4 text-slate-500 hidden"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Nueva contraseña -->
+  <div>
+    <label class="text-xs font-medium text-slate-400 block mb-1">Nueva contraseña</label>
+
+    <div class="relative">
+      <input
+        type="password"
+        name="password_nueva"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+        placeholder="••••••••"
+      />
+
+      <button
+        type="button"
+        data-toggle-password="true"
+        aria-label="Mostrar/Ocultar nueva contraseña"
+        class="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-50"
+      >
+        <i data-lucide="eye" class="h-4 w-4 text-slate-500"></i>
+        <i data-lucide="eye-off" class="h-4 w-4 text-slate-500 hidden"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Confirmar nueva contraseña -->
+  <div>
+    <label class="text-xs font-medium text-slate-400 block mb-1">Confirmar nueva contraseña</label>
+
+    <div class="relative">
+      <input
+        type="password"
+        name="password_confirmar"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+        placeholder="••••••••"
+      />
+
+      <button
+        type="button"
+        data-toggle-password="true"
+        aria-label="Mostrar/Ocultar confirmar contraseña"
+        class="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-50"
+      >
+        <i data-lucide="eye" class="h-4 w-4 text-slate-500"></i>
+        <i data-lucide="eye-off" class="h-4 w-4 text-slate-500 hidden"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
 
         <div class="mt-6 flex justify-end gap-3">
           <button

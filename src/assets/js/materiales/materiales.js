@@ -12,7 +12,7 @@ const cardsPerPage = 9
 let currentView = "table"
 
 // API endpoints
-const API_URL = window.location.origin + "/Gestion-inventario/src/controllers/material_formacion_controller.php"
+const API_URL = `${window.BASE_URL}src/controllers/material_formacion_controller.php`;
 
 function getMaterialesBaseUrl() {
   if (window.MATERIALES_BASE_URL) return window.MATERIALES_BASE_URL
