@@ -72,6 +72,85 @@ class SolicitudMaterialModel {
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-}
 
-//borrar
+    // Approve or reject request
+    public function responderSolicitud($idSolicitud, $estado, $idAprobador, $observaciones = null)
+    {
+        // Only valid states
+        if (!in_array($estado, ['Aprobada', 'Rechazada'])) {
+            return false;
+        }
+
+        $sql = "UPDATE solicitudes_material
+                SET estado = ?,
+                    id_usuario_aprobador = ?,
+                    fecha_respuesta = NOW(),
+                    observaciones = ?
+                WHERE id_solicitud = ?
+                AND estado = 'Pendiente'";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            $estado,
+            $idAprobador,
+            $observaciones,
+            $idSolicitud
+        ]);
+    }
+
+    // Mark request as delivered
+    public function marcarEntregada($idSolicitud, $idUsuario)
+    {
+        $sql = "UPDATE solicitudes_material
+                SET estado = 'Entregada',
+                    fecha_respuesta = NOW(),
+                    id_usuario_aprobador = ?
+                WHERE id_solicitud = ?
+                  AND estado = 'Aprobada'";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$idUsuario, $idSolicitud]);
+    }
+
+    // Get request details (materials)
+    public function getDetalles($idSolicitud)
+    {
+        $sql = "SELECT 
+                    sd.id_detalle,
+                    sd.id_material,
+                    mf.nombre AS material,
+                    sd.cantidad,
+                    mf.unidad_medida,
+                    mf.clasificacion
+                FROM solicitudes_detalle sd
+                INNER JOIN material_formacion mf 
+                    ON mf.id_material = sd.id_material
+                WHERE sd.id_solicitud = ?";
+    
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$idSolicitud]);
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    // Get request with header + details
+    public function getSolicitudCompleta($idSolicitud)
+    {
+        $sql = "SELECT * FROM solicitudes_material WHERE id_solicitud = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$idSolicitud]);
+
+        $solicitud = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$solicitud) {
+            return null;
+        }
+
+        $solicitud['materiales'] = $this->getDetalles($idSolicitud);
+
+        return $solicitud;
+    }
+
+}
