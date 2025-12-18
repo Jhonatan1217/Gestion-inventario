@@ -6,14 +6,20 @@ $programas = [];
 
 try {
     $sql = "SELECT 
-                id_programa, 
-                codigo_programa, 
-                nombre_programa, 
-                nivel_programa, 
-                descripcion_programa, 
-                duracion_horas, 
-                estado 
-            FROM programas_formacion";
+                p.id_programa, 
+                p.codigo_programa, 
+                p.nombre_programa, 
+                p.nivel_programa, 
+                p.descripcion_programa, 
+                p.duracion_horas, 
+                p.estado,
+                COUNT(DISTINCT u.id_usuario) as num_instructores
+            FROM programas_formacion p
+            LEFT JOIN usuarios u ON p.id_programa = u.id_programa 
+                AND u.cargo = 'Instructor'
+                AND u.estado = 1
+            GROUP BY p.id_programa
+            ORDER BY p.nombre_programa";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute();
@@ -24,13 +30,13 @@ try {
     // Map DB fields → HTML expected fields
     foreach ($raw as $r) {
         $programas[] = [
-            'id_programa' => $r['id_programa'],  // Added id_programa
+            'id_programa' => $r['id_programa'],
             'codigo'      => $r['codigo_programa'],
             'nombre'      => $r['nombre_programa'],
             'descripcion' => $r['descripcion_programa'],
             'nivel'       => $r['nivel_programa'],
             'duracion'    => $r['duracion_horas'] . ' horas',
-            'instructores'=> 0,
+            'instructores'=> (int)$r['num_instructores'],
             'estado'      => $r['estado']
         ];
     }
@@ -282,7 +288,7 @@ try {
                                 </div>
                             </td>
                             
-                            <!-- Number of instructors -->
+                            <!-- Number of instructors (contador real) -->
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2 text-sm text-muted-foreground opacity-75">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
@@ -377,12 +383,12 @@ try {
                     <!-- ICONO + TÍTULO + EDIT -->
                     <div class="flex justify-between items-start mb-3 flex-shrink-0">
                         <!-- Info + Icon -->
-                        <div class="flex items-start gap-3 flex-1 min-w-0"> <!-- Cambios aquí -->
+                        <div class="flex items-start gap-3 flex-1 min-w-0">
                             <div class="w-12 h-12 bg-avatar-secondary-39 rounded-md flex items-center justify-center flex-shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap-icon lucide-graduation-cap"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
                             </div>
 
-                            <div class="min-w-0 flex-1"> <!-- Cambios aquí -->
+                            <div class="min-w-0 flex-1">
                                 <h3 class="font-semibold text-foreground js-name truncate" title="<?php echo htmlspecialchars($programa['nombre']); ?>">
                                     <?php echo $programa['nombre']; ?>
                                 </h3>
@@ -443,7 +449,7 @@ try {
 
                     <hr class="border-border mb-3 flex-shrink-0">
                     <!-- Instructors + Toggle -->
-                    <div class="flex items-center justify-between mt-auto flex-shrink-0"> <!-- Cambios aquí -->
+                    <div class="flex items-center justify-between mt-auto flex-shrink-0">
                         <div class="flex items-center gap-2 text-sm text-muted-foreground opacity-75">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
                             <span class="js-instructores truncate max-w-[80px]">
@@ -501,8 +507,9 @@ try {
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
-                            <input id="edit_duracion" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga">
+                            <label class="block text-xs text-muted-foreground mb-1">Duración (horas) *</label>
+                            <input id="edit_duracion" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga" placeholder="Ej: 1200">
+                            <p class="text-xs text-muted-foreground mt-1">Solo números, sin texto</p>
                         </div>
                     </div>
                     <div class="flex items-center justify-end gap-3 mt-4">
@@ -596,8 +603,9 @@ try {
                     </div>
 
                     <div>
-                        <label class="block text-xs text-muted-foreground mb-1">Duración *</label>
-                        <input id="create_duracion" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga" placeholder="X Horas">
+                        <label class="block text-xs text-muted-foreground mb-1">Duración (horas) *</label>
+                        <input id="create_duracion" type="text" class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga" placeholder="Ej: 1200">
+                        <p class="text-xs text-muted-foreground mt-1">Solo números, sin texto</p>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 mt-4">
