@@ -14,6 +14,14 @@ class SolicitudMaterialController {
     // Create request with details
     public function crear($data)
     {
+        // Basic validation (business rule)
+        if (empty($data['materiales']) || !is_array($data['materiales'])) {
+            return [
+                "status" => "error",
+                "message" => "La solicitud debe contener al menos un material."
+            ];
+        }
+
         try {
             $this->model->begin();
 
@@ -38,9 +46,62 @@ class SolicitudMaterialController {
         }
     }
 
+
+    // Approve or reject request
+    public function responder($data)
+    {
+        $ok = $this->model->responderSolicitud(
+            $data['id_solicitud'],
+            $data['estado'],
+            $data['id_usuario_aprobador'],
+            $data['observaciones'] ?? null
+        );
+    
+        if (!$ok) {
+            return [
+                "status" => "error",
+                "message" => "No se pudo responder la solicitud. Verifique su estado."
+            ];
+        }
+    
+        return [
+            "status" => "success",
+            "message" => "La solicitud fue actualizada correctamente."
+        ];
+    }
+
+
+    // Mark request as delivered
+    public function entregar($data)
+    {
+        $ok = $this->model->marcarEntregada(
+            $data['id_solicitud'],
+            $data['id_usuario']
+        );
+    
+        if (!$ok) {
+            return [
+                "status" => "error",
+                "message" => "La solicitud no puede marcarse como entregada."
+            ];
+        }
+    
+        return [
+            "status" => "success",
+            "message" => "La solicitud fue marcada como entregada correctamente."
+        ];
+    }
+
+
+
     public function obtener($id)
     {
         return $this->model->getById($id);
+    }
+
+    public function obtenerCompleta($id)
+    {
+        return $this->model->getSolicitudCompleta($id);
     }
 }
 
@@ -69,11 +130,26 @@ switch ($accion) {
         sendJSON($controller->obtener($_GET['id']));
         break;
 
+    case "responder":
+        $data = json_decode(file_get_contents("php://input"), true);
+        sendJSON($controller->responder($data));
+        break;
+    
+    case "entregar":
+        $data = json_decode(file_get_contents("php://input"), true);
+        sendJSON($controller->entregar($data));
+        break;
+    
+    case "obtenerCompleta":
+        sendJSON($controller->obtenerCompleta($_GET['id']));
+        break;
+
+
     default:
         sendJSON([
             "status" => "error",
             "message" => "Acción no válida."
         ]);
         
-    //borrar
+
 }
