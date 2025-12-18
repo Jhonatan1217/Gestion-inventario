@@ -68,58 +68,50 @@ class RaeModel {
 
     /* UPDATE RAE */
     public function actualizar(
-        int $id,
-        string $codigo_rae,
-        string $nombre_rae,
-        string $descripcion,
-        int $id_ficha,
-        string $fecha_inicio,
-        string $fecha_fin,
-        string $estado
-    ): bool {
-        try {
-            $sql = "UPDATE raes 
-                    SET codigo_rae = :codigo,
-                        nombre_rae = :nombre,
-                        descripcion = :descripcion,
-                        id_ficha = :ficha,
-                        fecha_inicio = :inicio,
-                        fecha_fin = :fin,
-                        estado = :estado
-                    WHERE id_rae = :id";
+    int $id_rae,
+    ?string $codigo_rae,
+    ?int $id_programa,
+    ?string $descripcion_rae,
+    ?string $estado
+): bool {
 
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':codigo', $codigo_rae);
-            $stmt->bindParam(':nombre', $nombre_rae);
-            $stmt->bindParam(':descripcion', $descripcion);
-            $stmt->bindParam(':ficha', $id_ficha, PDO::PARAM_INT);
-            $stmt->bindParam(':inicio', $fecha_inicio);
-            $stmt->bindParam(':fin', $fecha_fin);
-            $stmt->bindParam(':estado', $estado);
+    $campos = [];
+    $params = [];
 
-            return $stmt->execute();
-
-        } catch (PDOException $e) {
-            error_log("Error al actualizar RAE: " . $e->getMessage());
-            return false;
-        }
+    if ($codigo_rae !== null) {
+        $campos[] = "codigo_rae = ?";
+        $params[] = $codigo_rae;
     }
 
-    /* DELETE RAE */
-    public function eliminar(int $id): bool {
-        try {
-            $sql = "DELETE FROM raes WHERE id_rae = :id";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error al eliminar RAE: " . $e->getMessage());
-            return false;
-        }
+    if ($id_programa !== null) {
+        $campos[] = "id_programa = ?";
+        $params[] = $id_programa;
     }
 
-    /* CHANGE STATUS */
+    if ($descripcion_rae !== null) {
+        $campos[] = "descripcion_rae = ?";
+        $params[] = $descripcion_rae;
+    }
+
+    if ($estado !== null) {
+        $campos[] = "estado = ?";
+        $params[] = $estado;
+    }
+
+    if (empty($campos)) {
+        return false;
+    }
+
+    $params[] = $id_rae;
+
+    $sql = "UPDATE raes SET " . implode(", ", $campos) . " WHERE id_rae = ?";
+    $stmt = $this->conn->prepare($sql);
+
+    return $stmt->execute($params);
+}
+
+
+    /* CHANGE RAE STATE (Active/Inactive)*/
     public function cambiarEstado(int $id, string $estado): bool {
         try {
             $sql = "UPDATE raes SET estado = :estado WHERE id_rae = :id";

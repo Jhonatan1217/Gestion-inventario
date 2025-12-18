@@ -33,22 +33,38 @@ class BodegaModel {
     }
 
     /* CREATE NEW BODEGA */
-    public function crear(string $codigo, string $nombre, string $ubicacion): bool {
-        try {
-            $sql = "INSERT INTO bodegas (codigo_bodega, nombre, ubicacion)
-                    VALUES (:codigo, :nombre, :ubicacion)"; // Insert statement
+    public function crear(
+    string $codigo,
+    string $nombre,
+    string $ubicacion,
+    string $clasificacion_bodega
+): bool {
+    try {
+        $sql = "INSERT INTO bodegas (
+                    codigo_bodega,
+                    nombre,
+                    ubicacion,
+                    clasificacion_bodega
+                ) VALUES (
+                    :codigo,
+                    :nombre,
+                    :ubicacion,
+                    :clasificacion
+                )";
 
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':codigo', $codigo);
-            $stmt->bindParam(':nombre', $nombre);
-            $stmt->bindParam(':ubicacion', $ubicacion);
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':codigo', $codigo);
+        $stmt->bindParam(':nombre', $nombre);
+        $stmt->bindParam(':ubicacion', $ubicacion);
+        $stmt->bindParam(':clasificacion', $clasificacion_bodega);
 
-            return $stmt->execute(); // Execute and return true/false
-        } catch (PDOException $e) {
-            error_log("Error crear bodega: " . $e->getMessage());
-            return false;
-        }
+        return $stmt->execute();
+    } catch (PDOException $e) {
+        error_log("Error crear bodega: " . $e->getMessage());
+        return false;
     }
+}
+
 
     /* UPDATE BODEGA */
     public function actualizar(int $id, string $codigo, string $nombre, string $ubicacion, string $estado): bool {

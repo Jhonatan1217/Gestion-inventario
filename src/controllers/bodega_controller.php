@@ -48,26 +48,52 @@ class BodegaController {
     }
 
     /* CREATE BODEGA */
-    public function crear() {
-        $data = $this->getJson();
+public function crear() {
+    $data = $this->getJson();
 
-        if (!$data) {
-            $this->jsonResponse(["error" => "JSON inválido"], 400);
-            return;
-        }
-
-        $ok = $this->model->crear(
-            $data['codigo_bodega'],
-            $data['nombre'],
-            $data['ubicacion']
-        );
-
-        $this->jsonResponse(
-            $ok ? ["mensaje" => "Bodega creada correctamente"]
-                : ["error" => "No se pudo crear"],
-            $ok ? 200 : 500
-        );
+    if (!$data) {
+        $this->jsonResponse(["error" => "JSON inválido"], 400);
+        return;
     }
+
+    // Validación básica de campos obligatorios
+    if (
+        empty($data['codigo_bodega']) ||
+        empty($data['nombre']) ||
+        empty($data['ubicacion']) ||
+        empty($data['clasificacion_bodega'])
+    ) {
+        $this->jsonResponse(
+            ["error" => "Faltan campos obligatorios"],
+            400
+        );
+        return;
+    }
+
+    // Validar ENUM
+    if (!in_array($data['clasificacion_bodega'], ['Insumos', 'Equipos'])) {
+        $this->jsonResponse(
+            ["error" => "Clasificación de bodega inválida"],
+            400
+        );
+        return;
+    }
+
+    $ok = $this->model->crear(
+        $data['codigo_bodega'],
+        $data['nombre'],
+        $data['ubicacion'],
+        $data['clasificacion_bodega']
+    );
+
+    $this->jsonResponse(
+        $ok
+            ? ["mensaje" => "Bodega creada correctamente"]
+            : ["error" => "No se pudo crear la bodega"],
+        $ok ? 200 : 500
+    );
+}
+
 
     /* UPDATE BODEGA */
 public function actualizar() {
