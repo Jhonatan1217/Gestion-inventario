@@ -1,6 +1,11 @@
 <?php
-require_once "../Gestion-inventario/Config/database.php";
-require_once "../models/solicitudes.php";
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . "/../../Config/database.php";
+require_once __DIR__ . "/../models/solicitudes.php";
+
 
 class SolicitudMaterialController {
 
