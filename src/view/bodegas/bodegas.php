@@ -2,6 +2,13 @@
 $collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
 $sidebarWidth = $collapsed ? "70px" : "260px";
 
+include_once BASE_PATH . '/Config/database.php';
+include_once BASE_PATH . '/src/models/bodega.php';
+
+
+$model = new BodegaModel($conn);
+$bodegas = $model->listar();
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -128,7 +135,6 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
               <th class="px-4 py-3 text-left font-semibold">Nombre</th>
               <th class="px-4 py-3 text-left font-semibold">Clasificación</th>
               <th class="px-4 py-3 text-left font-semibold">Ubicación</th>
-              <th class="px-4 py-3 text-left font-semibold">Tipo</th>
               <th class="px-4 py-3 text-left font-semibold">Estado</th>
               <th class="px-4 py-3 text-left font-semibold">Acciones</th>
             </tr>
@@ -136,54 +142,45 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
 
           <tbody class="divide-y divide-gray-200">
             <?php foreach ($bodegas as $b): ?>
-              <?php $activo = $b[5] === "Activo"; ?>
+              <?php $activo = $b['estado'] === "Activo"; ?>
               <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3">#<?= $b[0] ?></td>
+                <td class="px-4 py-3">#<?= $b['id_bodega'] ?></td>
 
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
                       <i data-lucide="warehouse" class="w-4 h-4"></i>
                     </div>
-                    <span class="font-medium text-gray-900"><?= htmlspecialchars($b[1]) ?></span>
+                    <span class="font-medium text-gray-900"><?= htmlspecialchars($b['nombre']) ?></span>
                   </div>
                 </td>
 
                 <td class="px-4 py-3">
                   <span class="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700">
-                    <?= htmlspecialchars($b[2]) ?>
+                    <?= htmlspecialchars($b['clasificacion_bodega']) ?>
                   </span>
-
                 </td>
 
                 <td class="px-4 py-3 text-gray-700">
                   <i data-lucide="map-pin" class="w-4 h-4 inline-block text-gray-500 mr-1"></i>
-                  <?= htmlspecialchars($b[3]) ?>
-                </td>
-
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700">
-                    <?= htmlspecialchars($b[4]) ?>
-                  </span>
+                  <?= htmlspecialchars($b['ubicacion']) ?>
                 </td>
                 
                 <td class="px-4 py-3">
                   <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
                     <?= $activo ? 'badge-estado-activo' : 'badge-estado-inactivo' ?>">
-                    <?= htmlspecialchars($b[5]) ?>
+                    <?= htmlspecialchars($b['estado']) ?>
                   </span>
                 </td>
-
 
                 <td class="px-4 py-3">
                   <button
                     class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
-                    data-id="<?= $b[0] ?>"
-                    data-nombre="<?= htmlspecialchars($b[1]) ?>"
-                    data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
-                    data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
-                    data-tipo="<?= htmlspecialchars($b[4]) ?>"
-                    data-estado="<?= htmlspecialchars($b[5]) ?>"
+                    data-id="<?= $b['id_bodega'] ?>"
+                    data-nombre="<?= htmlspecialchars($b['nombre']) ?>"
+                    data-clasificacion="<?= htmlspecialchars($b['clasificacion_bodega']) ?>"
+                    data-ubicacion="<?= htmlspecialchars($b['ubicacion']) ?>"
+                    data-estado="<?= htmlspecialchars($b['estado']) ?>"
                   >
                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                   </button>
@@ -202,62 +199,48 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
       <?php foreach ($bodegas as $b):
-        $estadoActivo = $b[5] === "Activo";
+        $estadoActivo = $b['estado'] === "Activo";
       ?>
         <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 flex flex-col gap-3 relative">
-
-          <!-- Header -->
           <div class="flex items-start justify-between gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <i data-lucide="warehouse" class="w-5 h-5"></i>
-            </div>
             <div>
-              <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b[1]) ?></h2>
-              <p class="text-xs text-gray-500">ID: <?= $b[0] ?></p>
+              <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b['nombre']) ?></h2>
+              <p class="text-xs text-gray-500">ID: <?= $b['id_bodega'] ?></p>
             </div>
 
             <button
               class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
-              data-id="<?= $b[0] ?>"
-              data-nombre="<?= htmlspecialchars($b[1]) ?>"
-              data-clasificacion="<?= htmlspecialchars($b[2]) ?>"
-              data-ubicacion="<?= htmlspecialchars($b[3]) ?>"
-              data-tipo="<?= htmlspecialchars($b[4]) ?>"
-              data-estado="<?= htmlspecialchars($b[5]) ?>"
+              data-id="<?= $b['id_bodega'] ?>"
+              data-nombre="<?= htmlspecialchars($b['nombre']) ?>"
+              data-clasificacion="<?= htmlspecialchars($b['clasificacion_bodega']) ?>"
+              data-ubicacion="<?= htmlspecialchars($b['ubicacion']) ?>"
+              data-estado="<?= htmlspecialchars($b['estado']) ?>"
             >
               <i data-lucide="more-horizontal" class="w-4 h-4"></i>
             </button>
           </div>
 
-          <!-- Location -->
           <div class="flex items-center gap-2 text-sm text-gray-700">
             <i data-lucide="map-pin" class="w-4 h-4 text-gray-500"></i>
-            <span><?= htmlspecialchars($b[3]) ?></span>
+            <span><?= htmlspecialchars($b['ubicacion']) ?></span>
           </div>
 
-          <!-- Tags -->
           <div class="flex flex-wrap gap-2">
             <span class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-blue-100 text-blue-700">
-              <?= htmlspecialchars($b[2]) ?>
-            </span>
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs bg-gray-100 text-gray-700">
-              <?= htmlspecialchars($b[4]) ?>
+              <?= htmlspecialchars($b['clasificacion_bodega']) ?>
             </span>
           </div>
 
           <hr class="border-gray-200">
 
-          <!-- Footer -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <i data-lucide="package" class="w-4 h-4 text-gray-500"></i>
-              <span><?= $b[6] ?> Materiales</span>
+              <span><?= $b['materiales'] ?> Materiales</span>
             </div>
 
             <div class="flex items-center gap-3">
-              <span
-                class="estado-text text-sm font-medium <?= $estadoActivo ? 'text-emerald-700' : 'text-red-700' ?>"
-              >
+              <span class="estado-text text-sm font-medium <?= $estadoActivo ? 'text-emerald-700' : 'text-red-700' ?>">
                 <?= $estadoActivo ? "Activa" : "Inactiva" ?>
               </span>
 
@@ -265,18 +248,16 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 <input
                   type="checkbox"
                   class="sr-only peer estado-switch"
-                  data-id="<?= $b[0] ?>"
+                  data-id="<?= $b['id_bodega'] ?>"
                   data-estado="<?= $estadoActivo ? 'Activo' : 'Inactivo' ?>"
                   <?= $estadoActivo ? "checked" : "" ?>
                 >
-
                 <div class="w-10 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-600 transition">
                   <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 peer-checked:translate-x-5 transition"></div>
                 </div>
               </label>
             </div>
           </div>
-
         </div>
       <?php endforeach; ?>
 
@@ -577,7 +558,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
           </div>
 
           <div class="grid grid-cols-[120px_auto] gap-3 items-center">
-            <span class="text-gray-600">Tipo:</span>
+            <span class="text-gray-600"></span>
             <span id="detalleTipo" class="detalle-chip">Bodega</span>
           </div>
         </div>
