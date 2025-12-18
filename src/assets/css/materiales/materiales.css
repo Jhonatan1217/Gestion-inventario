@@ -33,6 +33,33 @@
   display: flex;
 }
 
+/* Bordes redondeados para la tabla principal */
+#tableView > div {
+  border-radius: 12px;
+  overflow: visible;
+}
+
+#tableView table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#tableView thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+#tableView thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+#tableView tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+#tableView tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
 /* Estado inicial de los modales */
 #createModal > div,
 #editModal > div,
