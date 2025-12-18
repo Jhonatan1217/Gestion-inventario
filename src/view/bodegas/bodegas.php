@@ -359,13 +359,14 @@ $bodegas = [
     </div>
 
     <!-- FORM -->
-    <form class="space-y-4">
+    <form id="formCrearBodega" class="space-y-4">
       <div class="grid gap-4 sm:grid-cols-2">
 
         <!-- ID -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">ID *</label>
-          <input
+          <input 
+            id="crearCodigo"
             type="text"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
             placeholder="C-1">
@@ -375,6 +376,7 @@ $bodegas = [
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
           <select
+            id="crearTipo"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
             <option>Bodega</option>
             <option>Sub-Bodega</option>
@@ -385,9 +387,10 @@ $bodegas = [
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Clasificación *</label>
           <select
+            id="crearClasificacion"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Insumos</option>
-            <option>Equipos</option>
+            <option value="Insumos">Insumos</option>
+            <option value="Equipos">Equipos</option>
           </select>
         </div>
 
@@ -395,6 +398,7 @@ $bodegas = [
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
           <input
+            id="crearUbicacion"
             type="text"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
             placeholder="Ej: Bloque A, Piso 1">
@@ -405,6 +409,7 @@ $bodegas = [
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Bodega *</label>
         <input
+          id="crearNombre"
           type="text"
           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
           placeholder="Ej: Bodega Principal - Eléctrico">
@@ -420,7 +425,7 @@ $bodegas = [
         </button>
 
         <button
-          type="button"
+          type="submit"
           class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary hover:opacity-90">
           Crear Bodega
         </button>
@@ -481,11 +486,8 @@ $bodegas = [
           <select
             id="editClasificacion"
             class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Eléctrico</option>
-            <option>Construcción</option>
-            <option>Sanitario</option>
-            <option>Herramientas</option>
-            <option>Ejemplo</option>
+            <option value="Insumos">Insumos</option>
+            <option value="Equipos">Equipos</option>
           </select>
         </div>
 
@@ -671,245 +673,5 @@ $bodegas = [
 </div>
 
 </main>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Lucide
-  if (window.lucide && typeof lucide.createIcons === "function") {
-    lucide.createIcons();
-  }
-
-  /* ============================================================
-     ========== CAMBIO LISTA / GRID (TARJETAS) ==========
-  ============================================================ */
-  const btnVistaTabla    = document.getElementById("btnVistaTabla");
-  const btnVistaTarjetas = document.getElementById("btnVistaTarjetas");
-  const viewList         = document.getElementById("view-list");
-  const viewGrid         = document.getElementById("view-grid");
-
-  const setActiveBtn = (active, inactive) => {
-    active.classList.add("bg-muted", "text-foreground");
-    active.classList.remove("text-muted-foreground");
-
-    inactive.classList.remove("bg-muted", "text-foreground");
-    inactive.classList.add("text-muted-foreground");
-  };
-
-  const showList = () => {
-    viewList?.classList.remove("hidden");
-    viewGrid?.classList.add("hidden");
-    if (btnVistaTabla && btnVistaTarjetas) setActiveBtn(btnVistaTabla, btnVistaTarjetas);
-  };
-
-  const showGrid = () => {
-    viewGrid?.classList.remove("hidden");
-    viewList?.classList.add("hidden");
-    if (btnVistaTabla && btnVistaTarjetas) setActiveBtn(btnVistaTarjetas, btnVistaTabla);
-
-    if (window.lucide && typeof lucide.createIcons === "function") {
-      lucide.createIcons();
-    }
-  };
-
-  if (btnVistaTabla && btnVistaTarjetas) {
-    btnVistaTabla.addEventListener("click", showList);
-    btnVistaTarjetas.addEventListener("click", showGrid);
-    showList(); // inicial
-  }
-
-  /* ============================================================
-     ========== MODAL CREAR (NUEVA BODEGA) ==========
-  ============================================================ */
-  const btnNuevaBodega = document.getElementById("btnNuevaBodega");
-  const modalCrear     = document.getElementById("modalCrear");
-  const cerrarModal    = document.getElementById("cerrarModal");
-  const cancelarModal  = document.getElementById("cancelarModal");
-
-  const openModal = (modal) => {
-    if (!modal) return;
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-    document.body.classList.add("overflow-hidden");
-    if (window.lucide && typeof lucide.createIcons === "function") lucide.createIcons();
-  };
-
-  const closeModal = (modal) => {
-    if (!modal) return;
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-    document.body.classList.remove("overflow-hidden");
-  };
-
-  btnNuevaBodega?.addEventListener("click", () => openModal(modalCrear));
-  cerrarModal?.addEventListener("click", () => closeModal(modalCrear));
-  cancelarModal?.addEventListener("click", () => closeModal(modalCrear));
-
-  // Cerrar modal crear clic fuera
-  modalCrear?.addEventListener("click", (e) => {
-    if (e.target === modalCrear) closeModal(modalCrear);
-  });
-
-  /* ============================================================
-     ========== MENÚ CONTEXTUAL (3 PUNTOS) ==========
-  ============================================================ */
-  const contextMenu  = document.getElementById("context-menu");
-  const modalDetalle = document.getElementById("modalDetalle");
-  const modalEditar  = document.getElementById("modalEditar");
-
-  let selectedData = null;
-
-  function openContextMenu(btn) {
-    if (!contextMenu) return;
-
-    selectedData = {
-      id: btn.dataset.id,
-      nombre: btn.dataset.nombre,
-      clasificacion: btn.dataset.clasificacion,
-      ubicacion: btn.dataset.ubicacion,
-      tipo: btn.dataset.tipo,
-      estado: btn.dataset.estado
-    };
-
-    const r = btn.getBoundingClientRect();
-    const menuWidth = 208; // w-52
-    const x = r.right + window.scrollX - menuWidth;
-    const y = r.bottom + window.scrollY + 8;
-
-    contextMenu.style.left = `${Math.max(8, x)}px`;
-    contextMenu.style.top  = `${y}px`;
-    contextMenu.classList.remove("hidden");
-
-    if (window.lucide && typeof lucide.createIcons === "function") {
-      lucide.createIcons();
-    }
-  }
-
-  function closeContextMenu() {
-    contextMenu?.classList.add("hidden");
-  }
-
-  // Delegación para lista y grid
-  document.addEventListener("click", (e) => {
-    const btnDots = e.target.closest(".bodegas-btn-dots");
-    if (btnDots) {
-      e.preventDefault();
-      e.stopPropagation();
-      openContextMenu(btnDots);
-      return;
-    }
-
-    if (contextMenu && !contextMenu.contains(e.target)) {
-      closeContextMenu();
-    }
-  });
-
-  /* ============================================================
-     ========== ACCIONES DEL MENÚ ==========
-  ============================================================ */
-  if (contextMenu) {
-    const btnVer  = contextMenu.querySelector("[data-action='ver']");
-    const btnEdit = contextMenu.querySelector("[data-action='editar']");
-    const btnOff  = contextMenu.querySelector("[data-action='deshabilitar']");
-
-    btnVer?.addEventListener("click", () => {
-      if (!selectedData || !modalDetalle) return;
-
-      document.getElementById("detalleId").textContent = selectedData.id;
-      document.getElementById("detalleNombre").textContent = selectedData.nombre;
-      document.getElementById("detalleClasificacion").textContent = selectedData.clasificacion;
-      document.getElementById("detalleTipo").textContent = selectedData.tipo;
-      document.getElementById("detalleUbicacion").textContent = selectedData.ubicacion;
-
-      const est = document.getElementById("detalleEstado");
-      est.textContent = selectedData.estado;
-      est.className =
-        "inline-flex items-center rounded-full px-3 py-1 text-xs " +
-        (selectedData.estado === "Activo"
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-red-100 text-red-700");
-
-      openModal(modalDetalle);
-      closeContextMenu();
-    });
-
-    btnEdit?.addEventListener("click", () => {
-      if (!selectedData || !modalEditar) return;
-
-      document.getElementById("editId").value = selectedData.id;
-      document.getElementById("editNombre").value = selectedData.nombre;
-      document.getElementById("editClasificacion").value = selectedData.clasificacion;
-      document.getElementById("editUbicacion").value = selectedData.ubicacion;
-      document.getElementById("editTipo").value = selectedData.tipo;
-
-      openModal(modalEditar);
-      closeContextMenu();
-    });
-
-    btnOff?.addEventListener("click", () => {
-      if (!selectedData) return;
-      alert(`Bodega #${selectedData.id} deshabilitada`);
-      closeContextMenu();
-    });
-  }
-
-  /* ============================================================
-     ========== CERRAR MODALES DETALLE / EDITAR ==========
-  ============================================================ */
-  document.getElementById("cerrarDetalle")?.addEventListener("click", () => closeModal(modalDetalle));
-  document.getElementById("cerrarEditar")?.addEventListener("click", () => closeModal(modalEditar));
-  document.getElementById("cancelarEditar")?.addEventListener("click", () => closeModal(modalEditar));
-
-  modalDetalle?.addEventListener("click", (e) => {
-    if (e.target === modalDetalle) closeModal(modalDetalle);
-  });
-  modalEditar?.addEventListener("click", (e) => {
-    if (e.target === modalEditar) closeModal(modalEditar);
-  });
-
-  /* ============================================================
-     ========== SWITCH ACTIVA / INACTIVA (GRID) ==========
-  ============================================================ */
-  document.addEventListener("change", (e) => {
-    const sw = e.target.closest(".estado-switch");
-    if (!sw) return;
-
-    const card = sw.closest(".bg-white.border.border-gray-200"); // la card actual
-    if (!card) return;
-
-    const estadoNuevo = sw.checked ? "Activo" : "Inactivo";
-    const textoNuevo  = sw.checked ? "Activa" : "Inactiva";
-
-    const estadoText = card.querySelector(".estado-text");
-    if (estadoText) {
-      estadoText.textContent = textoNuevo;
-      estadoText.classList.toggle("text-emerald-700", sw.checked);
-      estadoText.classList.toggle("text-red-700", !sw.checked);
-    }
-
-    // Guardar estado
-    sw.dataset.estado = estadoNuevo;
-
-    // Actualizar data-estado del botón de 3 puntos para que el modal salga bien
-    const dotsBtn = card.querySelector(".bodegas-btn-dots");
-    if (dotsBtn) {
-      dotsBtn.dataset.estado = estadoNuevo;
-    }
-  });
-
-  /* ============================================================
-     ========== ESC PARA CERRAR ==========
-  ============================================================ */
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeModal(modalCrear);
-      closeModal(modalDetalle);
-      closeModal(modalEditar);
-      closeContextMenu();
-    }
-  });
-});
-</script>
-
-
 </body>
 </html>
