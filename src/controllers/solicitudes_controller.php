@@ -1,6 +1,7 @@
 <?php
 
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . "/../../Config/database.php";
@@ -22,8 +23,8 @@ class SolicitudMaterialController {
         // Basic validation (business rule)
         if (empty($data['materiales']) || !is_array($data['materiales'])) {
             return [
-                "status" => "error",
-                "message" => "La solicitud debe contener al menos un material."
+                "success" => false,
+                "error" => "La solicitud debe contener al menos un material."
             ];
         }
 
@@ -36,7 +37,7 @@ class SolicitudMaterialController {
             $this->model->commit();
 
             return [
-                "status" => "success",
+                "success" => true,
                 "message" => "Solicitud creada correctamente.",
                 "id_solicitud" => $idSolicitud
             ];
@@ -45,12 +46,11 @@ class SolicitudMaterialController {
             $this->model->rollback();
 
             return [
-                "status" => "error",
-                "message" => "Error al crear la solicitud."
+                "success" => false,
+                "error" => "Error al crear la solicitud: " . $e->getMessage()
             ];
         }
     }
-
 
     // Approve or reject request
     public function responder($data)
@@ -64,17 +64,16 @@ class SolicitudMaterialController {
     
         if (!$ok) {
             return [
-                "status" => "error",
-                "message" => "No se pudo responder la solicitud. Verifique su estado."
+                "success" => false,
+                "error" => "No se pudo responder la solicitud. Verifique su estado."
             ];
         }
     
         return [
-            "status" => "success",
+            "success" => true,
             "message" => "La solicitud fue actualizada correctamente."
         ];
     }
-
 
     // Mark request as delivered
     public function entregar($data)
@@ -86,18 +85,16 @@ class SolicitudMaterialController {
     
         if (!$ok) {
             return [
-                "status" => "error",
-                "message" => "La solicitud no puede marcarse como entregada."
+                "success" => false,
+                "error" => "La solicitud no puede marcarse como entregada."
             ];
         }
     
         return [
-            "status" => "success",
+            "success" => true,
             "message" => "La solicitud fue marcada como entregada correctamente."
         ];
     }
-
-
 
     public function obtener($id)
     {
@@ -115,11 +112,30 @@ class SolicitudMaterialController {
         return $this->model->getAll();
     }
 
+    // ============================================
+    // NUEVAS FUNCIONES PARA LOS SELECTORES
+    // ============================================
+    
+    public function obtenerProgramas()
+    {
+        return $this->model->getProgramas();
+    }
 
+    public function obtenerRaes($programaId)
+    {
+        return $this->model->getRaesPorPrograma($programaId);
+    }
 
+    public function obtenerFichas($programaId)
+    {
+        return $this->model->getFichasPorPrograma($programaId);
+    }
 
+    public function obtenerMateriales()
+    {
+        return $this->model->getMateriales();
+    }
 }
-
 
 /* ACTION HANDLER */
 
@@ -163,11 +179,32 @@ switch ($accion) {
         sendJSON($controller->listar());
         break;
 
+    // ============================================
+    // NUEVOS CASOS PARA LOS SELECTORES
+    // ============================================
+    
+    case "programas":
+        sendJSON($controller->obtenerProgramas());
+        break;
+
+    case "raes":
+        $programaId = isset($_GET['programa']) ? (int) $_GET['programa'] : 0;
+        sendJSON($controller->obtenerRaes($programaId));
+    break;
+
+
+    case "fichas":
+        $programaId = $_GET['programa'] ?? 0;
+        sendJSON($controller->obtenerFichas($programaId));
+        break;
+
+    case "materiales":
+        sendJSON($controller->obtenerMateriales());
+        break;
+
     default:
         sendJSON([
-            "status" => "error",
-            "message" => "Acción no válida."
+            "success" => false,
+            "error" => "Acción no válida."
         ]);
-        
-
 }
