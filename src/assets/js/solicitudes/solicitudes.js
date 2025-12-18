@@ -146,6 +146,28 @@ let solicitudes = [
     ],
     observaciones: "Para mi casita XD",
   },
+  {
+  id: 11,
+  fecha: "2023-10-10",
+  instructor: "Carlos Gómez",
+  ficha: "1234567",
+  estado: "entregada",
+  materiales: [
+    { nombre: "Guantes", cantidad: 20 }
+  ],
+  observaciones: "Entrega completa",
+},
+{
+  id: 12,
+  fecha: "2023-10-12",
+  instructor: "Ana Ruiz",
+  ficha: "7654321",
+  estado: "entregada",
+  materiales: [
+    { nombre: "Cascos", cantidad: 5 }
+  ],
+  observaciones: "Entrega parcial",
+},
 ];
 
 let filtroActivo = "todas";
@@ -207,13 +229,14 @@ function renderSolicitudes() {
 
   listaPaginada.forEach((sol) => {
     const card = document.createElement("div");
-    card.className = "sol-card";
+    card.className = `sol-card ${sol.estado}`;
 
     card.innerHTML = `
       <div class="sol-card-header">
         <div class="sol-card-title-wrap">
           <div class="sol-card-icon ${sol.estado}">
-            <i data-lucide="${iconoEstado(sol.estado)}"></i>
+            <i data-lucide="${sol.estado === "entregada" ? "package-check" : iconoEstado(sol.estado)}"></i>
+
           </div>
           <div>
             <div class="sol-card-title">Solicitud #${sol.id}</div>
@@ -263,7 +286,20 @@ function renderSolicitudes() {
       `
           : ""
       }
+      ${
+        sol.estado === "aprobada"
+          ? `
+        <div class="sol-card-a  ctions">
+          <button class="sol-btn-entregar" onclick="entregarSolicitud(${sol.id})">
+            <i data-lucide="package-check"></i>
+            Marcar como entregada
+          </button>
+        </div>
+      `
+          : ""
+      }
     `;
+    
 
     contenedorCards.appendChild(card);
   });
@@ -305,6 +341,19 @@ function rechazarSolicitud(id) {
   renderSolicitudes();
 }
 
+function entregarSolicitud(id) {
+  const sol = solicitudes.find((s) => s.id === id);
+  if (!sol) return;
+
+  // Solo permitir desde aprobada
+  if (sol.estado !== "aprobada") return;
+
+  sol.estado = "entregada";
+  currentPage = 1; // reset paginación
+  renderSolicitudes();
+}
+
+window.entregarSolicitud = entregarSolicitud;
 window.aprobarSolicitud = aprobarSolicitud;
 window.rechazarSolicitud = rechazarSolicitud;
 
@@ -451,3 +500,4 @@ if (btnGuardar && modal) {
 //  INIT
 // ============================================================
 renderSolicitudes();
+
