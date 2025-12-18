@@ -9,9 +9,58 @@ class ObraModel {
         $this->conn = $conn;
     }
 
-    /* LISTAR */
+    /* LISTAR CON JOINS */
     public function listar() {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT 
+                    af.*,
+                    f.numero_ficha,
+                    r.descripcion_rae,
+                    u.nombre_completo as nombre_instructor
+                FROM {$this->table} af
+                LEFT JOIN fichas f ON af.id_ficha = f.id_ficha
+                LEFT JOIN raes r ON af.id_rae = r.id_rae
+                LEFT JOIN usuarios u ON af.id_instructor = u.id_usuario
+                ORDER BY af.fecha_inicio DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /* OBTENER FICHAS ACTIVAS */
+    public function obtenerFichasActivas() {
+        $sql = "SELECT id_ficha, numero_ficha 
+                FROM fichas 
+                WHERE estado = 'Activa' 
+                ORDER BY numero_ficha";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /* OBTENER RAES ACTIVOS */
+    public function obtenerRaesActivos() {
+        $sql = "SELECT id_rae, descripcion_rae 
+                FROM raes 
+                WHERE estado = 'Activo' 
+                ORDER BY descripcion_rae";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /* OBTENER INSTRUCTORES ACTIVOS */
+    public function obtenerInstructoresActivos() {
+        $sql = "SELECT id_usuario, nombre_completo
+                FROM usuarios 
+                WHERE cargo = 'instructor' AND estado = 'Activo' 
+                ORDER BY nombre_completo";
+        
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
 
@@ -20,7 +69,17 @@ class ObraModel {
 
     /* OBTENER POR ID */
     public function obtener($id) {
-        $sql = "SELECT * FROM {$this->table} WHERE id_actividad = ?";
+        $sql = "SELECT 
+                    af.*,
+                    f.numero_ficha,
+                    r.descripcion_rae,
+                    u.nombre_completo as nombre_instructor
+                FROM {$this->table} af
+                LEFT JOIN fichas f ON af.id_ficha = f.id_ficha
+                LEFT JOIN raes r ON af.id_rae = r.id_rae
+                LEFT JOIN usuarios u ON af.id_instructor = u.id_usuario
+                WHERE af.id_actividad = ?";
+        
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
 

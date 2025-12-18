@@ -1,68 +1,3 @@
-<?php
-// Datos ficticios de obras
-$obrasData = [
-    [
-        'id' => 1,
-        'ficha' => '2567892',
-        'rae' => 'Realizar instalaciones eléctricas residenciales básicas',
-        'instructor' => 'Ana Lucía Vargas Peña',
-        'nombre_actividad' => 'Instalación de circuitos eléctricos',
-        'descripcion' => 'Proyecto de instalación completa de circuitos eléctricos residenciales incluyendo tablero de distribución, iluminación y tomas.',
-        'tipo_trabajo' => 'Individual',
-        'fecha_inicio' => '2024-11-19',
-        'fecha_fin' => '2024-12-09',
-        'estado' => 1
-    ],
-    [
-        'id' => 2,
-        'ficha' => '2567891',
-        'rae' => 'Preparar mezclas de concreto según especificaciones técnicas',
-        'instructor' => 'Juan Pablo Hernández Castro',
-        'nombre_actividad' => 'Planificación de obra residencial',
-        'descripcion' => 'Desarrollo de cronograma, presupuesto y planificación completa de una obra residencial de dos pisos con aplicación de software de gestión.',
-        'tipo_trabajo' => 'Grupal',
-        'fecha_inicio' => '2024-10-14',
-        'fecha_fin' => '2024-11-29',
-        'estado' => 0
-    ],
-    [
-        'id' => 3,
-        'ficha' => '2567890',
-        'rae' => 'Preparar mezclas de concreto según especificaciones técnicas',
-        'instructor' => 'Juan Pablo Hernández Castro',
-        'nombre_actividad' => 'Fundición de losas de concreto',
-        'descripcion' => 'Práctica de fundición de losas aligeradas y macizas utilizando diferentes proporciones de mezcla y técnicas de vibrado.',
-        'tipo_trabajo' => 'Grupal',
-        'fecha_inicio' => '2024-11-30',
-        'fecha_fin' => '2024-12-19',
-        'estado' => 1
-    ],
-    [
-        'id' => 4,
-        'ficha' => '2567890',
-        'rae' => 'Construir muros de contención según especificaciones técnicas',
-        'instructor' => 'Juan Pablo Hernández Castro',
-        'nombre_actividad' => 'Construcción de muros de contención',
-        'descripcion' => 'Actividad práctica para construir muros de contención de concreto aplicando técnicas de cimentación y mezcla de materiales según normativa vigente.',
-        'tipo_trabajo' => 'Grupal',
-        'fecha_inicio' => '2024-11-24',
-        'fecha_fin' => '2024-12-14',
-        'estado' => 1
-    ],
-    [
-        'id' => 5,
-        'ficha' => '2567889',
-        'rae' => 'Instalar sistemas de tuberías para agua potable',
-        'instructor' => 'Carlos Mendoza López',
-        'nombre_actividad' => 'Instalación de sistemas hidráulicos',
-        'descripcion' => 'Proyecto completo de instalación de sistemas de tuberías para agua potable y aguas residuales en vivienda unifamiliar.',
-        'tipo_trabajo' => 'Individual',
-        'fecha_inicio' => '2024-12-01',
-        'fecha_fin' => '2024-12-20',
-        'estado' => 1
-    ]
-];
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -92,6 +27,9 @@ $obrasData = [
                         <p class="text-3xl font-bold text-gray-900" id="totalObras">0</p>
                         <p class="text-xs text-gray-500 mt-1">Registradas en el sistema</p>
                     </div>
+                    <div class="p-3 rounded-2xl bg-[#007832]/30 inline-flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-construction-icon lucide-construction"><rect x="2" y="6" width="20" height="8" rx="1"/><path d="M17 14v7"/><path d="M7 14v7"/><path d="M17 3v3"/><path d="M7 3v3"/><path d="M10 14 2.3 6.3"/><path d="m14 6 7.7 7.7"/><path d="m8 6 8 8"/></svg>
+                    </div>
                 </div>
             </div>
 
@@ -103,6 +41,9 @@ $obrasData = [
                         <p class="text-3xl font-bold text-gray-900" id="obrasActivas">0</p>
                         <p class="text-xs text-gray-500 mt-1">En ejecución actualmente</p>
                     </div>
+                    <div class="p-3 rounded-2xl bg-[#007832]/30 inline-flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor-check-icon lucide-monitor-check"><path d="m9 10 2 2 4-4"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>
+                    </div>
                 </div>
             </div>
 
@@ -113,6 +54,9 @@ $obrasData = [
                         <p class="text-sm text-gray-600 mb-1">Obras Finalizadas</p>
                         <p class="text-3xl font-bold text-gray-900" id="obrasFinalizadas">0</p>
                         <p class="text-xs text-gray-500 mt-1">Completadas o inactivas</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-[#007832]/30 inline-flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark-check-icon lucide-bookmark-check"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 10 2 2 4-4"/></svg>
                     </div>
                 </div>
             </div>
@@ -149,7 +93,11 @@ $obrasData = [
 
             <!-- Contenedor de obras -->
             <div id="obrasContainer" class="p-6">
-                <!-- Las obras se cargarán aquí dinámicamente -->
+                <!-- Loading -->
+                <div class="text-center py-12" id="loading">
+                    <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-500">Cargando obras...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -177,11 +125,7 @@ $obrasData = [
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
                         required
                     >
-                        <option value="" disabled selected class="text-gray-500">Selecciona una Ficha</option>
-                        <option value="2567892">2567892</option>
-                        <option value="2567891">2567891</option>
-                        <option value="2567890">2567890</option>
-                        <option value="2567889">2567889</option>
+                        <option value="" disabled selected class="text-gray-500">Cargando fichas...</option>
                     </select>
                 </div>
 
@@ -194,11 +138,7 @@ $obrasData = [
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
                         required
                     >
-                        <option value="">Selecciona un RAE</option>
-                        <option value="Realizar instalaciones eléctricas residenciales básicas">Realizar instalaciones eléctricas residenciales básicas</option>
-                        <option value="Preparar mezclas de concreto según especificaciones técnicas">Preparar mezclas de concreto según especificaciones técnicas</option>
-                        <option value="Construir muros de contención según especificaciones técnicas">Construir muros de contención según especificaciones técnicas</option>
-                        <option value="Instalar sistemas de tuberías para agua potable">Instalar sistemas de tuberías para agua potable</option>
+                        <option value="" disabled selected class="text-gray-500">Cargando RAEs...</option>
                     </select>
                 </div>
 
@@ -211,10 +151,7 @@ $obrasData = [
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga"
                         required
                     >
-                        <option value="">Selecciona un instructor</option>
-                        <option value="Juan Pablo Hernández Castro">Juan Pablo Hernández Castro</option>
-                        <option value="Ana Lucía Vargas Peña">Ana Lucía Vargas Peña</option>
-                        <option value="Carlos Mendoza López">Carlos Mendoza López</option>
+                        <option value="" disabled selected class="text-gray-500">Cargando instructores...</option>
                     </select>
                 </div>
 
@@ -294,8 +231,12 @@ $obrasData = [
                     <button 
                         type="submit"
                         class="inline-flex items-center justify-center rounded-md bg-secondary px-10 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
+                        id="btnCreate"
                     >
-                        Crear Obra
+                        <span id="btnCreateText">Crear Obra</span>
+                        <span id="btnCreateLoading" class="hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
                     </button>
                 </div>
             </form>
@@ -318,18 +259,21 @@ $obrasData = [
             <form id="formEdit" class="p-6 pt-0 space-y-4" onsubmit="handleEditObra(event)">
                 <input type="hidden" id="edit_id">
                 
+                <!-- FICHA COMO SELECT -->
                 <div>
                     <label class="block text-xs text-muted-foreground mb-1">
                         Ficha *
                     </label>
-                    <input 
-                        type="text" 
+                    <select 
                         id="edit_ficha"
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         required
                     >
+                        <option value="" disabled selected class="text-gray-500">Cargando fichas...</option>
+                    </select>
                 </div>
 
+                <!-- RAE COMO SELECT DINÁMICO -->
                 <div>
                     <label class="block text-xs text-muted-foreground mb-1">
                         RAE *
@@ -339,14 +283,11 @@ $obrasData = [
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         required
                     >
-                        <option value="">Selecciona un RAE</option>
-                        <option value="Realizar instalaciones eléctricas residenciales básicas">Realizar instalaciones eléctricas residenciales básicas</option>
-                        <option value="Preparar mezclas de concreto según especificaciones técnicas">Preparar mezclas de concreto según especificaciones técnicas</option>
-                        <option value="Construir muros de contención según especificaciones técnicas">Construir muros de contención según especificaciones técnicas</option>
-                        <option value="Instalar sistemas de tuberías para agua potable">Instalar sistemas de tuberías para agua potable</option>
+                        <option value="" disabled selected class="text-gray-500">Cargando RAEs...</option>
                     </select>
                 </div>
 
+                <!-- INSTRUCTOR COMO SELECT DINÁMICO -->
                 <div>
                     <label class="block text-xs text-muted-foreground mb-1">
                         Instructor *
@@ -356,13 +297,11 @@ $obrasData = [
                         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm input-siga focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         required
                     >
-                        <option value="">Selecciona un instructor</option>
-                        <option value="Juan Pablo Hernández Castro">Juan Pablo Hernández Castro</option>
-                        <option value="Ana Lucía Vargas Peña">Ana Lucía Vargas Peña</option>
-                        <option value="Carlos Mendoza López">Carlos Mendoza López</option>
+                        <option value="" disabled selected class="text-gray-500">Cargando instructores...</option>
                     </select>
                 </div>
 
+                <!-- LOS DEMÁS CAMPOS PERMANECEN IGUAL -->
                 <div>
                     <label class="block text-xs text-muted-foreground mb-1">
                         Nombre de la Actividad *
@@ -450,52 +389,52 @@ $obrasData = [
     <!-- Modal Detalles -->
     <div id="modalDetails" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900">Detalles de la Obra</h3>
+            <div class="flex items-center justify-between p-6 pb-0">
+                <h3 class="text-2xl font-bold tracking-tight">Detalles de la Obra</h3>
                 <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <div class="p-6 space-y-4">
+            <div class="p-6 pt-0 space-y-4">
                 <div>
                     <h4 class="text-lg font-semibold text-gray-900 mb-2" id="details_nombre"></h4>
                     <span id="details_badge_tipo" class="inline-block px-3 py-1 bg-secondary text-white text-xs font-semibold rounded-full"></span>
                 </div>
 
                 <div>
-                    <p class="text-sm font-medium text-gray-700 mb-1">Descripción</p>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Descripción :</p>
                     <p class="text-sm text-gray-600" id="details_descripcion"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 pt-2">
                     <div>
-                        <p class="text-sm font-medium text-gray-700 mb-1">Ficha</p>
+                        <p class="text-sm font-medium text-gray-700 mb-1">Ficha :</p>
                         <p class="text-sm text-gray-900" id="details_ficha"></p>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-700 mb-1">Tipo de Trabajo</p>
+                        <p class="text-sm font-medium text-gray-700 mb-1">Tipo de Trabajo :</p>
                         <span id="details_tipo" class="inline-block px-2 py-1 bg-secondary text-white text-xs font-semibold rounded-full"></span>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-sm font-medium text-gray-700 mb-1">Instructor</p>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Instructor :</p>
                     <p class="text-sm text-gray-900" id="details_instructor"></p>
                 </div>
 
                 <div>
-                    <p class="text-sm font-medium text-gray-700 mb-1">RAE</p>
+                    <p class="text-sm font-medium text-gray-700 mb-1">RAE :</p>
                     <p class="text-sm text-gray-900" id="details_rae"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 pt-2">
                     <div>
-                        <p class="text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</p>
+                        <p class="text-sm font-medium text-gray-700 mb-1">Fecha de Inicio :</p>
                         <p class="text-sm text-gray-900" id="details_fecha_inicio"></p>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-700 mb-1">Fecha de Fin</p>
+                        <p class="text-sm font-medium text-gray-700 mb-1">Fecha de Fin :</p>
                         <p class="text-sm text-gray-900" id="details_fecha_fin"></p>
                     </div>
                 </div>
@@ -511,10 +450,10 @@ $obrasData = [
             </div>
         </div>
     </div>
-    <script>
-        // Pasar datos de PHP a JavaScript
-        window.obrasData = <?php echo json_encode($obrasData); ?>;
-    </script>
+    <!-- ========================================= -->
+    <!-- ALERT CONTAINER (FLOWBITE-LIKE TOASTS)    -->
+    <!-- ========================================= -->
+    <div id="flowbite-alert-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 w-full max-w-md"></div>
     <script src="<?= ASSETS_URL ?>js/obras/obras.js"></script>
 </body>
 </html>
