@@ -26,6 +26,44 @@ function getMaterialImageUrl(foto) {
   return `${getMaterialesBaseUrl()}/src/uploads/materiales/${foto}`
 }
 
+function parsePriceValue(raw) {
+  if (raw === undefined || raw === null) return ""
+  const cleaned = raw.toString().replace(/[^0-9,.-]/g, "").replace(/\./g, "").replace(/,/g, ".")
+  const num = Number.parseFloat(cleaned)
+  return Number.isFinite(num) ? num : ""
+}
+
+function formatCOPValue(value) {
+  const num = parsePriceValue(value)
+  if (num === "") return ""
+  return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(num)
+}
+
+function attachCurrencyMask(inputId) {
+  const input = document.getElementById(inputId)
+  if (!input) return
+
+  input.inputMode = "decimal"
+  input.placeholder = "$ 0"
+
+  input.addEventListener("focus", () => {
+    const raw = input.dataset.rawPrice ?? ""
+    input.value = raw
+    if (raw) input.setSelectionRange(raw.length, raw.length)
+  })
+
+  input.addEventListener("blur", () => {
+    const num = parsePriceValue(input.value)
+    if (num === "") {
+      input.dataset.rawPrice = ""
+      input.value = ""
+      return
+    }
+    input.dataset.rawPrice = num.toString()
+    input.value = formatCOPValue(num)
+  })
+}
+
 /* =========================
    API Functions
    ========================= */
@@ -232,6 +270,12 @@ function validateMaterialPayload(data, { isEdit = false, id = null } = {}) {
   if (!data.unidad_medida) {
     showAlert("Seleccione la unidad de medida", "error")
     document.getElementById(isEdit ? "editUnidad" : "unidad")?.focus()
+    return false
+  }
+
+  if (data.precio === "" || data.precio === null || data.precio === undefined || Number.isNaN(Number(data.precio))) {
+    showAlert("Ingrese un precio válido", "error")
+    document.getElementById(isEdit ? "editPrecio" : "precio")?.focus()
     return false
   }
 
@@ -637,6 +681,8 @@ function closeCreateModal() {
   document.getElementById("codigo").value = ""
   document.getElementById("unidad").value = ""
   document.getElementById("precio").value = ""
+  const precioInput = document.getElementById("precio")
+  if (precioInput) precioInput.dataset.rawPrice = ""
   document.getElementById("imagen").value = ""
   document.getElementById("codigoContainer").style.display = "none"
   
@@ -694,6 +740,10 @@ function openDetailsModal(id) {
         <span class="col-span-2">${material.unit}</span>
       </div>
       <div class="grid grid-cols-3 gap-2">
+        <span class="text-muted-foreground">Precio:</span>
+        <span class="col-span-2 font-medium">${material.precio ? formatCOPValue(material.precio) : "Sin precio"}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
         <span class="text-muted-foreground">Estado:</span>
         <div class="col-span-2">
           <span class="badge-estado-base ${estadoBadgeClass}">
@@ -725,7 +775,10 @@ function openEditModal(id) {
   document.getElementById("editCodigo").value = material.codigo || ""
   document.getElementById("editUnidad").value = material.unit
   const editPrecioInput = document.getElementById("editPrecio")
-  if (editPrecioInput) editPrecioInput.value = material.precio ?? ""
+  if (editPrecioInput) {
+    editPrecioInput.dataset.rawPrice = material.precio ?? ""
+    editPrecioInput.value = material.precio ? formatCOPValue(material.precio) : ""
+  }
 
   // Resetear input y pintar vista previa con la foto actual si existe
   const editImagenInput = document.getElementById("editImagen")
@@ -755,6 +808,11 @@ function closeEditModal() {
   if (editPreviewImagen) {
     editPreviewImagen.src = ""
     editPreviewImagen.classList.add("hidden")
+  }
+  const editPrecioInput = document.getElementById("editPrecio")
+  if (editPrecioInput) {
+    editPrecioInput.value = ""
+    editPrecioInput.dataset.rawPrice = ""
   }
 }
 
@@ -798,7 +856,7 @@ async function createMaterial() {
     clasificacion: document.getElementById("clasificacion").value,
     codigo_inventario: document.getElementById("codigo").value.trim() || null,
     unidad_medida: document.getElementById("unidad").value,
-    precio: document.getElementById("precio").value,
+    precio: parsePriceValue(document.getElementById("precio")?.dataset.rawPrice ?? document.getElementById("precio")?.value),
   }
 
   if (!validateMaterialPayload(materialData)) return
@@ -837,7 +895,7 @@ async function updateMaterial() {
     clasificacion: document.getElementById("editClasificacion").value,
     codigo_inventario: document.getElementById("editCodigo").value.trim() || null,
     unidad_medida: document.getElementById("editUnidad").value,
-    precio: document.getElementById("editPrecio")?.value,
+    precio: parsePriceValue(document.getElementById("editPrecio")?.dataset.rawPrice ?? document.getElementById("editPrecio")?.value),
     estado: materialsData.find((m) => m.id === id)?.enabled ? "Disponible" : "Agotado",
   }
 
@@ -848,13 +906,15 @@ async function updateMaterial() {
   const original = materialsData.find((m) => m.id === id)
   if (original) {
     const norm = (v) => (v ?? "").toString().trim()
+    const samePrecio = Number(parsePriceValue(original.precio)) === Number(parsePriceValue(materialData.precio))
+
     const noChanges =
       norm(original.name) === norm(materialData.nombre) &&
       norm(original.description) === norm(materialData.descripcion) &&
       norm(original.clasificacion) === norm(materialData.clasificacion) &&
       norm(original.codigo) === norm(materialData.codigo_inventario) &&
       norm(original.unit) === norm(materialData.unidad_medida) &&
-      norm(original.precio) === norm(materialData.precio) &&
+      samePrecio &&
       !hasNewPhoto
 
     if (noChanges) {
@@ -1023,6 +1083,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 function setupEventListeners() {
   document.getElementById("inputBuscar")?.addEventListener("input", applyFilters)
   document.getElementById("selectFiltroRol")?.addEventListener("change", applyFilters)
+
+  attachCurrencyMask("precio")
+  attachCurrencyMask("editPrecio")
   
   // Vista previa de imagen en el modal de crear
   const imagenInput = document.getElementById("imagen")

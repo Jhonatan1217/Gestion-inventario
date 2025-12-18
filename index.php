@@ -1,3 +1,4 @@
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -5,11 +6,7 @@ define('ACCESO_PERMITIDO', true);
 
 session_start();
 
-// =============================
-// CONFIGURACIÓN BASE
-// =============================
-
-// Ruta base del proyecto (carpeta GESTION_INVENTARIO / Gestion-inventario)
+// Ruta base del proyecto
 define('BASE_PATH', __DIR__);
 
 // Base URL dinámica
@@ -17,6 +14,7 @@ $protocol   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'http
 $host       = $_SERVER['HTTP_HOST'];
 $script_dir = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
 define('BASE_URL', $protocol . $host . $script_dir);
+
 
 // URL base para los assets
 define('ASSETS_URL', BASE_URL . "src/assets/");
@@ -29,19 +27,13 @@ $SESSION_USER_KEY = 'usuario_id';  // si en tu login usaste 'id_usuario', cambia
 // LÓGICA DE PÁGINA ACTUAL
 // =============================
 
+// Página solicitada (por defecto 'landing')
 $page = $_GET['page'] ?? 'landing';
 $page = basename($page); // sanitizar
 
-// Si el usuario YA está logueado y pide la landing,
-// lo mandamos al dashboard (o la página que quieras como inicio logueado)
-if (isset($_SESSION[$SESSION_USER_KEY]) && $page === 'landing') {
-    header('Location: ' . BASE_URL . 'index.php?page=dashboard');
-    exit;
-}
-
-// 1) LANDING PÚBLICA (sin header/sidebar)
+// 1) Si es la LANDING → mostrar solo landing.php sin header/sidebar/footer
 if ($page === 'landing') {
-    $landingFile = BASE_PATH . "/src/view/landing.php";
+    $landingFile = BASE_PATH . "/src/view/landing.php"; // ajusta ruta si tu vista está en otro lado
 
     if (file_exists($landingFile)) {
         include $landingFile;
@@ -50,13 +42,15 @@ if ($page === 'landing') {
                 No se encontró la vista <strong>landing.php</strong>.
             </p>";
     }
-    exit;
+    exit; // importante: no seguir renderizando el layout
 }
 
-// 2) PÁGINAS PROTEGIDAS → si no hay sesión, mandar al login
-if (!isset($_SESSION[$SESSION_USER_KEY])) {
-    // login REAL según tu árbol: src/view/login/login.php
-    header('Location: ' . BASE_URL . 'src/view/login/login.php');
+// 2) A PARTIR DE AQUÍ, TODAS LAS PÁGINAS SON PROTEGIDAS
+//    Si NO hay sesión → mandar al login (que puede ser tu login.php que me pasaste)
+
+if (!isset($_SESSION['usuario_id'])) {
+    // Ajusta la ruta según dónde tengas el login
+    header('Location: ' . BASE_URL . 'src/view/auth/login.php');
     exit;
 }
 ?>
@@ -64,10 +58,9 @@ if (!isset($_SESSION[$SESSION_USER_KEY])) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión Inventario</title>
+    <title>Gestion Inventario</title>
     <link rel="icon" type="image/png" href="">
-    <link rel="stylesheet" href="src/assets/css/globals.css">
-    <!-- aquí metes tu CSS/Tailwind si no lo haces en los includes -->
+    <!-- <link rel="stylesheet" href="./public/css/output.css"> -->
 </head>
 <body class="flex flex-col min-h-screen font-sans bg-white text-gray-900 transition-all duration-300">
     <header>

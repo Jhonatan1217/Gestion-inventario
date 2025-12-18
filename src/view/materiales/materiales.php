@@ -263,25 +263,25 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                     </div>
                 </div>
 
-                <!-- Imagen y Precio -->
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="space-y-2">
-                    <label class="text-sm font-medium">Imagen del material *</label>
-                        <div id="dropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Precio en bloque completo -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Precio *</label>
+                  <input id="precio" type="text" inputmode="decimal" placeholder="$ 0" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                </div>
+
+                <!-- Imagen en bloque completo para mantener orden visual -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Imagen del material *</label>
+                  <div id="dropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="7 10 12 5 17 10" />
                       <line x1="12" y1="5" x2="12" y2="19" />
-                      </svg>
-                      <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
-                      <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
-                      <input id="imagen" type="file" accept="image/png,image/jpeg" required class="sr-only" />
-                          <img id="previewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
-                    </div>
-                  </div>
-                  <div class="space-y-2">
-                    <label class="text-sm font-medium">Precio *</label>
-                        <input id="precio" type="number" min="0" step="0.01" placeholder="0.00" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                    </svg>
+                    <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
+                    <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
+                    <input id="imagen" type="file" accept="image/png,image/jpeg" required class="sr-only" />
+                    <img id="previewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
                   </div>
                 </div>
                 
@@ -422,25 +422,25 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                     </div>
                 </div>
 
-                <!-- Imagen y Precio (edición) -->
-                <div class="grid grid-cols-2 gap-4">
-                  <div class="space-y-2">
-                    <label class="text-sm font-medium">Imagen del material *</label>
-                        <div id="editDropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Precio en bloque completo (edición) -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Precio *</label>
+                  <input id="editPrecio" type="text" inputmode="decimal" placeholder="$ 0" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                </div>
+
+                <!-- Imagen en bloque completo (edición) -->
+                <div class="space-y-2">
+                  <label class="text-sm font-medium">Imagen del material *</label>
+                  <div id="editDropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="7 10 12 5 17 10" />
                       <line x1="12" y1="5" x2="12" y2="19" />
-                      </svg>
-                      <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
-                      <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
-                      <input id="editImagen" type="file" accept="image/png,image/jpeg" class="sr-only" />
-                          <img id="editPreviewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
-                    </div>
-                  </div>
-                  <div class="space-y-2">
-                    <label class="text-sm font-medium">Precio *</label>
-                        <input id="editPrecio" type="number" min="0" step="0.01" placeholder="0.00" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                    </svg>
+                    <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
+                    <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
+                    <input id="editImagen" type="file" accept="image/png,image/jpeg" class="sr-only" />
+                    <img id="editPreviewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
                   </div>
                 </div>
                 
