@@ -2,13 +2,6 @@
 $collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
 $sidebarWidth = $collapsed ? "70px" : "260px";
 
-$bodegas = [
-    [1, "Bodega Principal - Eléctrico", "Insumos", "Bloque A, Piso 1", "Bodega", "Activo", 1],
-    [2, "Bodega Construcción", "Equipos", "Bloque A, Piso 2", "Bodega", "Activo", 3],
-    [3, "Sub-bodega Sanitario", "Insumos", "Bloque B, Piso 1", "Sub-Bodega", "Activo", 4],
-    [4, "Bodega Herramientas", "Equipos", "Bloque C, Piso 1", "Bodega", "Activo", 2],
-    [5, "Ejemplo", "Insumos", "Bloque A, Piso 3", "Bodega", "Inactivo", 1],
-];
 ?>
 <!DOCTYPE html>
 <html lang="es">
