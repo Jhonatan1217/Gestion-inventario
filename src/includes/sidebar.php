@@ -8,6 +8,7 @@ $navigation = [
   ["name" => "Usuarios",    "page" => "usuarios",    "icon" => "Users"],
   ["name" => "Bodegas",     "page" => "bodegas",     "icon" => "Warehouse"],
   ["name" => "Materiales",  "page" => "materiales",  "icon" => "Package"],
+  ["name" => "Obras",       "page" => "obras",       "icon" => "Hammer"],
   ["name" => "Movimientos", "page" => "movimientos", "icon" => "ArrowLeftRight"],
   ["name" => "Solicitudes", "page" => "solicitudes", "icon" => "ClipboardList", "badge" => 2],
   ["name" => "Programas",   "page" => "programas",   "icon" => "GraduationCap"],
@@ -30,6 +31,7 @@ function getLucideIconName(string $key): string {
     case 'Users':            return 'users-2';
     case 'Warehouse':        return 'warehouse';
     case 'Package':          return 'package';
+    case 'Hammer':           return 'hammer';
     case 'ArrowLeftRight':   return 'arrow-left-right';
     case 'ClipboardList':    return 'clipboard-list';
     case 'GraduationCap':    return 'graduation-cap';
