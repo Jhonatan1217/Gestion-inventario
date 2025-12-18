@@ -83,11 +83,17 @@ $bodegas = $model->listar();
   <!-- Botón Nueva Bodega (grupo independiente) -->
   <button
     id="btnNuevaBodega"
-    class="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2"
-  >
+    class="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
     <i data-lucide="plus" class="w-4 h-4"></i>
     Nueva Bodega
   </button>
+  <button
+    id="btnNuevaSubBodega"
+    class="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 gap-2">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Nueva Sub-bodega
+  </button>
+
 
 </div>
 
@@ -344,18 +350,7 @@ $bodegas = $model->listar();
             type="text"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
             placeholder="C-1">
-        </div>
-
-        <!-- Tipo -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-          <select
-            id="crearTipo"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Bodega</option>
-            <option>Sub-Bodega</option>
-          </select>
-        </div>
+        </div>    
 
         <!-- Clasificación -->
         <div>
@@ -408,6 +403,136 @@ $bodegas = $model->listar();
   </div>
 </div>
 
+<!-- ========= MODAL CREAR SUB-BODEGA ========= -->
+<div id="modalCrearSubBodega" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+  
+  <!-- Fondo clicable -->
+  <div class="absolute inset-0" id="backdropCrearSub"></div>
+
+  <!-- Contenido -->
+  <div class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 sm:p-8">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900">Crear Nueva Sub-bodega</h2>
+        <p class="text-sm text-gray-500">
+          Complete los datos para registrar una sub-bodega
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="cerrarModalSub"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
+        <i data-lucide="x" class="h-4 w-4"></i>
+      </button>
+    </div>
+
+    <!-- FORM -->
+    <form id="formCrearSubBodega" class="space-y-4">
+
+      <div class="grid gap-4 sm:grid-cols-2">
+
+        <!-- BODEGA PADRE -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Bodega padre *
+          </label>
+          <select
+            id="subIdBodega"
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            required>
+            <!-- Se llena desde PHP o JS -->
+            <?php foreach ($bodegas as $b): ?>
+              <option value="<?= $b['id_bodega'] ?>">
+                <?= htmlspecialchars($b['nombre']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- CÓDIGO -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Código *
+          </label>
+          <input
+            id="subCodigo"
+            type="text"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            placeholder="SB-01"
+            required>
+        </div>
+
+        <!-- CLASIFICACIÓN -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Clasificación *
+          </label>
+          <select
+            id="subClasificacion"
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            required>
+            <option value="Insumos">Insumos</option>
+            <option value="Equipos">Equipos</option>
+          </select>
+        </div>
+
+        <!-- ESTADO (NO visible, backend usa default) -->
+      </div>
+
+      <!-- NOMBRE -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Nombre de la Sub-bodega *
+        </label>
+        <input
+          id="subNombre"
+          type="text"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+          placeholder="Sub-bodega Eléctrica"
+          required>
+      </div>
+
+      <!-- DESCRIPCIÓN -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Descripción
+        </label>
+        <textarea
+          id="subDescripcion"
+          rows="3"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+          placeholder="Opcional"></textarea>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="mt-4 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          id="cancelarModalSub"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-200">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary hover:opacity-90">
+          Crear Sub-bodega
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
 
   <!-- ========= MODAL EDITAR (DISEÑO TIPO MOVIMIENTOS) ========= -->
 <div id="modalEditar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -441,17 +566,6 @@ $bodegas = $model->listar();
             id="editId"
             type="text"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-        </div>
-
-        <!-- Tipo -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-          <select
-            id="editTipo"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
-            <option>Bodega</option>
-            <option>Sub-Bodega</option>
-          </select>
         </div>
 
         <!-- Clasificación -->
@@ -555,11 +669,6 @@ $bodegas = $model->listar();
           <div class="grid grid-cols-[120px_auto] gap-3 items-center">
             <span class="text-gray-600">Clasificación:</span>
             <span id="detalleClasificacion" class="detalle-chip">Insumos</span>
-          </div>
-
-          <div class="grid grid-cols-[120px_auto] gap-3 items-center">
-            <span class="text-gray-600"></span>
-            <span id="detalleTipo" class="detalle-chip">Bodega</span>
           </div>
         </div>
 
