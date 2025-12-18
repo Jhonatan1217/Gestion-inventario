@@ -14,6 +14,18 @@ let currentView = "table"
 // API endpoints
 const API_URL = window.location.origin + "/Gestion-inventario/src/controllers/material_formacion_controller.php"
 
+function getMaterialesBaseUrl() {
+  if (window.MATERIALES_BASE_URL) return window.MATERIALES_BASE_URL
+  if (window.BASE_URL) return window.BASE_URL
+  return window.location.origin + "/Gestion-inventario"
+}
+
+function getMaterialImageUrl(foto) {
+  if (!foto) return ""
+  if (foto.startsWith("http")) return foto
+  return `${getMaterialesBaseUrl()}/src/uploads/materiales/${foto}`
+}
+
 /* =========================
    API Functions
    ========================= */
@@ -29,6 +41,8 @@ async function fetchMaterials() {
       clasificacion: material.clasificacion,
       codigo: material.codigo_inventario,
       unit: material.unidad_medida,
+      precio: material.precio,
+      foto: material.foto,
       enabled: material.estado === "Disponible",
     }))
     filteredData = [...materialsData]
@@ -43,18 +57,11 @@ async function fetchMaterials() {
   }
 }
 
-async function createMaterialAPI(materialData) {
+async function createMaterialAPI(formData) {
   try {
     const response = await fetch(`${API_URL}?accion=crear`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nombre: materialData.nombre,
-        descripcion: materialData.descripcion,
-        clasificacion: materialData.clasificacion,
-        codigo_inventario: materialData.codigo_inventario,
-        unidad_medida: materialData.unidad_medida,
-      }),
+      body: formData,
     })
     const result = await response.json()
     return result
@@ -64,19 +71,11 @@ async function createMaterialAPI(materialData) {
   }
 }
 
-async function updateMaterialAPI(id, materialData) {
+async function updateMaterialAPI(id, formData) {
   try {
     const response = await fetch(`${API_URL}?accion=actualizar&id=${id}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nombre: materialData.nombre,
-        descripcion: materialData.descripcion,
-        clasificacion: materialData.clasificacion,
-        codigo_inventario: materialData.codigo_inventario,
-        unidad_medida: materialData.unidad_medida,
-        estado: materialData.estado,
-      }),
+      body: formData,
     })
     const result = await response.json()
     return result
@@ -637,7 +636,16 @@ function closeCreateModal() {
   document.getElementById("clasificacion").value = ""
   document.getElementById("codigo").value = ""
   document.getElementById("unidad").value = ""
+  document.getElementById("precio").value = ""
+  document.getElementById("imagen").value = ""
   document.getElementById("codigoContainer").style.display = "none"
+  
+  // Limpiar vista previa de imagen
+  const previewImagen = document.getElementById("previewImagen")
+  if (previewImagen) {
+    previewImagen.src = ""
+    previewImagen.classList.add("hidden")
+  }
 }
 
 function openDetailsModal(id) {
@@ -716,6 +724,24 @@ function openEditModal(id) {
   document.getElementById("editClasificacion").value = material.clasificacion
   document.getElementById("editCodigo").value = material.codigo || ""
   document.getElementById("editUnidad").value = material.unit
+  const editPrecioInput = document.getElementById("editPrecio")
+  if (editPrecioInput) editPrecioInput.value = material.precio ?? ""
+
+  // Resetear input y pintar vista previa con la foto actual si existe
+  const editImagenInput = document.getElementById("editImagen")
+  if (editImagenInput) editImagenInput.value = ""
+
+  const editPreviewImagen = document.getElementById("editPreviewImagen")
+  if (editPreviewImagen) {
+    const fotoUrl = getMaterialImageUrl(material.foto)
+    if (fotoUrl) {
+      editPreviewImagen.src = fotoUrl
+      editPreviewImagen.classList.remove("hidden")
+    } else {
+      editPreviewImagen.src = ""
+      editPreviewImagen.classList.add("hidden")
+    }
+  }
 
   toggleEditCodigoField()
   document.getElementById("editModal").classList.add("active")
@@ -723,6 +749,13 @@ function openEditModal(id) {
 
 function closeEditModal() {
   document.getElementById("editModal").classList.remove("active")
+  const editImagenInput = document.getElementById("editImagen")
+  if (editImagenInput) editImagenInput.value = ""
+  const editPreviewImagen = document.getElementById("editPreviewImagen")
+  if (editPreviewImagen) {
+    editPreviewImagen.src = ""
+    editPreviewImagen.classList.add("hidden")
+  }
 }
 
 function toggleCodigoField() {
@@ -765,13 +798,29 @@ async function createMaterial() {
     clasificacion: document.getElementById("clasificacion").value,
     codigo_inventario: document.getElementById("codigo").value.trim() || null,
     unidad_medida: document.getElementById("unidad").value,
+    precio: document.getElementById("precio").value,
   }
 
   if (!validateMaterialPayload(materialData)) return
 
-  const result = await createMaterialAPI(materialData)
+  // Crear FormData (igual que en usuario_controller)
+  const formData = new FormData()
+  formData.append("nombre", materialData.nombre)
+  formData.append("descripcion", materialData.descripcion)
+  formData.append("clasificacion", materialData.clasificacion)
+  formData.append("codigo_inventario", materialData.codigo_inventario || "")
+  formData.append("unidad_medida", materialData.unidad_medida)
+  formData.append("precio", materialData.precio)
+  
+  // Agregar la imagen
+  const imagenInput = document.getElementById("imagen")
+  if (imagenInput.files.length > 0) {
+    formData.append("foto", imagenInput.files[0])
+  }
 
-  if (result.success) {
+  const result = await createMaterialAPI(formData)
+
+  if (result.status === "success") {
     showAlert(result.message || "Material creado exitosamente", "success")
     closeCreateModal()
     await fetchMaterials()
@@ -788,8 +837,12 @@ async function updateMaterial() {
     clasificacion: document.getElementById("editClasificacion").value,
     codigo_inventario: document.getElementById("editCodigo").value.trim() || null,
     unidad_medida: document.getElementById("editUnidad").value,
+    precio: document.getElementById("editPrecio")?.value,
     estado: materialsData.find((m) => m.id === id)?.enabled ? "Disponible" : "Agotado",
   }
+
+  const editImagenInput = document.getElementById("editImagen")
+  const hasNewPhoto = editImagenInput && editImagenInput.files.length > 0
 
   // Bloquear envío si no hay cambios respecto al original
   const original = materialsData.find((m) => m.id === id)
@@ -800,7 +853,9 @@ async function updateMaterial() {
       norm(original.description) === norm(materialData.descripcion) &&
       norm(original.clasificacion) === norm(materialData.clasificacion) &&
       norm(original.codigo) === norm(materialData.codigo_inventario) &&
-      norm(original.unit) === norm(materialData.unidad_medida)
+      norm(original.unit) === norm(materialData.unidad_medida) &&
+      norm(original.precio) === norm(materialData.precio) &&
+      !hasNewPhoto
 
     if (noChanges) {
       showAlert("No realizaste cambios. Usa Cancelar o cierra el modal.", "warning")
@@ -810,9 +865,23 @@ async function updateMaterial() {
 
   if (!validateMaterialPayload(materialData, { isEdit: true, id })) return
 
-  const result = await updateMaterialAPI(id, materialData)
+  // FormData para permitir actualizar foto opcionalmente
+  const formData = new FormData()
+  formData.append("nombre", materialData.nombre)
+  formData.append("descripcion", materialData.descripcion)
+  formData.append("clasificacion", materialData.clasificacion)
+  formData.append("codigo_inventario", materialData.codigo_inventario || "")
+  formData.append("unidad_medida", materialData.unidad_medida)
+  formData.append("precio", materialData.precio || "")
+  formData.append("estado", materialData.estado)
 
-  if (result.success) {
+  if (editImagenInput && editImagenInput.files.length > 0) {
+    formData.append("foto", editImagenInput.files[0])
+  }
+
+  const result = await updateMaterialAPI(id, formData)
+
+  if (result.status === "success") {
     showAlert(result.message || "Material actualizado exitosamente", "success")
     closeEditModal()
     await fetchMaterials()
@@ -954,4 +1023,96 @@ document.addEventListener("DOMContentLoaded", async () => {
 function setupEventListeners() {
   document.getElementById("inputBuscar")?.addEventListener("input", applyFilters)
   document.getElementById("selectFiltroRol")?.addEventListener("change", applyFilters)
+  
+  // Vista previa de imagen en el modal de crear
+  const imagenInput = document.getElementById("imagen")
+  const dropzoneImagen = document.getElementById("dropzoneImagen")
+  const previewImagen = document.getElementById("previewImagen")
+  
+  if (imagenInput && dropzoneImagen && previewImagen) {
+    // Click en el dropzone abre el selector de archivos
+    dropzoneImagen.addEventListener("click", () => {
+      imagenInput.click()
+    })
+    
+    // Prevenir comportamiento por defecto en drag & drop
+    dropzoneImagen.addEventListener("dragover", (e) => {
+      e.preventDefault()
+      dropzoneImagen.classList.add("bg-muted")
+    })
+    
+    dropzoneImagen.addEventListener("dragleave", () => {
+      dropzoneImagen.classList.remove("bg-muted")
+    })
+    
+    // Manejar drop de archivos
+    dropzoneImagen.addEventListener("drop", (e) => {
+      e.preventDefault()
+      dropzoneImagen.classList.remove("bg-muted")
+      
+      const files = e.dataTransfer.files
+      if (files.length > 0) {
+        imagenInput.files = files
+        mostrarVistaPrevia(files[0])
+      }
+    })
+    
+    // Manejar selección de archivo
+    imagenInput.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        mostrarVistaPrevia(e.target.files[0])
+      }
+    })
+  }
+
+  // Vista previa en el modal de editar
+  const editImagenInput = document.getElementById("editImagen")
+  const editDropzoneImagen = document.getElementById("editDropzoneImagen")
+  const editPreviewImagen = document.getElementById("editPreviewImagen")
+
+  if (editImagenInput && editDropzoneImagen && editPreviewImagen) {
+    editDropzoneImagen.addEventListener("click", () => {
+      editImagenInput.click()
+    })
+
+    editDropzoneImagen.addEventListener("dragover", (e) => {
+      e.preventDefault()
+      editDropzoneImagen.classList.add("bg-muted")
+    })
+
+    editDropzoneImagen.addEventListener("dragleave", () => {
+      editDropzoneImagen.classList.remove("bg-muted")
+    })
+
+    editDropzoneImagen.addEventListener("drop", (e) => {
+      e.preventDefault()
+      editDropzoneImagen.classList.remove("bg-muted")
+
+      const files = e.dataTransfer.files
+      if (files.length > 0) {
+        editImagenInput.files = files
+        mostrarVistaPrevia(files[0], "editPreviewImagen")
+      }
+    })
+
+    editImagenInput.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        mostrarVistaPrevia(e.target.files[0], "editPreviewImagen")
+      }
+    })
+  }
+}
+
+function mostrarVistaPrevia(file, previewId = "previewImagen") {
+  const previewImagen = document.getElementById(previewId)
+  if (!previewImagen || !file || !file.type.startsWith("image/")) return
+
+  const reader = new FileReader()
+
+  reader.onload = (e) => {
+    previewImagen.src = e.target.result
+    previewImagen.classList.remove("hidden")
+  }
+
+  reader.readAsDataURL(file)
 }

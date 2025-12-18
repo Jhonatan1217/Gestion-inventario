@@ -18,6 +18,13 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
   <link rel="stylesheet" href="<?= BASE_URL ?>/src/assets/css/globals.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>/src/assets/css/materiales/materiales.css">
 
+  <!-- Exponer BASE_URL al JS para construir API_URL cuando no se use override -->
+  <script>
+    window.BASE_URL = "<?= BASE_URL ?>";
+    // Si necesitas apuntar al backend actualizado en otra URL sin editar código:
+    // window.MATERIALES_API_URL = "https://tu-servidor.com/Gestion-inventario/src/controllers/material_formacion_controller.php";
+  </script>
+
 </head>
 <body
   class="min-h-screen bg-background text-foreground transition-all duration-300
@@ -216,44 +223,66 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                         <label class="text-sm font-medium">Unidad de medida *</label>
                         <select id="unidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required>
                             <option value="">Seleccione...</option>
-                            <option value="UND">UND</option>
-                            <option value="PAR">PAR</option>
-                            <option value="JGO">JGO</option>
-                            <option value="KIT">KIT</option>
-                            <option value="CAJA">CAJA</option>
-                            <option value="BOLSA">BOLSA</option>
-                            <option value="PAQUETE">PAQUETE</option>
-                            <option value="ROLLO">ROLLO</option>
-                            <option value="BARRA">BARRA</option>
-                            <option value="TUBO">TUBO</option>
-                            <option value="LÁMINA">LÁMINA</option>
-                            <option value="KG">KG</option>
-                            <option value="G">G</option>
-                            <option value="TON">TON</option>
-                            <option value="L">L</option>
-                            <option value="ML">ML</option>
-                            <option value="M3">M3</option>
-                            <option value="CM3">CM3</option>
-                            <option value="M">M</option>
-                            <option value="CM">CM</option>
-                            <option value="MM">MM</option>
-                            <option value="PULG">PULG</option>
-                            <option value="PIE">PIE</option>
-                            <option value="M2">M2</option>
-                            <option value="CM2">CM2</option>
-                            <option value="AMP">AMP</option>
-                            <option value="W">W</option>
-                            <option value="KW">KW</option>
-                            <option value="V">V</option>
-                            <option value="GL">GL</option>
-                            <option value="SACO">SACO</option>
-                            <option value="BIDÓN">BIDÓN</option>
-                            <option value="BULTO">BULTO</option>
-                            <option value="DISP">DISP</option>
-                            <option value="CAÑUELA">CAÑUELA</option>
-                            <option value="CABLE">CABLE</option>
+                          <option value="AMP">AMP</option>
+                          <option value="BARRA">BARRA</option>
+                          <option value="BIDÓN">BIDÓN</option>
+                          <option value="BOLSA">BOLSA</option>
+                          <option value="BULTO">BULTO</option>
+                          <option value="CABLE">CABLE</option>
+                          <option value="CAJA">CAJA</option>
+                          <option value="CAÑUELA">CAÑUELA</option>
+                          <option value="CM">CM</option>
+                          <option value="CM2">CM2</option>
+                          <option value="CM3">CM3</option>
+                          <option value="DISP">DISP</option>
+                          <option value="G">G</option>
+                          <option value="GL">GL</option>
+                          <option value="JGO">JGO</option>
+                          <option value="KG">KG</option>
+                          <option value="KIT">KIT</option>
+                          <option value="KW">KW</option>
+                          <option value="L">L</option>
+                          <option value="LÁMINA">LÁMINA</option>
+                          <option value="M">M</option>
+                          <option value="M2">M2</option>
+                          <option value="M3">M3</option>
+                          <option value="ML">ML</option>
+                          <option value="MM">MM</option>
+                          <option value="PAQUETE">PAQUETE</option>
+                          <option value="PAR">PAR</option>
+                          <option value="PIE">PIE</option>
+                          <option value="PULG">PULG</option>
+                          <option value="ROLLO">ROLLO</option>
+                          <option value="SACO">SACO</option>
+                          <option value="TON">TON</option>
+                          <option value="TUBO">TUBO</option>
+                          <option value="UND">UND</option>
+                          <option value="V">V</option>
+                          <option value="W">W</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Imagen y Precio -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">Imagen del material *</label>
+                        <div id="dropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 5 17 10" />
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      </svg>
+                      <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
+                      <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
+                      <input id="imagen" type="file" accept="image/png,image/jpeg" required class="sr-only" />
+                          <img id="previewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">Precio *</label>
+                        <input id="precio" type="number" min="0" step="0.01" placeholder="0.00" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                  </div>
                 </div>
                 
                 <!-- Código (solo si es Inventariado) -->
@@ -353,44 +382,66 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                     <div class="space-y-2">
                         <label class="text-sm font-medium">Unidad de medida *</label>
                         <select id="editUnidad" class="w-full rounded-md border border-input bg-background px-3 pr-10 py-2 text-sm input" required>
-                            <option value="UND">UND</option>
-                            <option value="PAR">PAR</option>
-                            <option value="JGO">JGO</option>
-                            <option value="KIT">KIT</option>
-                            <option value="CAJA">CAJA</option>
-                            <option value="BOLSA">BOLSA</option>
-                            <option value="PAQUETE">PAQUETE</option>
-                            <option value="ROLLO">ROLLO</option>
-                            <option value="BARRA">BARRA</option>
-                            <option value="TUBO">TUBO</option>
-                            <option value="LÁMINA">LÁMINA</option>
-                            <option value="KG">KG</option>
-                            <option value="G">G</option>
-                            <option value="TON">TON</option>
-                            <option value="L">L</option>
-                            <option value="ML">ML</option>
-                            <option value="M3">M3</option>
-                            <option value="CM3">CM3</option>
-                            <option value="M">M</option>
-                            <option value="CM">CM</option>
-                            <option value="MM">MM</option>
-                            <option value="PULG">PULG</option>
-                            <option value="PIE">PIE</option>
-                            <option value="M2">M2</option>
-                            <option value="CM2">CM2</option>
-                            <option value="AMP">AMP</option>
-                            <option value="W">W</option>
-                            <option value="KW">KW</option>
-                            <option value="V">V</option>
-                            <option value="GL">GL</option>
-                            <option value="SACO">SACO</option>
-                            <option value="BIDÓN">BIDÓN</option>
-                            <option value="BULTO">BULTO</option>
-                            <option value="DISP">DISP</option>
-                            <option value="CAÑUELA">CAÑUELA</option>
-                            <option value="CABLE">CABLE</option>
+                          <option value="AMP">AMP</option>
+                          <option value="BARRA">BARRA</option>
+                          <option value="BIDÓN">BIDÓN</option>
+                          <option value="BOLSA">BOLSA</option>
+                          <option value="BULTO">BULTO</option>
+                          <option value="CABLE">CABLE</option>
+                          <option value="CAJA">CAJA</option>
+                          <option value="CAÑUELA">CAÑUELA</option>
+                          <option value="CM">CM</option>
+                          <option value="CM2">CM2</option>
+                          <option value="CM3">CM3</option>
+                          <option value="DISP">DISP</option>
+                          <option value="G">G</option>
+                          <option value="GL">GL</option>
+                          <option value="JGO">JGO</option>
+                          <option value="KG">KG</option>
+                          <option value="KIT">KIT</option>
+                          <option value="KW">KW</option>
+                          <option value="L">L</option>
+                          <option value="LÁMINA">LÁMINA</option>
+                          <option value="M">M</option>
+                          <option value="M2">M2</option>
+                          <option value="M3">M3</option>
+                          <option value="ML">ML</option>
+                          <option value="MM">MM</option>
+                          <option value="PAQUETE">PAQUETE</option>
+                          <option value="PAR">PAR</option>
+                          <option value="PIE">PIE</option>
+                          <option value="PULG">PULG</option>
+                          <option value="ROLLO">ROLLO</option>
+                          <option value="SACO">SACO</option>
+                          <option value="TON">TON</option>
+                          <option value="TUBO">TUBO</option>
+                          <option value="UND">UND</option>
+                          <option value="V">V</option>
+                          <option value="W">W</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Imagen y Precio (edición) -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">Imagen del material *</label>
+                        <div id="editDropzoneImagen" class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background px-4 py-6 text-center cursor-pointer hover:bg-muted transition-colors overflow-hidden">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-muted-foreground mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 5 17 10" />
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      </svg>
+                      <p class="text-xs text-muted-foreground">Arrastra una imagen o haz clic para seleccionar</p>
+                      <p class="text-[11px] text-muted-foreground">PNG, JPG hasta 5MB</p>
+                      <input id="editImagen" type="file" accept="image/png,image/jpeg" class="sr-only" />
+                          <img id="editPreviewImagen" alt="Vista previa" class="absolute inset-0 h-full w-full object-cover hidden" />
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium">Precio *</label>
+                        <input id="editPrecio" type="number" min="0" step="0.01" placeholder="0.00" required class="w-full rounded-md border border-input px-3 py-2 text-sm bg-transparent">
+                  </div>
                 </div>
                 
                 <!-- Código (solo si es Inventariado) -->
