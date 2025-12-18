@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+const API_URL = "src/controllers/bodega_controller.php"; 
   /* ============================================================
      ICONOS
   ============================================================ */
@@ -91,11 +91,12 @@ formCrearBodega?.addEventListener("submit", async (e) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          codigo_bodega: codigo,
-          nombre: nombre,
-          ubicacion: ubicacion,
-          clasificacion: clasificacion
-        })
+        codigo_bodega: codigo,
+        nombre: nombre,
+        ubicacion: ubicacion,
+        clasificacion_bodega: clasificacion
+      })
+
       }
     );
 
@@ -138,47 +139,7 @@ formCrearBodega?.addEventListener("submit", async (e) => {
   /* ============================================================
      CREAR BODEGA – BACKEND
   ============================================================ */
-  formCrearBodega?.addEventListener("submit", async (e) => {
-    e.preventDefault();
 
-    const codigo = document.getElementById("crearCodigo")?.value.trim();
-    const nombre = document.getElementById("crearNombre")?.value.trim();
-    const ubicacion = document.getElementById("crearUbicacion")?.value.trim();
-    const tipo = document.getElementById("crearTipo")?.value;
-    const clasificacion = document.getElementById("crearClasificacion")?.value;
-
-    if (!codigo || !nombre || !ubicacion) {
-      alert("Completa los campos obligatorios");
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        "/Gestion-inventario/src/controllers/bodega_controller.php?accion=crear",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            codigo_bodega: codigo,
-            nombre:nombre,
-            ubicacion:ubicacion,
-            tipo,
-            clasificacion_bodega:clasificacion,
-            estado: "Activo"
-          })
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      closeModal(modalCrear);
-      location.reload();
-
-    } catch (error) {
-      console.error(error);
-      alert("Error al crear la bodega");
-    }
-  });
 
   /* ============================================================
      MENÚ CONTEXTUAL
@@ -191,12 +152,14 @@ formCrearBodega?.addEventListener("submit", async (e) => {
 
   function openContextMenu(btn) {
     selectedData = {
-      id: btn.dataset.id,
-      nombre: btn.dataset.nombre,
-      clasificacion: btn.dataset.clasificacion,
-      ubicacion: btn.dataset.ubicacion,
-      estado: btn.dataset.estado
-    };
+    id: btn.dataset.id,
+    codigo: btn.dataset.codigo, 
+    nombre: btn.dataset.nombre,
+    clasificacion: btn.dataset.clasificacion,
+    ubicacion: btn.dataset.ubicacion,
+    estado: btn.dataset.estado
+  };
+
 
     const r = btn.getBoundingClientRect();
     const menuWidth = 208;
@@ -232,7 +195,7 @@ formCrearBodega?.addEventListener("submit", async (e) => {
   contextMenu?.querySelector("[data-action='ver']")?.addEventListener("click", () => {
     if (!selectedData) return;
 
-    document.getElementById("detalleId").textContent = selectedData.id;
+    document.getElementById("detalleId").textContent = selectedData.codigo;
     document.getElementById("detalleNombre").textContent = selectedData.nombre;
     document.getElementById("detalleClasificacion").textContent = selectedData.clasificacion;
     document.getElementById("detalleUbicacion").textContent = selectedData.ubicacion;
@@ -249,23 +212,56 @@ formCrearBodega?.addEventListener("submit", async (e) => {
   });
 
   contextMenu?.querySelector("[data-action='editar']")?.addEventListener("click", () => {
-    if (!selectedData) return;
+  if (!selectedData) return;
 
-    document.getElementById("editId").value = selectedData.id;
+    document.getElementById("editIdBodega").value = selectedData.id;
+    document.getElementById("editCodigoBodega").value = selectedData.codigo;
     document.getElementById("editNombre").value = selectedData.nombre;
     document.getElementById("editClasificacion").value = selectedData.clasificacion;
     document.getElementById("editUbicacion").value = selectedData.ubicacion;
 
 
-    openModal(modalEditar);
-    closeContextMenu();
+  openModal(modalEditar);
+  closeContextMenu();
+});
+
+
+  contextMenu
+    ?.querySelector("[data-action='deshabilitar']")
+    ?.addEventListener("click", async () => {
+
+      if (!selectedData) return;
+
+      const confirmar = confirm(
+        `¿Seguro que deseas ${selectedData.estado === "Activo" ? "deshabilitar" : "habilitar"} esta bodega?`
+      );
+
+      if (!confirmar) return;
+
+      try {
+        const res = await fetch(
+          "/Gestion-inventario/src/controllers/bodega_controller.php?accion=cambiar_estado",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+            codigo_bodega: selectedData.codigo,
+            estado: selectedData.estado === "Activo" ? "Inactivo" : "Activo"
+          })
+          }
+        );
+
+        if (!res.ok) throw new Error();
+
+        closeContextMenu();
+        location.reload();
+
+      } catch (error) {
+        console.error(error);
+        alert("No se pudo cambiar el estado de la bodega");
+      }
   });
 
-  contextMenu?.querySelector("[data-action='deshabilitar']")?.addEventListener("click", () => {
-    if (!selectedData) return;
-    alert(`Bodega #${selectedData.id} deshabilitada`);
-    closeContextMenu();
-  });
 
   /* ============================================================
      CIERRE DE MODALES
@@ -297,46 +293,46 @@ formCrearBodega?.addEventListener("submit", async (e) => {
   /* ============================================================
      EDITAR BODEGA – BACKEND
   ============================================================ */
-  const btnGuardarEditar = document.getElementById("guardarEditar");
+      document.getElementById("guardarEditar").addEventListener("click", () => {
 
-  btnGuardarEditar?.addEventListener("click", async () => {
-    const id = document.getElementById("editId").value.trim();
-    const nombre = document.getElementById("editNombre").value.trim();
-    const ubicacion = document.getElementById("editUbicacion").value.trim();
-    const clasificacion = document.getElementById("editClasificacion").value;
+      const id_bodega = document.getElementById("editIdBodega").value;
+      const codigo_bodega = document.getElementById("editCodigoBodega").value.trim();
+      const nombre = document.getElementById("editNombre").value.trim();
+      const ubicacion = document.getElementById("editUbicacion").value.trim();
+      const clasificacion_bodega = document.getElementById("editClasificacion").value;
 
-    if (!id || !nombre || !ubicacion || !clasificacion) {
-      alert("Completa todos los campos");
-      return;
-    }
+      if (!id_bodega || !codigo_bodega || !nombre || !ubicacion || !clasificacion_bodega) {
+        alert("Todos los campos son obligatorios");
+        return;
+      }
 
-    try {
-      const res = await fetch(
-        "/Gestion-inventario/src/controllers/bodega_controller.php?accion=editar",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id_bodega: id,
-            nombre,
-            ubicacion,
-            clasificacion_bodega: clasificacion
-          })
+      fetch(`${API_URL}?accion=actualizar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id_bodega,
+          codigo_bodega,
+          nombre,
+          ubicacion,
+          clasificacion_bodega
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          alert("Bodega actualizada correctamente");
+          location.reload();
         }
-      );
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error al actualizar la bodega");
+      });
+    });
 
-      if (!res.ok) throw new Error("Error al actualizar");
-
-      closeModal(modalEditar);
-      location.reload();
-
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo actualizar la bodega");
-    }
-  });
 
 });
-
-  
-

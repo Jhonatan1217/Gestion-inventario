@@ -150,7 +150,7 @@ $bodegas = $model->listar();
             <?php foreach ($bodegas as $b): ?>
               <?php $activo = $b['estado'] === "Activo"; ?>
               <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3">#<?= $b['id_bodega'] ?></td>
+                <td class="px-4 py-3">#<?= $b['codigo_bodega'] ?></td>
 
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
@@ -183,6 +183,7 @@ $bodegas = $model->listar();
                   <button
                     class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
                     data-id="<?= $b['id_bodega'] ?>"
+                    data-codigo="<?= htmlspecialchars($b['codigo_bodega']) ?>"
                     data-nombre="<?= htmlspecialchars($b['nombre']) ?>"
                     data-clasificacion="<?= htmlspecialchars($b['clasificacion_bodega']) ?>"
                     data-ubicacion="<?= htmlspecialchars($b['ubicacion']) ?>"
@@ -211,16 +212,17 @@ $bodegas = $model->listar();
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-base font-semibold text-gray-900"><?= htmlspecialchars($b['nombre']) ?></h2>
-              <p class="text-xs text-gray-500">ID: <?= $b['id_bodega'] ?></p>
+              <p class="text-xs text-gray-500">ID: <?= $b['codigo_bodega'] ?></p>
             </div>
 
             <button
               class="w-8 h-8 rounded-full flex items-center justify-center bodegas-btn-dots"
-              data-id="<?= $b['id_bodega'] ?>"
-              data-nombre="<?= htmlspecialchars($b['nombre']) ?>"
-              data-clasificacion="<?= htmlspecialchars($b['clasificacion_bodega']) ?>"
-              data-ubicacion="<?= htmlspecialchars($b['ubicacion']) ?>"
-              data-estado="<?= htmlspecialchars($b['estado']) ?>"
+                data-id="<?= $b['id_bodega'] ?>"
+                data-codigo="<?= htmlspecialchars($b['codigo_bodega']) ?>"
+                data-nombre="<?= htmlspecialchars($b['nombre']) ?>"
+                data-clasificacion="<?= htmlspecialchars($b['clasificacion_bodega']) ?>"
+                data-ubicacion="<?= htmlspecialchars($b['ubicacion']) ?>"
+                data-estado="<?= htmlspecialchars($b['estado']) ?>"
             >
               <i data-lucide="more-horizontal" class="w-4 h-4"></i>
             </button>
@@ -254,7 +256,7 @@ $bodegas = $model->listar();
                 <input
                   type="checkbox"
                   class="sr-only peer estado-switch"
-                  data-id="<?= $b['id_bodega'] ?>"
+                  data-codigo="<?= htmlspecialchars($b['codigo_bodega']) ?>"
                   data-estado="<?= $estadoActivo ? 'Activo' : 'Inactivo' ?>"
                   <?= $estadoActivo ? "checked" : "" ?>
                 >
@@ -446,7 +448,7 @@ $bodegas = $model->listar();
             required>
             <!-- Se llena desde PHP o JS -->
             <?php foreach ($bodegas as $b): ?>
-              <option value="<?= $b['id_bodega'] ?>">
+              <option value="<?= htmlspecialchars($b['codigo_bodega']) ?>">
                 <?= htmlspecialchars($b['nombre']) ?>
               </option>
             <?php endforeach; ?>
@@ -532,8 +534,6 @@ $bodegas = $model->listar();
   </div>
 </div>
 
-
-
   <!-- ========= MODAL EDITAR (DISEÑO TIPO MOVIMIENTOS) ========= -->
 <div id="modalEditar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
   <!-- Fondo clicable para cerrar -->
@@ -541,6 +541,7 @@ $bodegas = $model->listar();
 
   <!-- Contenido del modal -->
   <div class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 sm:p-8">
+    
     <!-- Header -->
     <div class="flex items-start justify-between mb-4">
       <div>
@@ -558,14 +559,18 @@ $bodegas = $model->listar();
 
     <!-- FORM -->
     <form id="formEditarBodega" class="space-y-4">
+
+    <input type="hidden" id="editIdBodega">
+
       <div class="grid gap-4 sm:grid-cols-2">
-        <!-- ID -->
+        
+        <!-- ID visible (solo informativo) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">ID *</label>
           <input
-            id="editId"
+            id="editCodigoBodega"
             type="text"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm ">
         </div>
 
         <!-- Clasificación -->
@@ -573,7 +578,8 @@ $bodegas = $model->listar();
           <label class="block text-sm font-medium text-gray-700 mb-1">Clasificación *</label>
           <select
             id="editClasificacion"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
             <option value="Insumos">Insumos</option>
             <option value="Equipos">Equipos</option>
           </select>
@@ -585,7 +591,8 @@ $bodegas = $model->listar();
           <input
             id="editUbicacion"
             type="text"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
         </div>
       </div>
 
@@ -595,7 +602,8 @@ $bodegas = $model->listar();
         <input
           id="editNombre"
           type="text"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
       </div>
 
       <!-- Footer botones -->
@@ -603,7 +611,8 @@ $bodegas = $model->listar();
         <button
           type="button"
           id="cancelarEditar"
-          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-200">
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700
+                 hover:bg-gray-100 border border-gray-200">
           Cancelar
         </button>
 
