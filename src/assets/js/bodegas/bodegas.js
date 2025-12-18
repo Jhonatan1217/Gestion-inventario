@@ -69,20 +69,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalCrear = document.getElementById("modalCrear");
   const formCrearBodega = document.getElementById("formCrearBodega");
 
+formCrearBodega?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const codigo = document.getElementById("crearCodigo").value.trim();
+  const nombre = document.getElementById("crearNombre").value.trim();
+  const ubicacion = document.getElementById("crearUbicacion").value.trim();
+  const clasificacion = document.getElementById("crearClasificacion").value;
+
+  if (!codigo || !nombre || !ubicacion || !clasificacion) {
+    alert("Completa todos los campos obligatorios");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "/Gestion-inventario/src/controllers/bodega_controller.php?accion=crear",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          codigo_bodega: codigo,
+          nombre: nombre,
+          ubicacion: ubicacion,
+          clasificacion: clasificacion
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error(txt);
+      throw new Error("Error al crear bodega");
+    }
+
+    document.getElementById("modalCrear").classList.add("hidden");
+    location.reload();
+
+  } catch (err) {
+    console.error(err);
+    alert("No se pudo crear la bodega");
+  }
+});
+
+  const cerrarModal = document.getElementById("cerrarModal");
+  const cancelarModal = document.getElementById("cancelarModal");
+
   btnNuevaBodega?.addEventListener("click", () => {
     openModal(modalCrear);
   });
 
-  document.getElementById("cerrarModal")?.addEventListener("click", () => {
+  cerrarModal?.addEventListener("click", () => {
     closeModal(modalCrear);
   });
 
-  document.getElementById("cancelarModal")?.addEventListener("click", () => {
+  cancelarModal?.addEventListener("click", () => {
     closeModal(modalCrear);
   });
 
   modalCrear?.addEventListener("click", (e) => {
-    if (e.target === modalCrear) closeModal(modalCrear);
+    if (e.target === modalCrear) {
+      closeModal(modalCrear);
+    }
   });
 
   /* ============================================================
@@ -94,10 +144,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const codigo = document.getElementById("crearCodigo")?.value.trim();
     const nombre = document.getElementById("crearNombre")?.value.trim();
     const ubicacion = document.getElementById("crearUbicacion")?.value.trim();
+    const tipo = document.getElementById("crearTipo")?.value;
     const clasificacion = document.getElementById("crearClasificacion")?.value;
 
-    if (!codigo || !nombre || !ubicacion || !clasificacion) {
-      alert("Completa todos los campos obligatorios");
+    if (!codigo || !nombre || !ubicacion) {
+      alert("Completa los campos obligatorios");
       return;
     }
 
@@ -109,9 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             codigo_bodega: codigo,
-            nombre,
-            ubicacion,
-            clasificacion_bodega: clasificacion,
+            nombre:nombre,
+            ubicacion:ubicacion,
+            tipo,
+            clasificacion_bodega:clasificacion,
             estado: "Activo"
           })
         }
@@ -122,9 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
       closeModal(modalCrear);
       location.reload();
 
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo crear la bodega");
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear la bodega");
     }
   });
 
@@ -204,6 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("editClasificacion").value = selectedData.clasificacion;
     document.getElementById("editUbicacion").value = selectedData.ubicacion;
 
+
     openModal(modalEditar);
     closeContextMenu();
   });
@@ -241,4 +294,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /* ============================================================
+     EDITAR BODEGA – BACKEND
+  ============================================================ */
+  const btnGuardarEditar = document.getElementById("guardarEditar");
+
+  btnGuardarEditar?.addEventListener("click", async () => {
+    const id = document.getElementById("editId").value.trim();
+    const nombre = document.getElementById("editNombre").value.trim();
+    const ubicacion = document.getElementById("editUbicacion").value.trim();
+    const clasificacion = document.getElementById("editClasificacion").value;
+
+    if (!id || !nombre || !ubicacion || !clasificacion) {
+      alert("Completa todos los campos");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "/Gestion-inventario/src/controllers/bodega_controller.php?accion=editar",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_bodega: id,
+            nombre,
+            ubicacion,
+            clasificacion_bodega: clasificacion
+          })
+        }
+      );
+
+      if (!res.ok) throw new Error("Error al actualizar");
+
+      closeModal(modalEditar);
+      location.reload();
+
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo actualizar la bodega");
+    }
+  });
+
 });
+
+  
+

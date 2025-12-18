@@ -557,7 +557,7 @@ $bodegas = $model->listar();
     </div>
 
     <!-- FORM -->
-    <form class="space-y-4">
+    <form id="formEditarBodega" class="space-y-4">
       <div class="grid gap-4 sm:grid-cols-2">
         <!-- ID -->
         <div>
