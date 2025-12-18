@@ -93,6 +93,9 @@ class RaeModel {
         $params[] = $estado;
     }
 
+<<<<<<< HEAD
+    /* CHANGE STATUS */
+=======
     if (empty($campos)) {
         return false;
     }
@@ -107,6 +110,7 @@ class RaeModel {
 
 
     /* CHANGE RAE STATE (Active/Inactive)*/
+>>>>>>> origin/sidebar
     public function cambiarEstado(int $id, string $estado): bool {
         try {
             $sql = "UPDATE raes SET estado = :estado WHERE id_rae = :id"; // Update only estado

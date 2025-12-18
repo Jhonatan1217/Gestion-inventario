@@ -1480,8 +1480,7 @@ formUsuario.addEventListener("submit", async (e) => {
   }
 
   const isEdit = !!hiddenUserId.value;
-  const numeroRegex = /^[0-9]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
 
   const allEmpty =
     !payload.nombre_completo &&
@@ -1602,9 +1601,7 @@ formUsuario.addEventListener("submit", async (e) => {
       !payload.password;
 
     if (noHayCambios) {
-      toastInfo(
-        "Para actualizar el registro es necesario modificar al menos un dato del usuario."
-      );
+      toastInfo("Para actualizar debes modificar al menos un dato.");
       return;
     }
   }
