@@ -103,6 +103,16 @@ class SolicitudMaterialController {
     {
         return $this->model->getSolicitudCompleta($id);
     }
+
+    // List all requests
+    public function listar()
+    {
+        return $this->model->getAll();
+    }
+
+
+
+
 }
 
 
@@ -144,6 +154,9 @@ switch ($accion) {
         sendJSON($controller->obtenerCompleta($_GET['id']));
         break;
 
+    case "listar":
+        sendJSON($controller->listar());
+        break;
 
     default:
         sendJSON([
