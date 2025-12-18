@@ -11,8 +11,10 @@ const itemsPerPage = 10
 const cardsPerPage = 9
 let currentView = "table"
 
+
+
 // API endpoints
-const API_URL = window.location.origin + "/Gestion-inventario/src/controllers/material_formacion_controller.php"
+const API_URL = `${window.BASE_URL}src/controllers/material_formacion_controller.php`;
 
 function getMaterialesBaseUrl() {
   if (window.MATERIALES_BASE_URL) return window.MATERIALES_BASE_URL
@@ -28,8 +30,32 @@ function getMaterialImageUrl(foto) {
 
 function parsePriceValue(raw) {
   if (raw === undefined || raw === null) return ""
-  const cleaned = raw.toString().replace(/[^0-9,.-]/g, "").replace(/\./g, "").replace(/,/g, ".")
-  const num = Number.parseFloat(cleaned)
+  const cleaned = raw.toString().replace(/[^0-9,.,-]/g, "").trim()
+  if (!cleaned) return ""
+
+  const hasComma = cleaned.includes(",")
+  const hasDot = cleaned.includes(".")
+  let decimalSep = null
+
+  if (hasComma && hasDot) {
+    decimalSep = cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".") ? "," : "."
+  } else if (hasComma) {
+    decimalSep = ","
+  } else if (hasDot) {
+    decimalSep = "."
+  }
+
+  let normalized = cleaned
+  if (decimalSep) {
+    const parts = normalized.split(decimalSep)
+    const intPart = parts.slice(0, -1).join("").replace(/[.,]/g, "")
+    const decPart = parts.slice(-1)[0].replace(/[.,]/g, "")
+    normalized = decPart ? `${intPart}.${decPart}` : intPart
+  } else {
+    normalized = cleaned.replace(/[.,]/g, "")
+  }
+
+  const num = Number.parseFloat(normalized)
   return Number.isFinite(num) ? num : ""
 }
 
@@ -59,6 +85,15 @@ function attachCurrencyMask(inputId) {
       input.value = ""
       return
     }
+    
+    // Validar mínimo de 100
+    if (num < 100) {
+      input.dataset.rawPrice = ""
+      input.value = ""
+      showAlert("El precio debe ser mínimo 100", "error")
+      return
+    }
+    
     input.dataset.rawPrice = num.toString()
     input.value = formatCOPValue(num)
   })
@@ -319,6 +354,104 @@ function getDataToRender() {
 }
 
 /* =========================
+   Empty States (fichas-style)
+   ========================= */
+let emptyStateTable = null
+let emptySearchTable = null
+let emptyStateCards = null
+let emptySearchCards = null
+
+function initEmptyStates() {
+  const tableView = document.getElementById("tableView")
+  const tableWrapper = tableView ? tableView.querySelector(":scope > div") : null
+
+  if (!emptyStateTable && tableWrapper && tableWrapper.parentNode) {
+    emptyStateTable = document.createElement("div")
+    emptyStateTable.id = "emptyStateMaterialesTable"
+    emptyStateTable.className =
+      "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full"
+    emptyStateTable.innerHTML = `
+      <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+        <svg class="h-7 w-7 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold mt-4">Aún no hay materiales registrados</h3>
+      <p class="text-sm text-muted-foreground mt-1 max-w-md">
+        Crea un material para empezar a gestionar tu inventario.
+      </p>
+    `
+    tableWrapper.parentNode.insertBefore(emptyStateTable, tableWrapper)
+  }
+
+  if (!emptySearchTable && tableWrapper && tableWrapper.parentNode) {
+    emptySearchTable = document.createElement("div")
+    emptySearchTable.id = "emptySearchMaterialesTable"
+    emptySearchTable.className =
+      "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full"
+    emptySearchTable.innerHTML = `
+      <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+        <svg class="h-7 w-7 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round"></circle>
+          <line x1="16" y1="16" x2="20" y2="20" stroke-linecap="round" stroke-linejoin="round"></line>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold mt-4">No se encontraron resultados</h3>
+      <p class="text-sm text-muted-foreground mt-1 max-w-md">
+        No se encontraron materiales que coincidan con los criterios de búsqueda actuales.
+      </p>
+    `
+    tableWrapper.parentNode.insertBefore(emptySearchTable, tableWrapper)
+  }
+
+  const cardView = document.getElementById("cardView")
+  const cardsContainerEl = document.getElementById("cardsContainer")
+
+  if (!emptyStateCards && cardsContainerEl && cardView) {
+    emptyStateCards = document.createElement("div")
+    emptyStateCards.id = "emptyStateMaterialesCards"
+    emptyStateCards.className =
+      "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full"
+    emptyStateCards.innerHTML = `
+      <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+        <svg class="h-7 w-7 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold mt-4">Aún no hay materiales registrados</h3>
+      <p class="text-sm text-muted-foreground mt-1 max-w-md">
+        Crea un material para empezar a gestionar tu inventario.
+      </p>
+    `
+    cardView.insertBefore(emptyStateCards, cardsContainerEl)
+  }
+
+  if (!emptySearchCards && cardsContainerEl && cardView) {
+    emptySearchCards = document.createElement("div")
+    emptySearchCards.id = "emptySearchMaterialesCards"
+    emptySearchCards.className =
+      "hidden mt-10 mb-6 flex flex-col items-center justify-center text-center border border-border rounded-2xl p-10 w-full"
+    emptySearchCards.innerHTML = `
+      <div class="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-transparent">
+        <svg class="h-7 w-7 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="6" stroke-linecap="round" stroke-linejoin="round"></circle>
+          <line x1="16" y1="16" x2="20" y2="20" stroke-linecap="round" stroke-linejoin="round"></line>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold mt-4">No se encontraron resultados</h3>
+      <p class="text-sm text-muted-foreground mt-1 max-w-md">
+        No se encontraron materiales que coincidan con los criterios de búsqueda actuales.
+      </p>
+    `
+    cardView.insertBefore(emptySearchCards, cardsContainerEl)
+  }
+}
+
+/* =========================
    Íconos SVG
    ========================= */
 const icons = {
@@ -330,7 +463,7 @@ const icons = {
     '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
   menu: '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>',
   package:
-    '<svg class="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>',
+    '<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>',
   email:
     '<svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 6l8 6 8-6"/></svg>',
   ruler:
@@ -350,19 +483,41 @@ function renderTable() {
 
   const tableBody = document.getElementById("tableBody")
   tableBody.innerHTML = ""
+  const tableView = document.getElementById("tableView")
+  let tableWrapper = tableView ? tableView.querySelector(":scope > div") : null
+  const tableEl = tableView ? tableView.querySelector(":scope > div > table") : null
+  if (!tableWrapper && tableEl) {
+    tableWrapper = tableEl.parentElement
+  }
+  const paginationEl = document.getElementById("pagination")
 
   if (!dataToRender.length) {
-    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
-    const row = document.createElement("tr")
-    row.innerHTML = `
-      <td class="px-4 py-6 text-center text-sm text-muted-foreground" colspan="7">${reason}</td>
-    `
-    tableBody.appendChild(row)
-    renderPagination()
-    if (window.lucide && typeof lucide.createIcons === "function") {
-      lucide.createIcons(tableBody)
+    // Hide table and pagination
+    if (tableWrapper) tableWrapper.classList.add("hidden")
+    if (tableEl) tableEl.classList.add("hidden")
+    if (paginationEl) {
+      paginationEl.innerHTML = ""
+      paginationEl.parentElement?.classList.add("hidden")
     }
+
+    // Show proper empty container
+    const hasFilters = Boolean(searchTerm || filterValue)
+    if (hasFilters) {
+      if (emptySearchTable) emptySearchTable.classList.remove("hidden")
+      if (emptyStateTable) emptyStateTable.classList.add("hidden")
+    } else {
+      if (emptyStateTable) emptyStateTable.classList.remove("hidden")
+      if (emptySearchTable) emptySearchTable.classList.add("hidden")
+    }
+
     return
+  } else {
+    // Show table, hide empty containers
+    if (tableWrapper) tableWrapper.classList.remove("hidden")
+    if (tableEl) tableEl.classList.remove("hidden")
+    if (emptyStateTable) emptyStateTable.classList.add("hidden")
+    if (emptySearchTable) emptySearchTable.classList.add("hidden")
+    if (paginationEl) paginationEl.parentElement?.classList.remove("hidden")
   }
 
   paginatedData.forEach((material) => {
@@ -460,18 +615,32 @@ function renderCards() {
 
   const cardsContainer = document.getElementById("cardsContainer")
   cardsContainer.innerHTML = ""
+  const cardPaginationEl = document.getElementById("cardPagination")
 
   if (!dataToRender.length) {
-    const reason = searchTerm || filterValue ? "No se encontraron materiales para el criterio seleccionado" : "Aún no hay materiales registrados"
-    const empty = document.createElement("div")
-    empty.className = "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground col-span-full"
-    empty.innerHTML = `
-      <p class="font-medium text-foreground">${reason}</p>
-      <p class="text-xs text-muted-foreground">Intenta crear un nuevo material o ajusta los filtros.</p>
-    `
-    cardsContainer.appendChild(empty)
-    renderPagination()
+    // Hide cards and pagination
+    cardsContainer.classList.add("hidden")
+    if (cardPaginationEl) {
+      cardPaginationEl.innerHTML = ""
+      cardPaginationEl.parentElement?.classList.add("hidden")
+    }
+
+    // Show proper empty container
+    const hasFilters = Boolean(searchTerm || filterValue)
+    if (hasFilters) {
+      if (emptySearchCards) emptySearchCards.classList.remove("hidden")
+      if (emptyStateCards) emptyStateCards.classList.add("hidden")
+    } else {
+      if (emptyStateCards) emptyStateCards.classList.remove("hidden")
+      if (emptySearchCards) emptySearchCards.classList.add("hidden")
+    }
     return
+  } else {
+    // Show cards, hide empty containers
+    cardsContainer.classList.remove("hidden")
+    if (emptyStateCards) emptyStateCards.classList.add("hidden")
+    if (emptySearchCards) emptySearchCards.classList.add("hidden")
+    if (cardPaginationEl) cardPaginationEl.parentElement?.classList.remove("hidden")
   }
 
   paginatedData.forEach((material) => {
@@ -485,7 +654,7 @@ function renderCards() {
     card.innerHTML = `
       <div class="flex items-start justify-between gap-2">
         <div class="flex items-center gap-2">
-          <div class="flex h-10 w-10 items-center justify-center rounded-full material-icon-bg" style="background-color: rgba(57, 169, 0, 0.1);">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-avatar-secondary-39 text-secondary flex-shrink-0">
             ${icons.package}
           </div>
           <div class="space-y-0.5">
@@ -711,18 +880,27 @@ function openDetailsModal(id) {
 
   const estadoBadgeClass = material.enabled ? "badge-estado-activo" : "badge-estado-inactivo"
   const clasificacionBadgeClass = material.clasificacion === "Inventariado" ? "badge-clasificacion-inventariado" : "badge-clasificacion-consumible"
+  const fotoUrl = getMaterialImageUrl(material.foto)
 
   const detailsContent = document.getElementById("detailsContent")
   detailsContent.innerHTML = `
     <div class="flex items-start gap-4 pb-4 border-b border-border">
-      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary flex-shrink-0">
-        <i data-lucide="box" class="lucide lucide-box h-5 w-5 text-[#007832]"></i>
+      <div class="flex h-20 w-20 items-center justify-center rounded-xl overflow-hidden bg-avatar-secondary-39 text-secondary flex-shrink-0">
+        ${fotoUrl 
+          ? `<img src="${fotoUrl}" alt="${material.name}" class="h-full w-full object-cover" />`
+          : `<i data-lucide="box" class="lucide lucide-box h-8 w-8 text-[#007832]"></i>`
+        }
       </div>
       <div class="flex-1">
         <h3 class="font-semibold text-lg">${material.name}</h3>
-        <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-clasificacion-base ${clasificacionBadgeClass}">
-          ${material.clasificacion}
-        </span>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium badge-clasificacion-base ${clasificacionBadgeClass}">
+            ${material.clasificacion}
+          </span>
+          <span class="badge-estado-base ${estadoBadgeClass}">
+            ${material.enabled ? "Disponible" : "Agotado"}
+          </span>
+        </div>
       </div>
     </div>
     
@@ -742,14 +920,6 @@ function openDetailsModal(id) {
       <div class="grid grid-cols-3 gap-2">
         <span class="text-muted-foreground">Precio:</span>
         <span class="col-span-2 font-medium">${material.precio ? formatCOPValue(material.precio) : "Sin precio"}</span>
-      </div>
-      <div class="grid grid-cols-3 gap-2">
-        <span class="text-muted-foreground">Estado:</span>
-        <div class="col-span-2">
-          <span class="badge-estado-base ${estadoBadgeClass}">
-            ${material.enabled ? "Disponible" : "Agotado"}
-          </span>
-        </div>
       </div>
     </div>
   `
@@ -819,15 +989,23 @@ function closeEditModal() {
 function toggleCodigoField() {
   const clasificacion = document.getElementById("clasificacion").value
   const codigoContainer = document.getElementById("codigoContainer")
+  const codigoHelpText = document.getElementById("codigoHelpText")
   const codigoInput = document.getElementById("codigo")
+  const precioCodigoGrid = document.getElementById("precioCodigoGrid")
 
   if (clasificacion === "Inventariado") {
     codigoContainer.style.display = "block"
+    codigoHelpText.style.display = "block"
     codigoInput.required = true
+    // Mostrar grid de 2 columnas
+    precioCodigoGrid.style.gridTemplateColumns = "1fr 1fr"
   } else {
     codigoContainer.style.display = "none"
+    codigoHelpText.style.display = "none"
     codigoInput.required = false
     codigoInput.value = ""
+    // Cambiar a 1 columna para que el precio ocupe todo el ancho
+    precioCodigoGrid.style.gridTemplateColumns = "1fr"
   }
 }
 
@@ -835,14 +1013,21 @@ function toggleEditCodigoField() {
   const clasificacion = document.getElementById("editClasificacion").value
   const codigoContainer = document.getElementById("editCodigoContainer")
   const codigoInput = document.getElementById("editCodigo")
+  const editPrecioCodigoGrid = document.getElementById("editPrecioCodigoGrid")
 
   if (clasificacion === "Inventariado") {
     codigoContainer.style.display = "block"
     codigoInput.required = true
+    // Mantener grid de 2 columnas
+    editPrecioCodigoGrid.classList.remove("grid-cols-1")
+    editPrecioCodigoGrid.classList.add("grid-cols-2")
   } else {
     codigoContainer.style.display = "none"
     codigoInput.required = false
     codigoInput.value = ""
+    // Cambiar a 1 columna para que el precio ocupe todo el ancho
+    editPrecioCodigoGrid.classList.remove("grid-cols-2")
+    editPrecioCodigoGrid.classList.add("grid-cols-1")
   }
 }
 
@@ -1075,6 +1260,7 @@ function applyFilters() {
    INIT
    ========================= */
 document.addEventListener("DOMContentLoaded", async () => {
+  initEmptyStates()
   await fetchMaterials()
   setupEventListeners()
   // await cargarProgramas() // This line seems to be from another module and might be a leftover
@@ -1115,15 +1301,21 @@ function setupEventListeners() {
       
       const files = e.dataTransfer.files
       if (files.length > 0) {
-        imagenInput.files = files
-        mostrarVistaPrevia(files[0])
+        if (validarImagen(files[0])) {
+          imagenInput.files = files
+          mostrarVistaPrevia(files[0])
+        }
       }
     })
     
     // Manejar selección de archivo
     imagenInput.addEventListener("change", (e) => {
       if (e.target.files.length > 0) {
-        mostrarVistaPrevia(e.target.files[0])
+        if (validarImagen(e.target.files[0])) {
+          mostrarVistaPrevia(e.target.files[0])
+        } else {
+          e.target.value = ""
+        }
       }
     })
   }
@@ -1153,17 +1345,45 @@ function setupEventListeners() {
 
       const files = e.dataTransfer.files
       if (files.length > 0) {
-        editImagenInput.files = files
-        mostrarVistaPrevia(files[0], "editPreviewImagen")
+        if (validarImagen(files[0])) {
+          editImagenInput.files = files
+          mostrarVistaPrevia(files[0], "editPreviewImagen")
+        }
       }
     })
 
     editImagenInput.addEventListener("change", (e) => {
       if (e.target.files.length > 0) {
-        mostrarVistaPrevia(e.target.files[0], "editPreviewImagen")
+        if (validarImagen(e.target.files[0])) {
+          mostrarVistaPrevia(e.target.files[0], "editPreviewImagen")
+        } else {
+          e.target.value = ""
+        }
       }
     })
   }
+}
+
+function validarImagen(file) {
+  const maxSize = 2 * 1024 * 1024 // 2MB
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]
+
+  if (!file) {
+    showAlert("No se seleccionó ningún archivo", "error")
+    return false
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    showAlert("Solo se permiten archivos JPG, JPEG o PNG", "error")
+    return false
+  }
+
+  if (file.size > maxSize) {
+    showAlert("La imagen no puede superar los 2MB", "error")
+    return false
+  }
+
+  return true
 }
 
 function mostrarVistaPrevia(file, previewId = "previewImagen") {
