@@ -67,28 +67,55 @@ class BodegaModel {
 
 
     /* UPDATE BODEGA */
-    public function actualizar(int $id, string $codigo, string $nombre, string $ubicacion, string $estado): bool {
-        try {
-            $sql = "UPDATE bodegas 
-                    SET codigo_bodega = :codigo,
-                        nombre = :nombre, 
-                        ubicacion = :ubicacion,
-                        estado = :estado
-                    WHERE id_bodega = :id"; // Update statement by ID
+  public function actualizar(
+    int $id,
+    string $codigo,
+    string $nombre,
+    string $ubicacion,
+    string $estado,
+    string $clasificacion
+): bool {
+    try {
+        // Validaciones defensivas (ENUM)
+        $estadosValidos = ['Activo', 'Inactivo'];
+        $clasificacionesValidas = ['Insumos', 'Equipos'];
 
-            $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':codigo', $codigo);
-            $stmt->bindParam(':nombre', $nombre);
-            $stmt->bindParam(':ubicacion', $ubicacion);
-            $stmt->bindParam(':estado', $estado);
-
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error actualizar bodega: " . $e->getMessage());
-            return false;
+        if (!in_array($estado, $estadosValidos, true)) {
+            throw new InvalidArgumentException('Estado no válido');
         }
+
+        if (!in_array($clasificacion, $clasificacionesValidas, true)) {
+            throw new InvalidArgumentException('Clasificación no válida');
+        }
+
+        $sql = "
+            UPDATE bodegas
+            SET codigo_bodega        = :codigo,
+                nombre               = :nombre,
+                ubicacion            = :ubicacion,
+                estado               = :estado,
+                clasificacion_bodega = :clasificacion
+            WHERE id_bodega = :id
+            LIMIT 1
+        ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+        $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+        $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
+        $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
+        $stmt->bindParam(':clasificacion', $clasificacion, PDO::PARAM_STR);
+
+        return $stmt->execute();
+
+    } catch (Throwable $e) {
+        error_log('Error actualizar bodega: ' . $e->getMessage());
+        return false;
     }
+}
+
 
     /* CHANGE BODEGA STATE (Active/Inactive)*/
     public function cambiarEstado(int $id, string $estado): bool {

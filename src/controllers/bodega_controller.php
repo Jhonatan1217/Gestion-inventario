@@ -97,22 +97,33 @@ public function crear() {
 
     /* UPDATE BODEGA */
 public function actualizar() {
+
     $data = $this->getJson();
-    $id = $_GET["id"] ?? $_GET["id_bodega"] ?? $data["id_bodega"] ?? null;
+
+    $id = $_GET["id"]
+        ?? $_GET["id_bodega"]
+        ?? $data["id_bodega"]
+        ?? null;
 
     if (!$id) {
-        $this->jsonResponse(["error" => "ID faltante"], 400);
+        $this->jsonResponse(["error" => "ID de bodega faltante"], 400);
         return;
     }
 
-    // VALIDACIÓN: si $data es NULL → error
     if (!$data) {
         $this->jsonResponse(["error" => "JSON inválido o vacío"], 400);
         return;
     }
 
-    // VALIDAR CAMPOS OBLIGATORIOS
-    $required = ["codigo_bodega", "nombre", "ubicacion", "estado"];
+    // CAMPOS OBLIGATORIOS SEGÚN LA BD
+    $required = [
+        "codigo_bodega",
+        "nombre",
+        "ubicacion",
+        "estado",
+        "clasificacion_bodega"
+    ];
+
     foreach ($required as $campo) {
         if (!isset($data[$campo])) {
             $this->jsonResponse(["error" => "Falta el campo: $campo"], 400);
@@ -120,17 +131,33 @@ public function actualizar() {
         }
     }
 
+    // VALIDAR ENUMS
+    $estadosValidos = ["Activo", "Inactivo"];
+    $clasificacionesValidas = ["Insumos", "Equipos"];
+
+    if (!in_array($data["estado"], $estadosValidos, true)) {
+        $this->jsonResponse(["error" => "Estado inválido"], 400);
+        return;
+    }
+
+    if (!in_array($data["clasificacion_bodega"], $clasificacionesValidas, true)) {
+        $this->jsonResponse(["error" => "Clasificación inválida"], 400);
+        return;
+    }
+
     $ok = $this->model->actualizar(
-        intval($id),
-        $data['codigo_bodega'],
-        $data['nombre'],
-        $data['ubicacion'],
-        $data['estado']
+        (int)$id,
+        $data["codigo_bodega"],
+        $data["nombre"],
+        $data["ubicacion"],
+        $data["estado"],
+        $data["clasificacion_bodega"]
     );
 
     $this->jsonResponse(
-        $ok ? ["mensaje" => "Bodega actualizada correctamente"]
-            : ["error" => "No se pudo actualizar"],
+        $ok
+            ? ["mensaje" => "Bodega actualizada correctamente"]
+            : ["error" => "No se pudo actualizar la bodega"],
         $ok ? 200 : 500
     );
 }
