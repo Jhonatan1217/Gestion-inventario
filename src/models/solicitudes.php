@@ -73,6 +73,30 @@ class SolicitudMaterialModel {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Get all requests
+    public function getAll()
+    {
+        $sql = "SELECT 
+                    sm.id_solicitud,
+                    sm.fecha_solicitud,
+                    sm.estado,
+                    sm.id_usuario_solicitante,
+                    sm.id_usuario_aprobador,
+                    sm.fecha_respuesta,
+                    sm.id_ficha,
+                    sm.id_actividad,
+                    sm.id_rae,
+                    sm.id_programa
+                FROM solicitudes_material sm
+                ORDER BY sm.fecha_solicitud DESC";
+    
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
     // Approve or reject request
     public function responderSolicitud($idSolicitud, $estado, $idAprobador, $observaciones = null)
     {
