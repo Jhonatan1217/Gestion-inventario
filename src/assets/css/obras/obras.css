@@ -1,0 +1,23 @@
+.main-content {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    max-width: none;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 90px;
+    width: calc(100% - 90px);
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    body.sidebar-collapsed .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+}
