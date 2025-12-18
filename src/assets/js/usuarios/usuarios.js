@@ -1,28 +1,28 @@
 // =========================
 // CONFIG: CONTROLLER ENDPOINTS
 // =========================
-const API_URL = "src/controllers/usuario_controller.php"; 
-const PROGRAMAS_API_URL = "src/controllers/programa_controller.php"; 
+const API_URL = "src/controllers/usuario_controller.php";
+const PROGRAMAS_API_URL = "src/controllers/programa_controller.php";
 
 // =========================
 // ROLE CONFIGURATION (label and badge styles)
 // =========================
 const roleLabels = {
-  "Coordinador": "Coordinador",
-  "Subcoordinador": "Subcoordinador",
-  "Instructor": "Instructor",
-  "Pasante": "Pasante",
-  "Aprendiz": "Aprendiz",
+  Coordinador: "Coordinador",
+  Subcoordinador: "Subcoordinador",
+  Instructor: "Instructor",
+  Pasante: "Pasante",
+  Aprendiz: "Aprendiz",
 };
 
 // Badge classes defined in globals.css
 const roleBadgeStyles = {
-  "Coordinador": "badge-role-coordinador",
-  "Subcoordinador": "badge-role-coordinador",
-  "Instructor": "badge-role-instructor",
-  "Pasante": "badge-role-pasante",
+  Coordinador: "badge-role-coordinador",
+  Subcoordinador: "badge-role-coordinador",
+  Instructor: "badge-role-instructor",
+  Pasante: "badge-role-pasante",
   // "Aprendiz" uses the same visual style as "Instructor"
-  "Aprendiz": "badge-role-parendiz",
+  Aprendiz: "badge-role-parendiz",
 };
 
 // =========================
@@ -289,7 +289,6 @@ if (!emptySearchContainer && vistaTabla && vistaTabla.parentNode) {
   vistaTabla.parentNode.insertBefore(emptySearchContainer, vistaTabla);
 }
 
-
 // =========================
 // HELPER FUNCTIONS
 // =========================
@@ -298,13 +297,122 @@ if (!emptySearchContainer && vistaTabla && vistaTabla.parentNode) {
  * Returns the initials of a full name.
  */
 function getInitials(nombre) {
-  return nombre
+  return String(nombre || "")
     .split(" ")
     .filter(Boolean)
     .map((n) => n[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+// =========================
+// ✅ NUEVO: helpers para mostrar foto_perfil sin tocar tu base
+// =========================
+function getBaseUrlFromApi() {
+  try {
+    const u = new URL(API_URL, window.location.href);
+    const idx = u.pathname.indexOf("/src/");
+    const basePath = idx !== -1 ? u.pathname.slice(0, idx + 1) : u.pathname.replace(/\/[^/]*$/, "/");
+    return u.origin + basePath; // termina en "/"
+  } catch (e) {
+    return window.location.origin + "/";
+  }
+}
+
+function resolveFotoUrl(path) {
+  if (!path) return null;
+
+  const raw = String(path).trim();
+  if (!raw) return null;
+
+  // ya es url completa
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  // normaliza: quita "/" inicial para concatenar bien
+  const clean = raw.replace(/^\/+/, "");
+  return getBaseUrlFromApi() + clean;
+}
+
+/**
+ * Render de avatar: si hay foto -> <img>, si no -> iniciales
+ */
+function renderAvatarHTML(user, sizeClass = "h-9 w-9", textClass = "text-sm") {
+  const fotoUrl = resolveFotoUrl(user?.foto_perfil);
+
+  if (fotoUrl) {
+    // fallback a iniciales si el <img> falla
+    const initials = getInitials(user?.nombre_completo || "");
+    const safeName = String(user?.nombre_completo || "usuario").replace(/"/g, "&quot;");
+
+    return `
+      <img
+        src="${fotoUrl}"
+        alt="Foto de ${safeName}"
+        class="rounded-full ${sizeClass} object-cover border border-border"
+        onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend','<div class=\\'flex ${sizeClass} items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary ${textClass}\\'>${initials}</div>');"
+      />
+    `;
+  }
+
+  return `
+    <div class="flex ${sizeClass} items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary ${textClass}">
+      ${getInitials(user?.nombre_completo || "")}
+    </div>
+  `;
+}
+
+// =========================
+// ✅ FIX: REGEX DEFINITIONS (evita ReferenceError en validaciones)
+// =========================
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const numeroRegex = /^\d+$/;
+
+// =========================
+// ✅ FIX: validateUserPayload (evita ReferenceError al submit)
+// =========================
+function validateUserPayload(payload, opts = {}) {
+  const { isEdit = false, currentId = null } = opts;
+
+  const doc = String(payload.numero_documento || "").trim();
+  const mail = String(payload.correo || "").trim().toLowerCase();
+
+  // Evitar duplicados en memoria (mejora UX antes de pegarle al backend)
+  if (doc) {
+    const dupDoc = users.find(
+      (u) =>
+        String(u.id) !== String(currentId) &&
+        String(u.numero_documento || "").trim() === doc
+    );
+    if (dupDoc) {
+      toastError("El número de documento ya está registrado.");
+      return false;
+    }
+  }
+
+  if (mail) {
+    const dupMail = users.find(
+      (u) =>
+        String(u.id) !== String(currentId) &&
+        String(u.correo || "").trim().toLowerCase() === mail
+    );
+    if (dupMail) {
+      toastError("El correo ya está registrado.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// =========================
+// ✅ FIX EXTRA: "Guard" global para evitar ReferenceError si el browser ejecuta un JS viejo
+// (NO toca tu lógica, solo asegura que exista la función)
+// =========================
+if (typeof window.validateUserPayload !== "function") {
+  window.validateUserPayload = validateUserPayload;
+} else {
+  // si ya existía, mantenemos la del window (no sobreescribimos nada)
 }
 
 /**
@@ -396,6 +504,18 @@ async function cargarProgramas() {
     // Always refresh the program options after loading
     renderOpcionesPrograma();
 
+    // ✅ FIX: si el modal está abierto en modo edición y es Instructor, re-selecciona el programa
+    if (
+      modalUsuario &&
+      modalUsuario.classList.contains("active") &&
+      selectedUser &&
+      selectedUser.cargo === "Instructor" &&
+      inputPrograma
+    ) {
+      const pid = selectedUser.id_programa ? String(selectedUser.id_programa) : "";
+      if (pid) inputPrograma.value = pid;
+    }
+
     // Informative alert when there are no programs in the system
     if (programas.length === 0) {
       toastInfo(
@@ -408,6 +528,61 @@ async function cargarProgramas() {
     renderOpcionesPrograma();
     toastError("Ocurrió un error al cargar los programas de formación.");
   }
+}
+
+// =========================
+// ✅ PASSWORD GENERATOR (letters + numbers + special chars)
+// =========================
+const PASSWORD_LENGTH = 12; // puedes subirlo a 14 o 16 si quieres más seguridad
+
+function getSecureRandomInt(max) {
+  // crypto seguro (navegadores modernos)
+  if (window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  }
+  // fallback
+  return Math.floor(Math.random() * max);
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = getSecureRandomInt(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function generateStrongPassword(length = PASSWORD_LENGTH) {
+  const lettersLower = "abcdefghijklmnopqrstuvwxyz";
+  const lettersUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const specials = "!@#$%^&*()_+-=[]{},.<>?/|~";
+
+  // ✅ Garantiza al menos 1 de cada tipo
+  const required = [
+    lettersLower[getSecureRandomInt(lettersLower.length)],
+    lettersUpper[getSecureRandomInt(lettersUpper.length)],
+    numbers[getSecureRandomInt(numbers.length)],
+    specials[getSecureRandomInt(specials.length)],
+  ];
+
+  const all = lettersLower + lettersUpper + numbers + specials;
+
+  const remaining = [];
+  const remainingCount = Math.max(0, length - required.length);
+  for (let i = 0; i < remainingCount; i++) {
+    remaining.push(all[getSecureRandomInt(all.length)]);
+  }
+
+  return shuffleArray([...required, ...remaining]).join("");
+}
+
+function setGenericPasswordInInput() {
+  if (!inputPassword) return;
+  const pass = generateStrongPassword(PASSWORD_LENGTH);
+  inputPassword.value = pass;
 }
 
 /**
@@ -494,6 +669,9 @@ function openModalUsuario(editUser = null) {
     if (passwordWrapper) {
       passwordWrapper.classList.remove("hidden");
     }
+
+    // ✅ NUEVO: contraseña genérica automática (letras + números + especiales)
+    setGenericPasswordInInput();
   }
 }
 
@@ -525,47 +703,51 @@ function openModalVerUsuario(user) {
 
   detalleUsuarioContent.innerHTML = `
       <div class="flex items-center gap-4">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-xl">
-          ${getInitials(user.nombre_completo)}
-        </div>
+        ${renderAvatarHTML(user, "h-16 w-16", "text-xl")}
         <div>
           <h3 class="font-semibold text-lg">${user.nombre_completo}</h3>
-          <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            roleBadgeStyles[user.cargo] || "badge-role-default"
-          }">
-            ${roleLabels[user.cargo] || user.cargo}
-          </span>
+
+          <!-- ✅ AHORA ROL + ESTADO AL LADO -->
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+              roleBadgeStyles[user.cargo] || "badge-role-default"
+            }">
+              ${roleLabels[user.cargo] || user.cargo}
+            </span>
+
+            <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${estadoBadgeClass}">
+              ${user.estado ? "Activo" : "Inactivo"}
+            </span>
+          </div>
         </div>
       </div>
+
       <div class="grid gap-3 text-sm">
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Documento:</span>
           <span class="col-span-2">${user.tipo_documento} ${user.numero_documento}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Teléfono:</span>
           <span class="col-span-2">${user.telefono}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Correo:</span>
           <span class="col-span-2">${user.correo}</span>
         </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Dirección:</span>
           <span class="col-span-2">${user.direccion}</span>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <span class="text-muted-foreground">Estado:</span>
-          <div class="col-span-2">
-            <span class="badge-estado-base ${estadoBadgeClass}">
-              ${user.estado ? "Activo" : "Inactivo"}
-            </span>
-          </div>
-        </div>
+
         <div class="grid grid-cols-3 gap-2">
           <span class="text-muted-foreground">Registrado:</span>
-          <span class="col-span-2">${user.created_at || ""}</span>
+          <span class="col-span-2">${user.fecha_creacion || ""}</span>
         </div>
+
         ${
           programaNombre
             ? `
@@ -670,8 +852,17 @@ async function cargarUsuarios() {
           correo: u.correo,
           direccion: u.direccion,
           estado: estadoBool,
-          created_at: u.created_at || "",
+
+          // ✅ FIX SIN TOCAR TU BASE:
+          // El backend trae fecha_creacion (no created_at), por eso el modal quedaba vacío.
+          // Guardamos ambos por compatibilidad.
+          fecha_creacion: u.fecha_creacion || u.created_at || "",
+          created_at: u.created_at || u.fecha_creacion || "",
+
           id_programa: u.id_programa ?? null,
+
+          // ✅ NUEVO: foto perfil (si viene del backend)
+          foto_perfil: u.foto_perfil ?? null,
         };
       });
     }
@@ -700,9 +891,27 @@ function actualizarUsuario(payload) {
 
 /**
  * Optional: dedicated endpoint for changing user status, if implemented.
+ * ✅ FIX: fallback automático si tu backend usa otro nombre de acción.
  */
-function cambiarEstadoUsuario(payload) {
-  return callApi(`${API_URL}?accion=cambiar_estado`, payload);
+async function cambiarEstadoUsuario(payload) {
+  const posiblesAcciones = ["cambiar_estado", "cambiarEstado", "toggle_estado", "toggleEstado"];
+
+  let last = null;
+
+  for (const accion of posiblesAcciones) {
+    const data = await callApi(`${API_URL}?accion=${accion}`, payload);
+    last = data;
+
+    // Si no hay error, listo
+    if (!data || !data.error) return data;
+
+    // Si el error NO es de "acción no válida", no seguimos probando (es un error real)
+    const msg = String(data.error || "");
+    const esAccionNoValida = /acción no válida|accion no valida|acción inválida|accion invalida/i.test(msg);
+    if (!esAccionNoValida) return data;
+  }
+
+  return last || { error: "No se pudo cambiar el estado del usuario." };
 }
 
 /**
@@ -722,7 +931,7 @@ async function toggleStatus(userId) {
 
     console.log("Respuesta cambiar_estado:", data);
 
-    if (data.error) {
+    if (data && data.error) {
       toastError(data.error || "No se pudo cambiar el estado del usuario.");
       return;
     }
@@ -847,15 +1056,25 @@ function renderTable() {
   const rol = selectFiltroRol.value;
 
   const filtered = users.filter((u) => {
-    // Do not show the logged-in user in the list
-    if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
-      return false;
-    }
+  // ✅ 1) No mostrar el usuario "Sistema Interno" (id 1) si NO estás logueado con esa cuenta
+  if (
+    typeof AUTH_USER_ID !== "undefined" &&
+    String(AUTH_USER_ID) !== "1" &&
+    String(u.id) === "1"
+  ) {
+    return false;
+  }
 
-    const matchName = u.nombre_completo.toLowerCase().includes(search);
-    const matchRol = rol ? u.cargo === rol : true;
-    return matchName && matchRol;
-  });
+  // ✅ 2) No mostrar el usuario logueado en la lista (tu regla actual)
+  if (typeof AUTH_USER_ID !== "undefined" && String(u.id) === String(AUTH_USER_ID)) {
+    return false;
+  }
+
+  const matchName = u.nombre_completo.toLowerCase().includes(search);
+  const matchRol = rol ? u.cargo === rol : true;
+  return matchName && matchRol;
+});
+
 
   const totalItems = filtered.length;
 
@@ -936,9 +1155,7 @@ function renderTable() {
     tr.innerHTML = `
         <td class="px-4 py-3 align-middle">
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-sm">
-              ${getInitials(user.nombre_completo)}
-            </div>
+            ${renderAvatarHTML(user, "h-9 w-9", "text-sm")}
             <div>
               <p class="font-medium text-sm">${user.nombre_completo}</p>
               <p class="text-xs text-muted-foreground">${user.correo}</p>
@@ -1006,7 +1223,7 @@ function renderTable() {
                   <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 20h9"/>
                   <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.5 3.5a2.121 2.121 0 0 1 3 3L9 17l-4 1 1-4 10.5-10.5z"/>
+                        d="M16.5 3.5a2.121 2 0 0 1 3 3L9 17l-4 1 1-4 10.5-10.5z"/>
                 </svg>
                 Editar
               </button>
@@ -1066,9 +1283,7 @@ function renderTable() {
     card.innerHTML = `
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-avatar-secondary-39 text-secondary text-xs">
-              ${getInitials(user.nombre_completo)}
-            </div>
+            ${renderAvatarHTML(user, "h-10 w-10", "text-xs")}
             <div class="space-y-0.5">
               <p class="font-semibold text-xs sm:text-sm leading-snug">${user.nombre_completo}</p>
               <p class="text-[11px] sm:text-xs text-muted-foreground">${user.tipo_documento} ${user.numero_documento}</p>
@@ -1242,29 +1457,69 @@ function renderTable() {
 // DROPDOWN MENU HANDLING
 // =========================
 
+// ✅ FIX: evita listeners duplicados en cada render (esto era lo que suele romper menús/acciones)
+let _menuEventsAttached = false;
+
 /**
  * Sets up global click handling for contextual menus in both table and card views.
+ * ✅ FIX: Delegación de eventos (1 sola vez) para que no se multipliquen listeners.
  */
 function attachMenuEvents() {
-  // Close all menus when clicking outside
-  document.addEventListener("click", (e) => {
-    if (
-      !e.target.closest("[data-menu-trigger]") &&
-      !e.target.closest("[data-menu]")
-    ) {
-      document.querySelectorAll("[data-menu]").forEach((el) => {
-        el.classList.add("hidden");
-        el.classList.remove("show");
-      });
-    }
-  });
+  if (_menuEventsAttached) return;
+  _menuEventsAttached = true;
 
-  // Toggle specific menu on trigger click
-  document.querySelectorAll("[data-menu-trigger]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+  const closeAllMenus = () => {
+    document.querySelectorAll("[data-menu]").forEach((el) => {
+      el.classList.add("hidden");
+      el.classList.remove("show");
+    });
+  };
+
+  document.addEventListener("click", (e) => {
+    const trigger = e.target.closest("[data-menu-trigger]");
+    const actionBtn = e.target.closest("[data-menu] [data-action]");
+    const anyMenu = e.target.closest("[data-menu]");
+
+    // 1) Si clic en un item de acción
+    if (actionBtn) {
       e.stopPropagation();
 
-      const wrapper = btn.closest(".relative, .inline-block, td, div");
+      const action = actionBtn.getAttribute("data-action");
+      const id = actionBtn.getAttribute("data-id");
+      const user = users.find((u) => String(u.id) === String(id));
+      if (!user) {
+        closeAllMenus();
+        return;
+      }
+
+      if (action === "ver") {
+        openModalVerUsuario(user);
+      } else if (action === "editar") {
+        openModalUsuario(user);
+      } else if (action === "toggle") {
+        toggleStatus(id);
+      }
+
+      // Cierra el menú al ejecutar acción
+      const menu = actionBtn.closest("[data-menu]");
+      if (menu) {
+        menu.classList.add("hidden");
+        menu.classList.remove("show");
+      }
+
+      return;
+    }
+
+    // 2) Si clic en el trigger (botón de 3 puntos)
+    if (trigger) {
+      e.stopPropagation();
+
+      const wrapper =
+        trigger.closest(".relative") ||
+        trigger.closest(".inline-block") ||
+        trigger.closest("td") ||
+        trigger.closest("div");
+
       if (!wrapper) return;
 
       const menu = wrapper.querySelector("[data-menu]");
@@ -1272,10 +1527,8 @@ function attachMenuEvents() {
 
       const isHidden = menu.classList.contains("hidden");
 
-      document.querySelectorAll("[data-menu]").forEach((el) => {
-        el.classList.add("hidden");
-        el.classList.remove("show");
-      });
+      // Cierra otros menús
+      closeAllMenus();
 
       if (isHidden) {
         menu.classList.remove("hidden");
@@ -1288,33 +1541,14 @@ function attachMenuEvents() {
           menu.classList.add("hidden");
         }, 150);
       }
-    });
-  });
 
-  // Menu item actions
-  document.querySelectorAll("[data-menu] [data-action]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+      return;
+    }
 
-      const action = btn.getAttribute("data-action");
-      const id = btn.getAttribute("data-id");
-      const user = users.find((u) => String(u.id) === String(id));
-      if (!user) return;
-
-      if (action === "ver") {
-        openModalVerUsuario(user);
-      } else if (action === "editar") {
-        openModalUsuario(user);
-      } else if (action === "toggle") {
-        toggleStatus(id);
-      }
-
-      const menu = btn.closest("[data-menu]");
-      if (menu) {
-        menu.classList.add("hidden");
-        menu.classList.remove("show");
-      }
-    });
+    // 3) Si clic fuera de triggers y fuera de menús => cerrar todo
+    if (!anyMenu) {
+      closeAllMenus();
+    }
   });
 }
 
@@ -1374,8 +1608,9 @@ formUsuario.addEventListener("submit", async (e) => {
   }
 
   const isEdit = !!hiddenUserId.value;
-  const numeroRegex = /^[0-9]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // ✅ FIX: usa la función global garantizada (evita ReferenceError si corre un JS viejo/caché)
+  if (!window.validateUserPayload(payload, { isEdit, currentId: hiddenUserId.value })) return;
 
   const allEmpty =
     !payload.nombre_completo &&
@@ -1496,9 +1731,7 @@ formUsuario.addEventListener("submit", async (e) => {
       !payload.password;
 
     if (noHayCambios) {
-      toastInfo(
-        "Para actualizar el registro es necesario modificar al menos un dato del usuario."
-      );
+      toastInfo("Para actualizar debes modificar al menos un dato.");
       return;
     }
   }
@@ -1546,6 +1779,34 @@ document.addEventListener("keydown", (e) => {
     }
   }
 });
+
+// =========================
+// TOGGLE PASSWORD (OJITO)
+// =========================
+(function initPasswordToggle() {
+  const inputPass = document.getElementById("password");
+  const btnToggle = document.getElementById("btnTogglePassword");
+  const iconEye = document.getElementById("iconEye");
+  const iconEyeOff = document.getElementById("iconEyeOff");
+
+  if (!inputPass || !btnToggle || !iconEye || !iconEyeOff) return;
+
+  btnToggle.addEventListener("click", () => {
+    const isHidden = inputPass.type === "password";
+    inputPass.type = isHidden ? "text" : "password";
+
+    iconEye.classList.toggle("hidden", isHidden);
+    iconEyeOff.classList.toggle("hidden", !isHidden);
+
+    btnToggle.title = isHidden ? "Ocultar contraseña" : "Ver contraseña";
+    btnToggle.setAttribute("aria-label", btnToggle.title);
+
+    // Mantener el foco y el cursor al final (nice UX)
+    inputPass.focus();
+    const len = inputPass.value.length;
+    inputPass.setSelectionRange(len, len);
+  });
+})();
 
 // ================================
 // INITIAL LOAD
