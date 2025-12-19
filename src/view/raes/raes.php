@@ -49,7 +49,31 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     <!-- Solo importamos global.css del SENA -->
     <link rel="stylesheet" href="<?= BASE_URL ?>src/assets/css/globals.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ✅ AJUSTE: Iconos más pequeños en GRID (libro y programa) sin tocar tu JS -->
+    <style>
+        /* SOLO afecta a tarjetas del grid generado por JS */
+        #gridViewContainer .lucide-book-open,
+        #gridViewContainer svg.lucide-book-open,
+        #gridViewContainer [data-lucide="book-open"],
+        #gridViewContainer i.fa-book-open,
+        #gridViewContainer i.fa-book {
+            width: 18px !important;
+            height: 18px !important;
+            font-size: 14px !important;
+        }
+
+        #gridViewContainer .lucide-graduation-cap,
+        #gridViewContainer svg.lucide-graduation-cap,
+        #gridViewContainer [data-lucide="graduation-cap"],
+        #gridViewContainer i.fa-graduation-cap {
+            width: 16px !important;
+            height: 16px !important;
+            font-size: 13px !important;
+        }
+    </style>
 </head>
+
 <body>
     <!-- Reduciendo significativamente los márgenes laterales: 80px cuando está colapsado y 270px cuando está expandido -->
     <main class="p-6 transition-all duration-300"
@@ -116,7 +140,17 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <!-- Buscador -->
                 <div class="relative w-full sm:max-w-xs">
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                    <svg
+                        class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
                     <input id="searchRae" type="text" placeholder="Buscar rae..." class="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm">
                 </div>
                             
@@ -136,7 +170,11 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                             stroke-linejoin="round"
                         />
                     </svg>
-                    <select id="selectFiltroNivel" class="rounded-md border border-input bg-background px-3 py-2 w-40 text-sm">
+                    <select
+                        id="selectFiltroNivel"
+                        class="rounded-md border border-input bg-background px-3 py-2 pr-10 w-52 sm:w-56 text-sm whitespace-nowrap"
+                        >
+
                         <option value="">Todos los niveles</option>
                         <option value="Técnico">Técnico</option>
                         <option value="Tecnólogo">Tecnólogo</option>
@@ -176,22 +214,34 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             </div>
 
             <!-- VISTA DE TABLA -->
-            <div id="tableView" class="border border-border rounded-lg">
-                <table class="w-full border-collapse">
+            <!-- ✅ CORREGIDO: bordes y esquinas como "Usuarios" + sin recortes -->
+            <div id="tableView" class="relative rounded-xl border border-border bg-card p-[1px] overflow-visible">
+                <table class="min-w-full border-separate border-spacing-0 text-sm rounded-[11px] bg-card">
                     
                     <!-- Encabezados de la tabla -->
                     <thead>
-                        <tr class="border-b border-border bg-muted">
-                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">ID</th>
-                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Descripción</th>
-                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Programa</th>
-                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Estado</th>
-                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm">Acciones</th>
+                        <tr>
+                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm bg-muted first:rounded-tl-[11px]">ID</th>
+                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm bg-muted">Descripción</th>
+                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm bg-muted">Programa</th>
+                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm bg-muted">Estado</th>
+                            <th class="text-left py-3 px-4 font-medium text-muted-foreground text-sm bg-muted last:rounded-tr-[11px]">Acciones</th>
                         </tr>
                     </thead>
                     
                     <!-- Filas de datos: cargadas dinámicamente desde la API -->
-                    <tbody id="raesTableBody">
+                    <tbody
+                        id="raesTableBody"
+                        class="divide-y divide-border bg-card
+                               [&>tr>td]:bg-card
+                               [&>tr:last-child>td:first-child]:rounded-bl-[11px]
+                               [&>tr:last-child>td:last-child]:rounded-br-[11px]
+                               /* ✅ ICONOS MÁS PEQUEÑOS SOLO EN: Descripción (col 2) y Programa (col 3) */
+                               [&>tr>td:nth-child(2)_svg]:h-4 [&>tr>td:nth-child(2)_svg]:w-4
+                               [&>tr>td:nth-child(2)_i]:text-[12px]
+                               [&>tr>td:nth-child(3)_svg]:h-4 [&>tr>td:nth-child(3)_svg]:w-4
+                               [&>tr>td:nth-child(3)_i]:text-[12px]"
+                    >
                         <!-- contenido generado por JS -->
                     </tbody>
                 </table>
@@ -248,7 +298,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 <!-- Icono + Código + Estado -->
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 bg-avatar-secondary-39 rounded-md flex items-center justify-center flex-shrink-0;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open">
+                        <!-- ✅ ICONO MÁS PEQUEÑO (ANTES 40x40) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#007832" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open">
                             <path d="M12 7v14"/>
                             <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
                         </svg>
@@ -269,7 +320,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 <div>
                     <label class="block text-sm font-semibold mb-2">Programa:</label>
                     <div class="flex items-center gap-2 text-sm font-medium">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap">
+                        <!-- ✅ ICONO MÁS PEQUEÑO (ANTES 30x30) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap">
                             <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
                             <path d="M22 10v6"></path>
                             <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
@@ -305,7 +357,13 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 <!-- Código RAE -->
                 <div>
                     <label for="editRaeCodigo" class="block text-sm font-medium mb-2">Código RAE *</label>
-                    <input id="editRaeCodigo" type="text" placeholder="Ej: 001" class="w-full px-4 py-2 border border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                    <input 
+                        id="editRaeCodigo" 
+                        type="text" 
+                        placeholder="Ej: 001" 
+                        class="w-full px-4 py-2 border border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                        onkeypress="return validarSoloNumeros(event)"
+                    >
                 </div>
 
                 <!-- Programa -->
@@ -368,7 +426,13 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
                 <!-- Código RAE -->
                 <div>
                     <label for="createRaeCodigo" class="block text-sm font-medium text-foreground mb-2">Código RAE *</label>
-                    <input id="createRaeCodigo" type="text" placeholder="Ej: 001" class="w-full px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                    <input 
+                        id="createRaeCodigo" 
+                        type="text" 
+                        placeholder="Ej: 001" 
+                        class="w-full px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                        onkeypress="return validarSoloNumeros(event)"
+                    >
                 </div>
 
                 <!-- Programa -->
@@ -396,6 +460,7 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
             </div>
         </div>
     </div>
+
     <script src="<?= ASSETS_URL ?>js/raes/raes.js"></script>
 </body>
 </html>

@@ -388,7 +388,7 @@ function openEditModal(index) {
     document.getElementById("edit_nombre").value = row.dataset.nombre
     document.getElementById("edit_descripcion").value = row.dataset.descripcion
     document.getElementById("edit_nivel").value = row.dataset.nivel
-    document.getElementById("edit_duracion").value = row.dataset.duracion
+    document.getElementById("edit_duracion").value = row.dataset.duracion.replace(/[^\d]/g, '')
   }
 
   modal.classList.remove("hidden")
@@ -570,7 +570,21 @@ function validateProgramData(data, isEdit = false) {
  * Check if there are any changes between original and current data (for edit mode)
  */
 function hasChanges(originalData, currentData) {
-  return JSON.stringify(originalData) !== JSON.stringify(currentData);
+  // Normalizar datos para comparación
+  const normalize = (obj) => {
+    return {
+      codigo: (obj.codigo || '').trim(),
+      nombre: (obj.nombre || '').trim(),
+      descripcion: (obj.descripcion || '').trim(),
+      nivel: (obj.nivel || '').trim(),
+      duracion: (obj.duracion || '').trim()
+    };
+  };
+
+  const originalNormalized = normalize(originalData);
+  const currentNormalized = normalize(currentData);
+
+  return JSON.stringify(originalNormalized) !== JSON.stringify(currentNormalized);
 }
 
 // ************************************** Programs Creation ***********************************************
@@ -583,9 +597,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("[v0] BASE_URL configured as:", BASE_URL)
 
+  // Variable para almacenar datos originales en edición
+  let originalEditData = null;
+
+  // Evento para capturar datos originales al abrir modal de edición
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('button[onclick^="openEditModal"]') || 
+        e.target.closest('button[onclick^="toggleActionMenu"] + [data-action="editar"]') ||
+        e.target.closest('button[data-action="editar"]')) {
+      const row = e.target.closest('tr') || e.target.closest('div[data-index]');
+      if (row) {
+        originalEditData = {
+          codigo: row.dataset.codigo,
+          nombre: row.dataset.nombre,
+          descripcion: row.dataset.descripcion,
+          nivel: row.dataset.nivel,
+          duracion: row.dataset.duracion.replace(/[^\d]/g, '')
+        };
+      }
+    }
+  });
+
   // Create Program Form
   const createForm = document.getElementById("createProgramForm")
   if (createForm) {
+    // Solo permitir números en el campo de duración
+    const duracionInput = document.getElementById("create_duracion");
+    if (duracionInput) {
+      duracionInput.addEventListener("input", function(e) {
+        this.value = this.value.replace(/[^\d]/g, '');
+      });
+    }
+
     createForm.addEventListener("submit", async (e) => {
       e.preventDefault()
 
@@ -646,24 +689,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Edit Program Form
   const editForm = document.getElementById("editProgramForm")
   if (editForm) {
-    let originalEditData = null; // Store original data for change detection
-
-    // Store original data when opening edit modal
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('button[onclick^="openEditModal"]') || 
-          e.target.closest('button[onclick^="toggleActionMenu"] + [data-action="editar"]')) {
-        const row = e.target.closest('tr') || e.target.closest('div[data-index]');
-        if (row) {
-          originalEditData = {
-            codigo: row.dataset.codigo,
-            nombre: row.dataset.nombre,
-            descripcion: row.dataset.descripcion,
-            nivel: row.dataset.nivel,
-            duracion: row.dataset.duracion
-          };
-        }
-      }
-    });
+    // Solo permitir números en el campo de duración
+    const editDuracionInput = document.getElementById("edit_duracion");
+    if (editDuracionInput) {
+      editDuracionInput.addEventListener("input", function(e) {
+        this.value = this.value.replace(/[^\d]/g, '');
+      });
+    }
 
     editForm.addEventListener("submit", async (e) => {
       e.preventDefault()
@@ -783,10 +815,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const nuevoEstado = estadoActual ? 0 : 1
 
       const actionText = nuevoEstado ? "activar" : "desactivar";
-      
-      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
-        return;
-      }
 
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {
@@ -852,12 +880,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const nuevoEstado = e.target.checked ? 1 : 0
       
       const actionText = nuevoEstado ? "activar" : "desactivar";
-      
-      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
-        // Revert checkbox if user cancels
-        e.target.checked = !e.target.checked;
-        return;
-      }
 
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {

@@ -49,7 +49,11 @@ switch ($page) {
 
     case 'solicitudes':
         $viewFile = BASE_PATH . '/src/view/solicitudes/solicitudes.php';  // ajusta al archivo real
-        break;        
+        break;
+
+    case 'obras':
+        $viewFile = BASE_PATH . '/src/view/obras/obras.php';  // ajusta al archivo real
+        break;
 
     case 'materiales':
             $viewFile = BASE_PATH . '/src/view/materiales/materiales.php';  // ajusta al archivo real
