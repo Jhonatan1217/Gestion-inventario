@@ -1,4 +1,5 @@
 <?php
+
 class Usuario {
     private $conn;
     private $table = "usuarios";
@@ -7,7 +8,7 @@ class Usuario {
         $this->conn = $db;
     }
 
-    //Function to list all users
+    // LISTAR
     public function listar() {
         $sql = "SELECT * FROM " . $this->table;
         $stmt = $this->conn->prepare($sql);
@@ -15,7 +16,7 @@ class Usuario {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Function to get a user by their ID
+    // OBTENER POR ID
     public function obtenerPorId($id) {
         $sql = "SELECT * FROM " . $this->table . " WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
@@ -24,7 +25,7 @@ class Usuario {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Function to get a user by their email (for uniqueness validation or login later)
+    // OBTENER POR CORREO
     public function obtenerPorCorreo($correo) {
         $sql = "SELECT * FROM " . $this->table . " WHERE correo = :correo";
         $stmt = $this->conn->prepare($sql);
@@ -33,14 +34,36 @@ class Usuario {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Function to create a new user
-    public function crear($nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $direccion, $password, $id_programa = null) {
-        $sql = "INSERT INTO usuarios 
-                (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, password, direccion, estado, id_programa)
-                VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :password, :direccion, 'activo', :programa)";
+    // OBTENER POR DOCUMENTO
+    public function obtenerPorDocumento($documento) {
+        $sql = "SELECT * FROM " . $this->table . " WHERE numero_documento = :documento";
         $stmt = $this->conn->prepare($sql);
-        
+        $stmt->bindParam(':documento', $documento);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // CREAR (devuelve ID)
+    public function crear(
+        $nombre,
+        $tipo_doc,
+        $num_doc,
+        $telefono,
+        $cargo,
+        $correo,
+        $direccion,
+        $password,
+        $token = null,
+        $id_programa = null
+    ) {
+        $sql = "INSERT INTO usuarios
+                (nombre_completo, tipo_documento, numero_documento, telefono, cargo, correo, password, direccion, estado, id_programa)
+                VALUES (:nombre, :tipo_doc, :num_doc, :telefono, :cargo, :correo, :password, :direccion, :estado, :programa)";
+
+        $stmt = $this->conn->prepare($sql);
+
         $hash = password_hash($password, PASSWORD_DEFAULT);
+        $estado = ($token !== null && $token !== '') ? 'inactivo' : 'activo';
 
         $stmt->bindParam(':nombre', $nombre);
         $stmt->bindParam(':tipo_doc', $tipo_doc);
@@ -48,24 +71,27 @@ class Usuario {
         $stmt->bindParam(':telefono', $telefono);
         $stmt->bindParam(':cargo', $cargo);
         $stmt->bindParam(':correo', $correo);
-        $stmt->bindParam(':password', $hash); 
+        $stmt->bindParam(':password', $hash);
         $stmt->bindParam(':direccion', $direccion);
+        $stmt->bindParam(':estado', $estado);
 
-        // 👇 manejo correcto del programa (NULL u entero)
-        if ($id_programa === null || $id_programa === '' ) {
+        if ($id_programa === null || $id_programa === '') {
             $stmt->bindValue(':programa', null, PDO::PARAM_NULL);
         } else {
-            $idProgramaInt = (int)$id_programa;
-            $stmt->bindValue(':programa', $idProgramaInt, PDO::PARAM_INT);
+            $stmt->bindValue(':programa', (int)$id_programa, PDO::PARAM_INT);
         }
 
-        return $stmt->execute();
+        $ok = $stmt->execute();
+        if (!$ok) return false;
+
+        return (int)$this->conn->lastInsertId();
     }
 
+    // ACTUALIZAR
     public function actualizar($id_usuario, $nombre, $tipo_doc, $num_doc, $telefono, $cargo, $correo, $password, $direccion, $id_programa = null) {
 
         if ($password !== null && $password !== "") {
-            $sql = "UPDATE usuarios SET 
+            $sql = "UPDATE usuarios SET
                     nombre_completo = :nombre,
                     tipo_documento = :tipo_doc,
                     numero_documento = :num_doc,
@@ -83,7 +109,7 @@ class Usuario {
             $stmt->bindParam(':password', $hash);
 
         } else {
-            $sql = "UPDATE usuarios SET 
+            $sql = "UPDATE usuarios SET
                     nombre_completo = :nombre,
                     tipo_documento = :tipo_doc,
                     numero_documento = :num_doc,
@@ -93,6 +119,7 @@ class Usuario {
                     direccion = :direccion,
                     id_programa = :programa
                 WHERE id_usuario = :id_usuario";
+
             $stmt = $this->conn->prepare($sql);
         }
 
@@ -105,7 +132,6 @@ class Usuario {
         $stmt->bindParam(':correo', $correo);
         $stmt->bindParam(':direccion', $direccion);
 
-        // 👇 manejo correcto de programa (NULL o INT)
         if ($id_programa === null || $id_programa === '') {
             $stmt->bindValue(':programa', null, PDO::PARAM_NULL);
         } else {
@@ -115,117 +141,116 @@ class Usuario {
         return $stmt->execute();
     }
 
-    // Function to delete a user
-    public function eliminar($id) {
-        $sql = "DELETE FROM " . $this->table . " WHERE id_usuario = :id";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute(); 
-    }
-
-    // Function to change the status of a user (active/inactive)
+    // CAMBIAR ESTADO
     public function cambiarEstado($id_usuario, $estado) {
         $sql = "UPDATE usuarios SET estado = :estado WHERE id_usuario = :id_usuario";
         $stmt = $this->conn->prepare($sql);
 
-        $estadoBD = $estado == 1 ? 'activo' : 'inactivo';
+        $estadoBD = ((int)$estado === 1) ? 'activo' : 'inactivo';
 
         $stmt->bindParam(':estado', $estadoBD);
         $stmt->bindParam(':id_usuario', $id_usuario);
 
         return $stmt->execute();
     }
-    
-    // Function to get a user by their document number
-    public function obtenerPorDocumento($documento) {
-        $sql = "SELECT * FROM " . $this->table . " WHERE numero_documento = :documento";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(':documento', $documento);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    // Function to handle user login
+
+    // LOGIN (solo si activo)
     public function login($correo, $password) {
         $user = $this->obtenerPorCorreo($correo);
-        if ($user && password_verify($password, $user['password'])) {
-            return $user; 
+        if (!$user) return false;
+
+        if (isset($user['estado']) && $user['estado'] !== 'activo') {
+            return false;
+        }
+
+        if (password_verify($password, $user['password'])) {
+            return $user;
         }
         return false;
     }
 
-    // ==========================================
-    // 🔥 NUEVO: actualizarPerfil (para perfil propio)
-    // NO toca cargo, estado ni id_programa
-    // ==========================================
-    public function actualizarPerfil(
-        int $idUsuario,
-        string $nombreCompleto,
-        string $tipoDocumento,
-        string $numeroDocumento,
-        string $telefono,
-        string $direccion,
-        string $correo,
-        ?string $rutaFotoPerfil = null
-    ) {
-        if ($rutaFotoPerfil !== null) {
-            $sql = "UPDATE {$this->table}
-                    SET nombre_completo = :nombre,
-                        tipo_documento = :tipo_doc,
-                        numero_documento = :num_doc,
-                        telefono = :tel,
-                        direccion = :dir,
-                        correo = :correo,
-                        foto_perfil = :foto
-                    WHERE id_usuario = :id_usuario";
-        } else {
-            $sql = "UPDATE {$this->table}
-                    SET nombre_completo = :nombre,
-                        tipo_documento = :tipo_doc,
-                        numero_documento = :num_doc,
-                        telefono = :tel,
-                        direccion = :dir,
-                        correo = :correo
-                    WHERE id_usuario = :id_usuario";
-        }
+    // TOKEN: crear token (con debug si falla)
+    public function crearTokenVerificacion(int $idUsuario, string $token): bool {
 
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(':nombre',     $nombreCompleto);
-        $stmt->bindValue(':tipo_doc',   $tipoDocumento);
-        $stmt->bindValue(':num_doc',    $numeroDocumento);
-        $stmt->bindValue(':tel',        $telefono);
-        $stmt->bindValue(':dir',        $direccion);
-        $stmt->bindValue(':correo',     $correo);
-        $stmt->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
+    // invalidar tokens anteriores del mismo tipo
+    $sqlDisable = "UPDATE tokens_correo
+                   SET usado = 1
+                   WHERE id_usuario = :id_usuario AND tipo = 'verificar_correo' AND usado = 0";
+    $stmtDisable = $this->conn->prepare($sqlDisable);
+    $stmtDisable->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
+    $stmtDisable->execute();
 
-        if ($rutaFotoPerfil !== null) {
-            $stmt->bindValue(':foto', $rutaFotoPerfil);
-        }
+    // insertar token nuevo
+    $sql = "INSERT INTO tokens_correo
+            (id_usuario, token, tipo, fecha_creacion, fecha_expiracion, usado)
+            VALUES
+            (:id_usuario, :token, 'verificar_correo', NOW(), DATE_ADD(NOW(), INTERVAL 24 HOUR), 0)";
 
-        return $stmt->execute();
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
+    $stmt->bindValue(':token', $token, PDO::PARAM_STR);
+
+    $ok = $stmt->execute();
+    if (!$ok) {
+        $err = $stmt->errorInfo();
+        throw new Exception("Error insert token: " . ($err[2] ?? 'desconocido'));
     }
 
-    // =====================================================
-    // 🔒 PASSWORD: obtener hash actual (PDO + id_usuario)
-    // =====================================================
-    public function obtenerHashPasswordPorId(int $idUsuario) {
-        $sql = "SELECT password FROM {$this->table} WHERE id_usuario = :id_usuario LIMIT 1";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['password'] ?? null;
-    }
+    return true;
+}
 
-    // =====================================================
-    // 🔒 PASSWORD: actualizar hash (PDO + id_usuario)
-    // =====================================================
-    public function actualizarPasswordPorId(int $idUsuario, string $nuevoHash): bool {
-        $sql = "UPDATE {$this->table} SET password = :password WHERE id_usuario = :id_usuario";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindValue(':password', $nuevoHash, PDO::PARAM_STR);
-        $stmt->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
-        return $stmt->execute();
+
+    // ACTIVAR CUENTA por token
+    public function activarCuenta(string $token): bool {
+
+    $sql = "SELECT id_usuario, usado, fecha_expiracion, tipo
+            FROM tokens_correo
+            WHERE token = :token
+            LIMIT 1";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(':token', $token, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) return false;
+
+    // ✅ ahora debe ser verificar_correo
+    if (($row['tipo'] ?? '') !== 'verificar_correo') return false;
+    if ((int)$row['usado'] === 1) return false;
+    if (strtotime($row['fecha_expiracion']) < time()) return false;
+
+    $idUsuario = (int)$row['id_usuario'];
+
+    $sqlU = "UPDATE usuarios SET estado = 'activo' WHERE id_usuario = :id_usuario";
+    $stmtU = $this->conn->prepare($sqlU);
+    $stmtU->bindValue(':id_usuario', $idUsuario, PDO::PARAM_INT);
+
+    $sqlT = "UPDATE tokens_correo
+             SET usado = 1
+             WHERE token = :token AND tipo = 'verificar_correo'";
+    $stmtT = $this->conn->prepare($sqlT);
+    $stmtT->bindValue(':token', $token, PDO::PARAM_STR);
+
+    try {
+        $this->conn->beginTransaction();
+
+        if (!$stmtU->execute()) {
+            $this->conn->rollBack();
+            return false;
+        }
+
+        if (!$stmtT->execute()) {
+            $this->conn->rollBack();
+            return false;
+        }
+
+        $this->conn->commit();
+        return true;
+
+    } catch (\Throwable $e) {
+        if ($this->conn->inTransaction()) $this->conn->rollBack();
+        return false;
     }
 }
-?>
+}

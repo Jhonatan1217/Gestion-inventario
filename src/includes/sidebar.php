@@ -132,10 +132,20 @@ if (!defined('BASE_URL')) {
   <div class="border-t border-sidebar-border p-3">
     <div class="flex items-center justify-center gap-2 <?php echo $collapsed ? 'flex-col' : ''; ?>">
 
+      <!-- ✅ Historial (a la izquierda de la campana) -->
+      <a 
+        href="<?= BASE_URL ?>index.php?page=historial<?= $collQuery ?>"
+        class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent"
+        title="Historial"
+      >
+        <i data-lucide="history" class="h-5 w-5"></i>
+      </a>
+
       <!-- Bell -->
       <a 
         href="<?= BASE_URL ?>index.php?page=notificaciones<?= $collQuery ?>"
         class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent"
+        title="Notificaciones"
       >
         <i data-lucide="bell" class="h-5 w-5"></i>
       </a>
@@ -144,6 +154,7 @@ if (!defined('BASE_URL')) {
       <a 
         href="<?= BASE_URL ?>logout.php"
         class="h-9 w-9 flex items-center justify-center rounded-md text-red-500 hover:bg-red-100"
+        title="Cerrar sesión"
       >
         <i data-lucide="log-out" class="h-5 w-5"></i>
       </a>
@@ -152,6 +163,7 @@ if (!defined('BASE_URL')) {
       <a
         href="<?= BASE_URL ?>index.php?page=<?= urlencode($currentPage) ?>&coll=<?= $collapsed ? '0' : '1' ?>"
         class="h-9 w-9 flex items-center justify-center rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent"
+        title="<?= $collapsed ? 'Expandir' : 'Colapsar' ?>"
       >
         <?php if ($collapsed): ?>
           <i data-lucide="chevron-right" class="h-5 w-5"></i>

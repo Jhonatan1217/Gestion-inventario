@@ -101,7 +101,7 @@ $collapsed = isset($_GET['coll']) && $_GET['coll'] == '1';
 
 // En desktop dejamos espacio para el sidebar (igual que tu header):
 // expandido: 260px, colapsado: 70px
-$contentOffsetClass = $collapsed ? 'lg:pl-[90px]' : 'lg:pl-[260px]';
+$contentOffsetClass = $collapsed ? 'lg:pl-[90px]' : 'lg:pl-[280px]';
 ?>
 <!DOCTYPE html>
 <html lang="es">
