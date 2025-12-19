@@ -245,10 +245,10 @@ $pieGradient = implode(", ", $gradientParts);
     <div class="flex items-center justify-between">
         <p class="mg-7px text-2x1 font-medium text-muted-foreground">Alertas Stock</p>
 
-        <!-- ✅ CORREGIDO: tu div tenía el atributo roto. Se deja como cuadrito 29% + verde secundario -->
-        <div class="rounded-md p-2 bg-[#0078324A]">
-            <i data-lucide="alert-triangle" class="h-5 w-5 text-[#007832]"></i>
-        </div>
+        <!-- ✅ Amarillo institucional: ícono + fondo -->
+      <div class="rounded-md p-2 bg-[#FDC3004A]">
+        <i data-lucide="alert-triangle" class="h-5 w-5 text-[#FDC300]"></i>
+      </div>
 
     </div>
     <div class="flex items-center gap-2 mt-2">
@@ -338,8 +338,10 @@ $pieGradient = implode(", ", $gradientParts);
             <div class="space-y-2">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium"><?php echo htmlspecialchars($alert["material_nombre"]); ?></span>
-                <span class="px-3 py-1 rounded-full bg-[#FDC30050] font-medium text-sm text-[#FDC300]">
-                Bajo
+
+                <!-- ✅ CORREGIDO: misma etiqueta (tamaño/padding) que "Solicitudes Recientes" -->
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-[#FDC30040] text-[#FDC300]">
+                  Bajo
                 </span>
             </div>
             <div class="flex items-center gap-2">
@@ -410,17 +412,19 @@ $pieGradient = implode(", ", $gradientParts);
     </div>
     <div class="px-6 pb-4 space-y-4">
         <?php foreach (array_slice($mockMovimientos, 0, 4) as $mov):
+        // ✅ Estilo como la foto: bolita perfecta + verde suave
         if ($mov["tipo"] === "entrada") {
-            $movClasses = "bg-success/10 text-success";
+            $movClasses = "bg-[#39A9001A] text-[#39A900]";
         } elseif ($mov["tipo"] === "salida") {
-            $movClasses = "bg-primary/10 text-primary";
+            $movClasses = "bg-[#39A9001A] text-[#39A900]";
         } else {
-            $movClasses = "bg-accent/10 text-accent-foreground";
+            $movClasses = "bg-[#FDC3001A] text-[#FDC300]";
         }
         ?>
         <div class="flex items-start gap-3 pb-3 border-b border-border last:border-0 last:pb-0">
-            <div class="mt-0.5 rounded-full p-1.5 <?php echo $movClasses; ?>">
-            <i data-lucide="arrow-down-up" class="h-3 w-3"></i>
+            <!-- ✅ Ícono estilo foto: círculo perfecto + centrado -->
+            <div class="mt-0.5 h-8 w-8 rounded-full flex items-center justify-center <?php echo $movClasses; ?>">
+            <i data-lucide="arrow-down-up" class="h-4 w-4"></i>
             </div>
             <div class="flex-1 min-w-0">
             <p class="text-sm font-medium capitalize"><?php echo htmlspecialchars($mov["tipo"]); ?></p>
