@@ -483,8 +483,6 @@ $bodegas = $model->listar();
             <option value="Equipos">Equipos</option>
           </select>
         </div>
-
-        <!-- ESTADO (NO visible, backend usa default) -->
       </div>
 
       <!-- NOMBRE -->

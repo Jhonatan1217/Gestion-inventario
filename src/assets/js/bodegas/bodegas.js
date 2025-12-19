@@ -136,9 +136,101 @@ formCrearBodega?.addEventListener("submit", async (e) => {
     }
   });
 
-  /* ============================================================
-     CREAR BODEGA – BACKEND
-  ============================================================ */
+ /* ============================================================
+   MODAL CREAR SUB-BODEGA
+============================================================ */
+
+// BOTÓN Y MODAL
+const btnNuevaSubBodega = document.getElementById("btnNuevaSubBodega");
+const modalCrearSub = document.getElementById("modalCrearSubBodega");
+
+// FORMULARIO
+const formCrearSubBodega = document.getElementById("formCrearSubBodega");
+
+// CAMPOS
+const inputBodegaPadre = document.getElementById("subIdBodega");
+const inputCodigo = document.getElementById("subCodigo");
+const inputClasificacion = document.getElementById("subClasificacion");
+const inputNombre = document.getElementById("subNombre");
+const inputDescripcion = document.getElementById("subDescripcion");
+
+// BOTONES
+const cerrarModalSub = document.getElementById("cerrarModalSub");
+const cancelarModalSub = document.getElementById("cancelarModalSub");
+const backdropCrearSub = document.getElementById("backdropCrearSub");
+
+/* ============================================================
+   ENVIAR FORMULARIO
+============================================================ */
+formCrearSubBodega?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const idBodega = inputBodegaPadre.value;
+  const codigo = inputCodigo.value.trim();
+  const clasificacion = inputClasificacion.value;
+  const nombre = inputNombre.value.trim();
+  const descripcion = inputDescripcion.value.trim();
+
+  if (!idBodega || !codigo || !clasificacion || !nombre) {
+    alert("Completa todos los campos obligatorios");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "/Gestion-inventario/src/controllers/sub_bodega_controller.php?accion=crear",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          codigo_sub_bodega: codigo,
+          nombre: nombre,
+          descripcion: descripcion,
+          clasificacion_bodega: clasificacion,
+          codigo_bodega_padre: idBodega
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(errorText);
+      throw new Error("Error al crear sub-bodega");
+    }
+
+    closeModal(modalCrearSub);
+    location.reload();
+
+  } catch (err) {
+    console.error(err);
+    alert("No se pudo crear la sub-bodega");
+  }
+});
+
+/* ============================================================
+   ABRIR / CERRAR MODAL
+============================================================ */
+btnNuevaSubBodega?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openModal(modalCrearSub);
+});
+
+
+cerrarModalSub?.addEventListener("click", () => {
+  closeModal(modalCrearSub);
+});
+
+cancelarModalSub?.addEventListener("click", () => {
+  closeModal(modalCrearSub);
+});
+
+backdropCrearSub?.addEventListener("click", (e) => {
+  if (e.target === backdropCrearSub) {
+    closeModal(modalCrearSub);
+  }
+});
 
 
   /* ============================================================
