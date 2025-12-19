@@ -15,7 +15,7 @@ const API_URL = "src/controllers/bodega_controller.php";
   const viewList = document.getElementById("view-list");
   const viewGrid = document.getElementById("view-grid");
 
-  const setActiveBtn = (active, inactive) => {
+  const setActiveBtn = (active, inactive) => {  
     active.classList.add("bg-muted", "text-foreground");
     active.classList.remove("text-muted-foreground");
 
