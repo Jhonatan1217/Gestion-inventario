@@ -894,6 +894,206 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
             <i data-lucide="eye" class="h-4 w-4"></i><span>Ver detalle</span>
         </button>
     </div>
+  </div>
+
+  <!-- MODAL REGISTRAR MOVIMIENTO -->
+  <div id="movimientoModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="absolute inset-0" onclick="closeMovimientoModal()"></div>
+
+    <div class="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-xl p-6 sm:p-8">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">Registrar Movimiento</h2>
+          <p class="text-sm text-gray-500">Registre un nuevo movimiento de inventario</p>
+        </div>
+        <button type="button" onclick="closeMovimientoModal()"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+
+      <!-- Tabs (✅ entrada / salida / devolucion) -->
+      <div class="mb-6 flex justify-center">
+        <div id="tabsMovimiento"
+          class="flex w-full max-w-md items-center rounded-full bg-gray-100 p-1 text-sm font-medium shadow-inner">
+
+          <button type="button" data-tipo="entrada"
+            class="tab-mov flex-1 rounded-full py-2 text-center text-gray-600 hover:text-gray-900 transition-all">
+            Entrada
+          </button>
+
+          <button type="button" data-tipo="salida"
+            class="tab-mov flex-1 rounded-full py-2 text-center text-gray-600 hover:text-gray-900 transition-all">
+            Salida
+          </button>
+
+          <button type="button" data-tipo="devolucion"
+            class="tab-mov flex-1 rounded-full py-2 text-center text-gray-600 hover:text-gray-900 transition-all">
+            Devolución
+          </button>
+
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <form id="formMovimiento" class="space-y-4" novalidate>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+
+          <!-- Material (id_material) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Material *</label>
+            <select id="material" name="id_material" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione el material</option>
+              <?php foreach ($materiales as $mat): ?>
+                <option value="<?= $mat["id"] ?>"><?= htmlspecialchars($mat["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Cantidad -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+            <input id="cantidad" name="cantidad" type="number" min="1" step="1" value="1" required
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"/>
+          </div>
+
+          <!-- Bodega -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Bodega *</label>
+            <select id="bodega" name="id_bodega" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione la bodega</option>
+              <?php foreach ($bodegas as $b): ?>
+                <option value="<?= $b["id"] ?>"><?= htmlspecialchars($b["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- ✅ Subbodega -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Subbodega *</label>
+            <select id="subbodega" name="id_subbodega" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione la subbodega</option>
+              <?php foreach ($subbodegas as $sb): ?>
+                <option value="<?= $sb["id"] ?>" data-bodega="<?= $sb["id_bodega"] ?>">
+                  <?= htmlspecialchars($sb["nombre"]) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <p class="text-xs text-gray-400 mt-1">* Se filtra automáticamente según la bodega</p>
+          </div>
+
+          <!-- Entrega (solo entrada) -->
+          <div data-field="entrega">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Entrega *</label>
+            <select id="entrega" name="entrega"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione</option>
+              <option value="entrada_material">Entrada del material</option>
+              <option value="entrega_material">Entrega de material</option>
+            </select>
+          </div>
+
+          <!-- Programa (solo salida) -->
+          <div data-field="programa" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Programa de formación *</label>
+            <select id="programa" name="id_programa"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione el programa</option>
+              <?php foreach ($programas as $p): ?>
+                <option value="<?= $p["id"] ?>"><?= htmlspecialchars($p["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Ficha (salida y devolucion) -->
+          <div data-field="ficha" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ficha *</label>
+            <select id="ficha" name="id_ficha"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione la ficha</option>
+              <?php foreach ($fichas as $f): ?>
+                <option value="<?= $f["id"] ?>"><?= htmlspecialchars($f["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- RAE (salida y devolucion) -->
+          <div data-field="rae" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">RAE *</label>
+            <select id="rae" name="id_rae"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione el RAE</option>
+              <?php foreach ($raes as $r): ?>
+                <option value="<?= $r["id"] ?>"><?= htmlspecialchars($r["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Instructor (salida y devolucion) -->
+          <div data-field="instructor" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Instructor *</label>
+            <select id="instructor" name="id_usuario"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione el instructor</option>
+              <?php foreach ($instructores as $ins): ?>
+                <option value="<?= $ins["id"] ?>"><?= htmlspecialchars($ins["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Solicitud (opcional, si la usas) -->
+          <div data-field="solicitud" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Solicitud (opcional)</label>
+            <select id="solicitud" name="id_solicitud"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione</option>
+              <?php foreach ($solicitudes as $s): ?>
+                <option value="<?= $s["id"] ?>"><?= htmlspecialchars($s["nombre"]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- Estado del material (no está en tu tabla, pero lo dejaste en UI) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estado del material *</label>
+            <select id="estado_material" name="estado_material" required
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]">
+              <option value="">Seleccione</option>
+              <option value="bueno">Bueno</option>
+              <option value="regular">Regular</option>
+              <option value="malo">Malo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+          <textarea id="observaciones" name="observaciones" rows="3"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+            placeholder="Observaciones del movimiento"></textarea>
+        </div>
+
+        <!-- Hidden tipo movimiento -->
+        <input type="hidden" name="tipo_movimiento" id="tipoMovimiento" value="entrada">
+
+        <div class="mt-4 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeMovimientoModal()"
+            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-border">
+            Cancelar
+          </button>
+          <button type="submit" id="btnRegistrarMovimiento"
+            class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary">
+            Registrar entrada
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
     <script>
 
