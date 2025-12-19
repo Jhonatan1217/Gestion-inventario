@@ -23,7 +23,7 @@ class MaterialFormacionController {
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = 'material_' . time() . '.' . $extension;
 
-        $path = __DIR__ . '../../public/uploads/materiales/' . $filename;
+        $path = __DIR__ . '/../uploads/materiales/' . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $path)) {
             return null;
@@ -88,6 +88,23 @@ class MaterialFormacionController {
                 "status" => "error",
                 "message" => "Datos inválidos para actualizar el material."
             ];
+        }
+
+        // AGREGADO: Mantener foto actual si no se envía una nueva
+        $actual = $this->model->getById($id);
+        $fotoActual = $actual['foto'] ?? null;
+
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $nuevaFoto = $this->savePhoto($_FILES['foto']);
+            if (!$nuevaFoto) {
+                return [
+                    "status" => "error",
+                    "message" => "La imagen no es válida (tipo o tamaño)."
+                ];
+            }
+            $data['foto'] = $nuevaFoto;
+        } else {
+            $data['foto'] = $fotoActual;
         }
 
         $ok = $this->model->update($id, $data);
@@ -188,13 +205,15 @@ switch ($accion) {
         break;
 
     case "crear":
-        $data = json_decode(file_get_contents("php://input"), true);
+        // Solo FormData: los campos vienen en $_POST y la imagen en $_FILES
+        $data = $_POST;
         sendJSON($controller->crear($data));
         break;
 
     case "actualizar":
         $id = $_GET['id'] ?? null;
-        $data = json_decode(file_get_contents("php://input"), true);
+        // Solo FormData también para actualizar (campos en $_POST, imagen en $_FILES)
+        $data = $_POST;
         sendJSON($controller->actualizar($id, $data));
         break;
 

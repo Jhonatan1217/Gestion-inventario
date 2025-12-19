@@ -27,21 +27,49 @@ class ObraController {
         echo json_encode($this->model->listar());
     }
 
+    public function obtenerFichas() {
+        echo json_encode($this->model->obtenerFichasActivas());
+    }
+
+    public function obtenerRaes() {
+        echo json_encode($this->model->obtenerRaesActivos());
+    }
+
+    public function obtenerInstructores() {
+        echo json_encode($this->model->obtenerInstructoresActivos());
+    }
+
     public function obtener($id) {
         echo json_encode($this->model->obtener($id));
     }
 
     public function crear() {
         $data = json_decode(file_get_contents("php://input"), true);
+        
+        // Validar datos requeridos
+        if (empty($data["id_ficha"]) || empty($data["id_rae"]) || empty($data["id_instructor"]) || 
+            empty($data["nombre_actividad"]) || empty($data["tipo_trabajo"])) {
+            echo json_encode(["error" => "Faltan datos requeridos"]);
+            return;
+        }
+        
         echo json_encode([
-            "success" => $this->model->crear($data)
+            "success" => $this->model->crear($data),
+            "message" => "Obra creada exitosamente"
         ]);
     }
 
     public function actualizar() {
         $data = json_decode(file_get_contents("php://input"), true);
+        
+        if (empty($data["id_actividad"])) {
+            echo json_encode(["error" => "ID de actividad requerido"]);
+            return;
+        }
+        
         echo json_encode([
-            "success" => $this->model->actualizar($data)
+            "success" => $this->model->actualizar($data),
+            "message" => "Obra actualizada exitosamente"
         ]);
     }
 
@@ -56,12 +84,25 @@ class ObraController {
 $controller = new ObraController($conn);
 
 /* ROUTER */
-$accion = $_GET["accion"] ?? null;
-$id = $_GET["id_actividad"] ?? null;
+$input = json_decode(file_get_contents("php://input"), true) ?? [];
+$accion = $_POST["accion"] ?? $_GET["accion"] ?? $input["accion"] ?? null;
+$id = $_POST["id_actividad"] ?? $_GET["id_actividad"] ?? $input["id_actividad"] ?? null;
 
 switch ($accion) {
     case "listar":
         $controller->listar();
+        break;
+
+    case "obtener_fichas":
+        $controller->obtenerFichas();
+        break;
+
+    case "obtener_raes":
+        $controller->obtenerRaes();
+        break;
+
+    case "obtener_instructores":
+        $controller->obtenerInstructores();
         break;
 
     case "obtener":
