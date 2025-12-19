@@ -499,7 +499,7 @@ $bodegas = $model->listar();
           required>
       </div>
 
-      <!-- DESCRIPCIÓN -->
+      <!-- DESCRIPCIÓN -->  
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">
           Descripción
