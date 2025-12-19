@@ -512,15 +512,18 @@ $bodegas = $model->listar();
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Bodega padre *</label>
-            <select id="subIdBodega"
-                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
-                    required>
-              <?php foreach ($bodegas as $b): ?>
-                <option value="<?= htmlspecialchars($b['codigo_bodega']) ?>">
-                  <?= htmlspecialchars($b['nombre']) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
+              <select id="id_bodega"
+                      class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-[#39A90040] focus:border-[#39A900]"
+                      required>
+                <option value="">Seleccione una bodega</option>
+
+                <?php foreach ($bodegas as $b): ?>
+                  <option value="<?= (int)$b['id_bodega'] ?>">
+                    <?= htmlspecialchars($b['nombre']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
           </div>
 
           <div>
@@ -682,6 +685,16 @@ $bodegas = $model->listar();
               <span class="text-gray-600">Estado:</span>
               <span id="detalleEstado" class="badge-estado-activo">-</span>
             </div>
+          </div>
+        </div>
+        <div class="pt-5 border-t border-gray-200">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="layers" class="w-4 h-4 text-gray-600"></i>
+            <h4 class="font-semibold text-gray-900">Sub-bodegas</h4>
+          </div>
+
+          <div id="subBodegasContainer" class="space-y-2">
+            <p class="text-sm text-gray-500">Seleccione una bodega</p>
           </div>
         </div>
 
