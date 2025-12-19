@@ -1,8 +1,12 @@
 <?php
+// =====================================
+// USER MANAGEMENT – PHP VIEW
+// =====================================
 
 $collapsed = isset($_GET["coll"]) && $_GET["coll"] == "1";
 $sidebarWidth = $collapsed ? "70px" : "260px";
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,7 +28,8 @@ $sidebarWidth = $collapsed ? "70px" : "260px";
     <?php echo $collapsed ? 'lg:pl-[70px]' : 'lg:pl-[260px]'; ?>"
 >
 
-    <main class="page-with-sidebar max-w-7xl mx-auto px-4 py-8">
+      <main class="p-6 transition-all duration-300"
+      style="margin-left: <?= $sidebarWidth ?>;">
       <div class="space-y-6 animate-fade-in-up">
 
         <!-- HEADER -->
