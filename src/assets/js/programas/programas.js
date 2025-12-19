@@ -815,10 +815,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const nuevoEstado = estadoActual ? 0 : 1
 
       const actionText = nuevoEstado ? "activar" : "desactivar";
-      
-      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
-        return;
-      }
 
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {
@@ -884,12 +880,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const nuevoEstado = e.target.checked ? 1 : 0
       
       const actionText = nuevoEstado ? "activar" : "desactivar";
-      
-      if (!confirm(`¿Estás seguro de que deseas ${actionText} este programa?`)) {
-        // Revert checkbox if user cancels
-        e.target.checked = !e.target.checked;
-        return;
-      }
 
       try {
         const res = await fetch(`${BASE_URL}src/controllers/programa_controller.php?accion=cambiar_estado`, {
