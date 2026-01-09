@@ -233,61 +233,61 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
             </div>
         </div>
 
-        <!-- filters -->
-        <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+       <!-- filters -->
+<div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-            <!-- Search by record -->
-            <div class="relative w-full sm:max-w-xs">
-                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-                    <i data-lucide="search" class="h-4 w-4"></i>
-                </span>
+    <!-- 🔍 SEARCH (LEFT - QUIETO) -->
+    <div class="relative w-full sm:max-w-xs">
+        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+            <i data-lucide="search" class="h-4 w-4"></i>
+        </span>
 
-                <input
-                    type="text"
-                    name="buscar_ficha"
-                    placeholder="Buscar por ficha..."
-                    class="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
-            </div>
+        <input
+            type="text"
+            name="buscar_ficha"
+            placeholder="Buscar por ficha..."
+            class="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+    </div>
 
-            <!-- Program filter -->
-            <div class="relative w-full sm:max-w-xs">
-                <select
-                    name="filtro_programa"
-                    class="w-full appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-9 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                    <option value="">Todos los programas</option>
-                    <?php foreach ($programas as $p): ?>
-                        <option value="<?= strtolower($p['nombre']) ?>">
-                            <?= htmlspecialchars($p['nombre']) ?>
-                        </option>
-                    <?php endforeach; ?>
+    <!-- 🎛️ FILTERS (RIGHT - JUNTOS) -->
+    <div class="flex items-center gap-3 justify-end w-full sm:w-auto">
+
+        <!-- TIPO -->
+        <div class="flex items-center gap-2">
+            <i data-lucide="filter" class="h-4 w-4 text-muted-foreground"></i>
+            <div class="relative">
+                <select name="filtro_tipo"
+                    class="appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-8 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                    <option value="">Todos</option>
+                    <option value="entrada">Entradas</option>
+                    <option value="salida">Salidas</option>
+                    <option value="devolucion">Devoluciones</option>
                 </select>
 
                 <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
-                    <i data-lucide="chevron-down" class="h-4 w-4"></i>
                 </span>
             </div>
-            <div class="flex items-center gap-2">
-                <i data-lucide="filter" class="h-4 w-4 text-muted-foreground"></i>
-                <div class="relative">
-                    <select name="filtro_tipo"
-                        class="appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-8 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                        <option value="">Todos</option>
-                        <option value="entrada">Entradas</option>
-                        <option value="salida">Salidas</option>
-                        <option value="devolucion">Devoluciones</option>
-                    </select>
-
-                    <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
-                        <i data-lucide="chevron-down" class="h-4 w-4"></i>
-                    </span>
-                </div>
-            </div>
         </div>
 
+        <!-- PROGRAMA -->
+        <div class="relative w-full sm:w-56">
+            <select
+                name="filtro_programa"
+                class="w-full appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-9 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                <option value="">Todos los programas</option>
+                <?php foreach ($programas as $p): ?>
+                    <option value="<?= strtolower($p['nombre']) ?>">
+                        <?= htmlspecialchars($p['nombre']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
+            </span>
         </div>
 
-
-
+    </div>
+</div>
 
         <!-- TABLE -->
         <div id="tableView" class="mt-6 rounded-2xl border border-border bg-card overflow-hidden">
@@ -795,51 +795,64 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
     <!-- =====================
          DEVOLUCIÓN (ULTRA COMPACTA)
     ====================== -->
-    <div data-field="programa"
-        class="hidden rounded-md border border-blue-200 bg-blue-50 p-2">
+    <!-- =====================
+     DEVOLUCIÓN (ULTRA COMPACTA)
+====================== -->
+<div data-field="programa"
+     class="hidden rounded-md border border-[#39A900] bg-[#39A90015] p-2">
 
-        <p class="text-[11px] font-semibold text-blue-700 mb-1">
-            Devolución académica
-        </p>
+    <p class="text-[11px] font-semibold text-[#2e7d00] mb-1">
+        Devolución académica
+    </p>
 
-        <div class="grid grid-cols-2 gap-1">
+    <div class="grid grid-cols-2 gap-1">
 
-            <select id="programa" class="col-span-2 border rounded px-2 py-1 text-xs">
-                <option value="">Programa</option>
-                <?php foreach ($programas as $p): ?>
-                    <option value="<?= $p["id"] ?>"><?= $p["nombre"] ?></option>
-                <?php endforeach; ?>
-            </select>
+        <!-- PROGRAMA -->
+        <select id="programa"
+            class="col-span-2 border rounded px-2 py-1 text-xs">
+            <option value="">Programa</option>
+            <?php foreach ($programas as $p): ?>
+                <option value="<?= $p["id"] ?>"><?= $p["nombre"] ?></option>
+            <?php endforeach; ?>
+        </select>
 
-            <select id="ficha" class="border rounded px-2 py-1 text-xs">
-                <option value="">Ficha</option>
-                <?php foreach ($fichas as $f): ?>
-                    <option value="<?= $f["id"] ?>"><?= $f["nombre"] ?></option>
-                <?php endforeach; ?>
-            </select>
+        <!-- FICHA -->
+        <select id="ficha"
+            class="border rounded px-2 py-1 text-xs">
+            <option value="">Ficha</option>
+            <?php foreach ($fichas as $f): ?>
+                <option value="<?= $f["id"] ?>"><?= $f["nombre"] ?></option>
+            <?php endforeach; ?>
+        </select>
 
-            <select id="rae" class="border rounded px-2 py-1 text-xs">
-                <option value="">RAE</option>
-                <?php foreach ($raes as $r): ?>
-                    <option value="<?= $r["id"] ?>"><?= $r["nombre"] ?></option>
-                <?php endforeach; ?>
-            </select>
+        <!-- RAE -->
+        <select id="rae"
+            class="border rounded px-2 py-1 text-xs">
+            <option value="">RAE</option>
+            <?php foreach ($raes as $r): ?>
+                <option value="<?= $r["id"] ?>"><?= $r["nombre"] ?></option>
+            <?php endforeach; ?>
+        </select>
 
-            <select id="instructor" class="col-span-2 border rounded px-2 py-1 text-xs">
-                <option value="">Instructor</option>
-                <?php foreach ($instructores as $i): ?>
-                    <option value="<?= $i["id"] ?>"><?= $i["nombre"] ?></option>
-                <?php endforeach; ?>
-            </select>
+        <!-- INSTRUCTOR -->
+        <select id="instructor"
+            class="col-span-2 border rounded px-2 py-1 text-xs">
+            <option value="">Instructor</option>
+            <?php foreach ($instructores as $i): ?>
+                <option value="<?= $i["id"] ?>"><?= $i["nombre"] ?></option>
+            <?php endforeach; ?>
+        </select>
 
-            <select id="solicitud" class="col-span-2 border rounded px-2 py-1 text-xs">
-                <option value="">Solicitud (opcional)</option>
-                <?php foreach ($solicitudes as $s): ?>
-                    <option value="<?= $s["id"] ?>"><?= $s["nombre"] ?></option>
-                <?php endforeach; ?>
-            </select>
+        <!-- SOLICITUD -->
+        <select id="solicitud"
+            class="col-span-2 border rounded px-2 py-1 text-xs">
+            <option value="">Solicitud (opcional)</option>
+            <?php foreach ($solicitudes as $s): ?>
+                <option value="<?= $s["id"] ?>"><?= $s["nombre"] ?></option>
+            <?php endforeach; ?>
+        </select>
 
-        </div>
+    </div>
     </div>
 
     <!-- =====================
@@ -879,8 +892,6 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
     </div>
 
 </form>
-
-
             </div>
         </div>
 
@@ -912,7 +923,7 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
         </button>
       </div>
 
-      <!-- Tabs (✅ entrada / salida / devolucion) -->
+      <!-- Tabs (✅ entrada / devolucion) -->
       <div class="mb-6 flex justify-center">
         <div id="tabsMovimiento"
           class="flex w-full max-w-md items-center rounded-full bg-gray-100 p-1 text-sm font-medium shadow-inner">
@@ -922,10 +933,6 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
             Entrada
           </button>
 
-          <button type="button" data-tipo="salida"
-            class="tab-mov flex-1 rounded-full py-2 text-center text-gray-600 hover:text-gray-900 transition-all">
-            Salida
-          </button>
 
           <button type="button" data-tipo="devolucion"
             class="tab-mov flex-1 rounded-full py-2 text-center text-gray-600 hover:text-gray-900 transition-all">
@@ -1276,8 +1283,9 @@ $collParam = isset($_GET['coll']) ? '&coll=' . urlencode($_GET['coll']) : '';
                     if (btnSubmit) {
                         btnSubmit.textContent = labelsPorTipo[tipo] || "Registrar";
                         btnSubmit.classList.remove("bg-blue-600", "bg-secondary");
-                        btnSubmit.classList.add(isDev ? "bg-blue-600" : "bg-secondary");
+                        btnSubmit.classList.add("bg-secondary"); // siempre verde
                     }
+
 
                     if (!isDev) {
                         ["programa", "ficha", "rae", "instructor", "solicitud"].forEach(id => {
