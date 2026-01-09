@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[BODEGAS.JS] cargado v2025-12-18_flowbite-alerts+toggle-no-reload+empty-icons-fixed");
 
-  const API_URL = "src/controllers/bodega_controller.php";
-  const API_SUBBODEGAS = "src/controllers/sub_bodega_controller.php";
+  const API_URL = new URL("src/controllers/bodega_controller.php", document.baseURI).toString();
+  const API_SUBBODEGAS = new URL("src/controllers/sub_bodega_controller.php", document.baseURI).toString();
+
 
 
 document.addEventListener("click", (e) => {
