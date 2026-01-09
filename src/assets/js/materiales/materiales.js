@@ -1109,12 +1109,10 @@ function toggleCodigoField() {
   if (clasificacion === "Inventariado") {
     codigoContainer.style.display = "block"
     codigoHelpText.style.display = "block"
-    codigoInput.required = true
     precioCodigoGrid.style.gridTemplateColumns = "1fr 1fr"
   } else {
     codigoContainer.style.display = "none"
     codigoHelpText.style.display = "none"
-    codigoInput.required = false
     codigoInput.value = ""
     precioCodigoGrid.style.gridTemplateColumns = "1fr"
   }
@@ -1133,7 +1131,6 @@ function toggleEditCodigoField() {
 
   if (clasificacion === "Inventariado") {
     codigoContainer.style.display = "block"
-    codigoInput.required = true
 
     if (editPrecioCodigoGrid && editPrecioCodigoGrid.classList) {
       editPrecioCodigoGrid.classList.remove("grid-cols-1")
@@ -1141,7 +1138,6 @@ function toggleEditCodigoField() {
     }
   } else {
     codigoContainer.style.display = "none"
-    codigoInput.required = false
     codigoInput.value = ""
 
     if (editPrecioCodigoGrid && editPrecioCodigoGrid.classList) {
