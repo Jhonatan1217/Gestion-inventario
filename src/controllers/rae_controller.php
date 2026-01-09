@@ -27,7 +27,7 @@ class RaeController {
     }
 
     /* ==========================
-       LISTAR TODOS
+       LISTAR
     ========================== */
     public function listar() {
         $this->jsonResponse($this->model->listar());
@@ -42,41 +42,51 @@ class RaeController {
             return;
         }
 
-        $data = $this->model->obtener($id);
-        $this->jsonResponse($data ?: ['error' => 'RAE no encontrada']);
+        $rae = $this->model->obtener((int)$id);
+        $this->jsonResponse($rae ?: ['error' => 'RAE no encontrada']);
     }
 
     /* ==========================
        CREAR
     ========================== */
     public function crear() {
-        $input = $this->getJson();
 
-        if (!$input) {
+        $data = $this->getJson();
+
+        if (!$data) {
             $this->jsonResponse(['error' => 'Datos inválidos'], 400);
             return;
         }
 
-        // SOLO lo que existe en tu tabla
         $required = ['codigo_rae', 'descripcion_rae', 'id_programa', 'estado'];
 
         foreach ($required as $field) {
-            if (!isset($input[$field])) {
+            if (!isset($data[$field])) {
                 $this->jsonResponse(['error' => "Falta el campo: $field"], 400);
                 return;
             }
         }
 
+        // VALIDAR CÓDIGO RAE ÚNICO
+        if ($this->model->existeCodigo($data['codigo_rae'])) {
+            $this->jsonResponse(
+                ['error' => "El código RAE '{$data['codigo_rae']}' ya existe. Use un código único."],
+                400
+            );
+            return;
+        }
+
         $ok = $this->model->crear(
-            $input['codigo_rae'],
-            $input['descripcion_rae'],
-            intval($input['id_programa']),
-            $input['estado']
+            $data['codigo_rae'],
+            $data['descripcion_rae'],
+            (int)$data['id_programa'],
+            $data['estado']
         );
 
         $this->jsonResponse(
-            $ok ? ["success" => true, "message" => "RAE creada correctamente"]
-               : ["error" => "Error al crear RAE"],
+            $ok
+                ? ["success" => true, "message" => "RAE creada correctamente"]
+                : ["error" => "Error al crear RAE"],
             $ok ? 200 : 500
         );
     }
@@ -133,12 +143,13 @@ class RaeController {
         }
 
         $ok = $this->model->cambiarEstado(
-            intval($data["id_rae"]),
+            (int)$data["id_rae"],
             $data["estado"]
         );
 
         $this->jsonResponse(
-            $ok ? ["mensaje" => "Estado actualizado correctamente"]
+            $ok
+                ? ["mensaje" => "Estado actualizado correctamente"]
                 : ["error" => "No se pudo actualizar el estado"],
             $ok ? 200 : 500
         );
@@ -146,7 +157,7 @@ class RaeController {
 }
 
 /* ==========================
-      ROUTER
+   ROUTER
 ========================== */
 
 $accion = $_GET['accion'] ?? null;
