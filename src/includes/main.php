@@ -43,13 +43,28 @@ switch ($page) {
     case 'fichas':
         $viewFile = BASE_PATH . '/src/view/fichas/fichas.php';  // ajusta al archivo real
         break;        
+    case 'rae':
+        $viewFile = BASE_PATH . '/src/view/raes/raes.php';  // ajusta al archivo real
+        break;        
 
     case 'solicitudes':
         $viewFile = BASE_PATH . '/src/view/solicitudes/solicitudes.php';  // ajusta al archivo real
-        break;        
+        break;
 
+    case 'obras':
+        $viewFile = BASE_PATH . '/src/view/obras/obras.php';  // ajusta al archivo real
+        break;
+
+    case 'materiales':
+            $viewFile = BASE_PATH . '/src/view/materiales/materiales.php';  // ajusta al archivo real
+            break;
+    case 'historial':
+            $viewFile = BASE_PATH . '/src/view/historial/historial.php';  // ajusta al archivo real
+            break;
     // ...agrega aquí más casos según tus carpetas/vistas...
-
+    case 'evidencias':
+            $viewFile = BASE_PATH . '/src/view/evidencias/evidencias.php';  // ajusta al archivo real
+            break;
     default:
         // Por defecto intentamos src/view/$page.php (para cosas como landing, etc.)
         $viewFile = BASE_PATH . "/src/view/$page.php";

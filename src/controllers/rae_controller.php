@@ -9,7 +9,6 @@ class RaeController {
 
     private $model;
 
-    // Constructor: receives the PDO connection and creates the model instance
     public function __construct(PDO $conn) {
         $this->model = new RaeModel($conn);
     }
@@ -28,64 +27,56 @@ class RaeController {
     }
 
     /* ==========================
-       LISTAR
+       LISTAR TODOS
     ========================== */
     public function listar() {
-        // Get all RAEs from the model and return as JSON
-        echo json_encode($this->model->listar());
+        $this->jsonResponse($this->model->listar());
     }
 
-    /* Get RAE by ID */
+    /* ==========================
+       OBTENER POR ID
+    ========================== */
     public function obtener($id) {
-        // Validate that ID was provided
         if (!$id) {
-            echo json_encode(['error' => 'id_rae requerido']);
+            $this->jsonResponse(['error' => 'id_rae requerido'], 400);
             return;
         }
 
-        $rae = $this->model->obtener((int)$id);
-        $this->jsonResponse($rae ?: ['error' => 'RAE no encontrada']);
+        $data = $this->model->obtener($id);
+        $this->jsonResponse($data ?: ['error' => 'RAE no encontrada']);
     }
 
-    /* Create new RAE */
+    /* ==========================
+       CREAR
+    ========================== */
     public function crear() {
+        $input = $this->getJson();
 
-        $data = $this->getJson();
-
-        if (!$data) {
+        if (!$input) {
             $this->jsonResponse(['error' => 'Datos inválidos'], 400);
             return;
         }
 
+        // SOLO lo que existe en tu tabla
         $required = ['codigo_rae', 'descripcion_rae', 'id_programa', 'estado'];
 
         foreach ($required as $field) {
-            if (!isset($data[$field])) {
+            if (!isset($input[$field])) {
                 $this->jsonResponse(['error' => "Falta el campo: $field"], 400);
                 return;
             }
         }
 
-        // VALIDAR CÓDIGO RAE ÚNICO
-        if ($this->model->existeCodigo($data['codigo_rae'])) {
-            $this->jsonResponse(
-                ['error' => "El código RAE '{$data['codigo_rae']}' ya existe. Use un código único."],
-                400
-            );
-            return;
-        }
-
         $ok = $this->model->crear(
-            $data['codigo_rae'],
-            $data['descripcion_rae'],
-            (int)$data['id_programa'],
-            $data['estado']
+            $input['codigo_rae'],
+            $input['descripcion_rae'],
+            intval($input['id_programa']),
+            $input['estado']
         );
 
         $this->jsonResponse(
-            $ok
-                ? ["success" => true, "message" => "RAE creada correctamente"]
-                : ["error" => "Error al crear RAE"],
+            $ok ? ["success" => true, "message" => "RAE creada correctamente"]
+               : ["error" => "Error al crear RAE"],
             $ok ? 200 : 500
         );
     }
@@ -142,13 +133,12 @@ class RaeController {
         }
 
         $ok = $this->model->cambiarEstado(
-            (int)$data["id_rae"],
+            intval($data["id_rae"]),
             $data["estado"]
         );
 
         $this->jsonResponse(
-            $ok
-                ? ["mensaje" => "Estado actualizado correctamente"]
+            $ok ? ["mensaje" => "Estado actualizado correctamente"]
                 : ["error" => "No se pudo actualizar el estado"],
             $ok ? 200 : 500
         );
@@ -156,16 +146,14 @@ class RaeController {
 }
 
 /* ==========================
-   ROUTER
+      ROUTER
 ========================== */
 
 $accion = $_GET['accion'] ?? null;
 $id = $_GET['id_rae'] ?? null;
 
-// Create controller instance with database connection
 $controller = new RaeController($conn);
 
-// Route the request to the appropriate controller method
 switch ($accion) {
 
     case "listar":
@@ -184,15 +172,10 @@ switch ($accion) {
         $controller->actualizar();
         break;
 
-    case "activar":
-        $controller->activar($id);
-        break;
-
-    case "inactivar":
-        $controller->inactivar($id);
+    case "cambiar_estado":
+        $controller->cambiar_estado();
         break;
 
     default:
-        // Invalid action requested
         echo json_encode(["error" => "Acción no válida"]);
 }
