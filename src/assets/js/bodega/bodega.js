@@ -331,9 +331,15 @@ let subBodegasCountByBodega = {};
 
       const parsed = await safeJson(res);
 
-      if (!parsed.ok || parsed?.data?.error) {
-        throw new Error(parsed?.data?.error || "Error al crear bodega");
-      }
+if (!res.ok) {
+  console.error("[BACKEND RAW]", parsed.raw);
+  throw new Error(`HTTP ${res.status} - ${parsed.raw?.slice(0, 300) || "Sin respuesta"}`);
+}
+
+if (parsed?.data?.error) {
+  throw new Error(parsed.data.error);
+}
+
 
       closeModal(modalCrear);
       toastSuccess(parsed?.data?.mensaje || "Bodega creada correctamente.");
