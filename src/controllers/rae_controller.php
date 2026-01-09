@@ -14,7 +14,22 @@ class RaeController {
         $this->model = new RaeModel($conn);
     }
 
-    /* List all RAEs */
+    /* ==========================
+       HELPERS
+    ========================== */
+
+    private function getJson() {
+        return json_decode(file_get_contents("php://input"), true);
+    }
+
+    private function jsonResponse($data, int $code = 200) {
+        http_response_code($code);
+        echo json_encode($data);
+    }
+
+    /* ==========================
+       LISTAR
+    ========================== */
     public function listar() {
         // Get all RAEs from the model and return as JSON
         echo json_encode($this->model->listar());
@@ -28,62 +43,94 @@ class RaeController {
             return;
         }
 
-        // Query the model for the specific RAE
-        $data = $this->model->obtener($id);
-        
-        // Return the RAE data or error if not found
-        echo json_encode($data ?: ['error' => 'RAE no encontrada']);
+        $rae = $this->model->obtener((int)$id);
+        $this->jsonResponse($rae ?: ['error' => 'RAE no encontrada']);
     }
 
     /* Create new RAE */
     public function crear() {
-        // Decode the JSON input from the request body
-        $input = json_decode(file_get_contents("php://input"), true);
 
-        // Validate that valid JSON was received
-        if (!$input) {
-            echo json_encode(['error' => 'Datos inválidos']);
+        $data = $this->getJson();
+
+        if (!$data) {
+            $this->jsonResponse(['error' => 'Datos inválidos'], 400);
             return;
         }
 
-        // Create the RAE in the database
-        $ok = $this->model->crear($input);
+        $required = ['codigo_rae', 'descripcion_rae', 'id_programa', 'estado'];
 
-        // Return success or error response
-        echo json_encode([
-            'success' => $ok,
-            'message' => $ok ? "RAE creada correctamente" : "Error al crear RAE"
-        ]);
+        foreach ($required as $field) {
+            if (!isset($data[$field])) {
+                $this->jsonResponse(['error' => "Falta el campo: $field"], 400);
+                return;
+            }
+        }
+
+        // VALIDAR CÓDIGO RAE ÚNICO
+        if ($this->model->existeCodigo($data['codigo_rae'])) {
+            $this->jsonResponse(
+                ['error' => "El código RAE '{$data['codigo_rae']}' ya existe. Use un código único."],
+                400
+            );
+            return;
+        }
+
+        $ok = $this->model->crear(
+            $data['codigo_rae'],
+            $data['descripcion_rae'],
+            (int)$data['id_programa'],
+            $data['estado']
+        );
+
+        $this->jsonResponse(
+            $ok
+                ? ["success" => true, "message" => "RAE creada correctamente"]
+                : ["error" => "Error al crear RAE"],
+            $ok ? 200 : 500
+        );
     }
-
-/*Update*/
-public function actualizar() {
-
-    $data = $this->getJson();
-
-    if (!isset($data["id_rae"])) {
-        return $this->jsonResponse(["error" => "id_rae es obligatorio"], 400);
-    }
-
-    $ok = $this->model->actualizar(
-        (int)$data["id_rae"],
-        $data["codigo_rae"] ?? null,
-        isset($data["id_programa"]) ? (int)$data["id_programa"] : null,
-        $data["descripcion_rae"] ?? null,
-        $data["estado"] ?? null
-    );
-
-    return $this->jsonResponse(
-        $ok ? ["mensaje" => "RAE actualizado correctamente"]
-            : ["error" => "No hay datos para actualizar"],
-        $ok ? 200 : 400
-    );
-}
-
-
 
     /* ==========================
-       CAMBIAR ESTADO (ACTIVAR/INACTIVAR)
+       ACTUALIZAR
+    ========================== */
+    public function actualizar() {
+
+        $data = $this->getJson();
+
+        if (!isset($data["id_rae"])) {
+            $this->jsonResponse(["error" => "id_rae es obligatorio"], 400);
+            return;
+        }
+
+        // VALIDAR CÓDIGO RAE ÚNICO (si se envía)
+        if (isset($data["codigo_rae"])) {
+            if ($this->model->existeCodigo($data["codigo_rae"], (int)$data["id_rae"])) {
+                $this->jsonResponse(
+                    ["error" => "El código RAE ya existe en otro registro"],
+                    400
+                );
+                return;
+            }
+        }
+
+        $ok = $this->model->actualizar(
+            (int)$data["id_rae"],
+            $data["codigo_rae"] ?? null,
+            isset($data["id_programa"]) ? (int)$data["id_programa"] : null,
+            $data["descripcion_rae"] ?? null,
+            $data["estado"] ?? null
+        );
+
+        $this->jsonResponse(
+            $ok
+                ? ["mensaje" => "RAE actualizado correctamente"]
+                : ["error" => "No hay datos para actualizar"],
+            $ok ? 200 : 400
+        );
+    }
+
+    /* ==========================
+       CAMBIAR ESTADO
     ========================== */
     public function cambiar_estado() {
 
@@ -94,20 +141,24 @@ public function actualizar() {
             return;
         }
 
-        // Change RAE status to inactive
-        $ok = $this->model->inactivar($id);
+        $ok = $this->model->cambiarEstado(
+            (int)$data["id_rae"],
+            $data["estado"]
+        );
 
-        // Return success or error response
-        echo json_encode([
-            'success' => $ok,
-            'message' => $ok ? "RAE inactivada" : "Error al inactivar RAE"
-        ]);
+        $this->jsonResponse(
+            $ok
+                ? ["mensaje" => "Estado actualizado correctamente"]
+                : ["error" => "No se pudo actualizar el estado"],
+            $ok ? 200 : 500
+        );
     }
 }
 
-/* Router - Routes requests to controller methods */
+/* ==========================
+   ROUTER
+========================== */
 
-// Get the action and ID from query string
 $accion = $_GET['accion'] ?? null;
 $id = $_GET['id_rae'] ?? null;
 
