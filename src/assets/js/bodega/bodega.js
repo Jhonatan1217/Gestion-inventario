@@ -446,25 +446,42 @@ const loadSubBodegas = async (idBodega) => {
       return;
     }
 
-    container.innerHTML = subBodegas.map(sb => `
-      <div class="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50">
-        <div>
-          <p class="font-medium text-gray-900">
-            ${sb.nombre_subbodega}
-          </p>
-          <p class="text-xs text-gray-500">
-            ${sb.codigo_subbodega} · ${sb.clasificacion_subbodegas}
-          </p>
-        </div>
+container.innerHTML = subBodegas.map(sb => `
+  <div class="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50">
+    <div class="min-w-0">
+      <p class="font-medium text-gray-900 truncate">
+        ${sb.nombre_subbodega}
+      </p>
+      <p class="text-xs text-gray-500">
+        ${sb.codigo_subbodega} · ${sb.clasificacion_subbodegas}
+      </p>
+    </div>
 
-        <span class="text-xs px-2 py-1 rounded-full
-          ${sb.estado === "Activo"
-            ? "bg-emerald-100 text-emerald-700"
-            : "bg-red-100 text-red-700"}">
-          ${sb.estado}
-        </span>
-      </div>
-    `).join("");
+    <div class="flex items-center gap-2">
+      <span class="text-xs px-2 py-1 rounded-full
+        ${sb.estado === "Activo"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-red-100 text-red-700"}">
+        ${sb.estado}
+      </span>
+
+      <!-- Botón menú (igual idea que bodegas) -->
+      <button
+        type="button"
+        class="w-8 h-8 rounded-full inline-flex items-center justify-center subbodega-actions-btn hover:bg-gray-200"
+        data-id="${sb.id_subbodega}"
+        data-idbodega="${sb.id_bodega}"
+        data-codigo="${sb.codigo_subbodega}"
+        data-nombre="${sb.nombre_subbodega}"
+        data-clasificacion="${sb.clasificacion_subbodegas}"
+        data-descripcion="${sb.descripcion ?? ""}"
+        data-estado="${sb.estado}"
+      >
+        <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+`).join("");
 
     safeIcons();
 
@@ -560,12 +577,30 @@ const initSubBodegas = async () => {
 
 initSubBodegas();
 
-  // ============================
-  // MENÚ CONTEXTUAL SUB-BODEGAS
-  // ============================
-
+ // ============================
+// MENÚ CONTEXTUAL SUB-BODEGAS (FIX DEFINITIVO)
+// ============================
 let selectedSubBodega = null;
 
+const subMenu = document.getElementById("context-menu-subbodega");
+
+const closeSubMenu = () => {
+  if (!subMenu) return;
+  subMenu.classList.add("hidden");
+};
+
+const openSubMenu = (btn) => {
+  if (!subMenu || !btn) return;
+
+  const r = btn.getBoundingClientRect();
+  subMenu.style.left = `${r.right + window.scrollX - 220}px`;
+  subMenu.style.top = `${r.bottom + window.scrollY + 8}px`;
+
+  subMenu.classList.remove("hidden");
+  safeIcons();
+};
+
+// ABRIR menú desde el botón "..." de cada sub-bodega
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".subbodega-actions-btn");
   if (!btn) return;
@@ -583,123 +618,83 @@ document.addEventListener("click", (e) => {
     estado: btn.dataset.estado,
   };
 
-  const menu = document.getElementById("context-menu-subbodega");
-  if (!menu) return;
-
-  const label = menu.querySelector("[data-action='toggle'] span");
+  const label = subMenu?.querySelector("[data-action='toggle'] span");
   if (label) {
-    label.textContent =
-      selectedSubBodega.estado === "Activo" ? "Desactivar" : "Activar";
+    label.textContent = selectedSubBodega.estado === "Activo" ? "Desactivar" : "Activar";
   }
 
-  const r = btn.getBoundingClientRect();
-  menu.style.left = `${r.right + window.scrollX - 220}px`;
-  menu.style.top = `${r.bottom + window.scrollY + 8}px`;
-  menu.classList.remove("hidden");
+  openSubMenu(btn);
 });
 
-document
-  .getElementById("context-menu-subbodega")
-  ?.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".ctx-sub-btn");
-    if (!btn || !selectedSubBodega) return;
+// CLICK en opciones del menú (CIERRA SIEMPRE AL INICIO)
+subMenu?.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".ctx-sub-btn");
+  if (!btn || !selectedSubBodega) return;
 
-    e.preventDefault();
-    const action = btn.dataset.action;
+  e.preventDefault();
+  e.stopPropagation();
 
-    // 👁 VER
-    if (action === "ver") {
-      document.getElementById("detalleSubNombre").textContent =
-        selectedSubBodega.nombre;
-      document.getElementById("detalleSubCodigo").textContent =
-        selectedSubBodega.codigo;
-      document.getElementById("detalleSubClasificacion").textContent =
-        selectedSubBodega.clasificacion;
-      document.getElementById("detalleSubDescripcion").textContent =
-        selectedSubBodega.descripcion || "-";
-      document.getElementById("detalleSubEstado").textContent =
-        selectedSubBodega.estado;
+  const action = btn.dataset.action;
 
-      openModal(document.getElementById("modalDetalleSubBodega"));
-      return;
-    }
+  closeSubMenu(); // ✅ CLAVE: se oculta apenas presionas cualquier opción
 
-    // ✏️ EDITAR
-    if (action === "editar") {
-      document.getElementById("editSubId").value = selectedSubBodega.id;
-      document.getElementById("editSubCodigo").value =
-        selectedSubBodega.codigo;
-      document.getElementById("editSubNombre").value =
-        selectedSubBodega.nombre;
-      document.getElementById("editSubClasificacion").value =
-        selectedSubBodega.clasificacion;
-      document.getElementById("editSubDescripcion").value =
-        selectedSubBodega.descripcion || "";
+  // 👁 VER
+  if (action === "ver") {
+    document.getElementById("detalleSubNombre").textContent = selectedSubBodega.nombre;
+    document.getElementById("detalleSubCodigo").textContent = selectedSubBodega.codigo;
+    document.getElementById("detalleSubClasificacion").textContent = selectedSubBodega.clasificacion;
+    document.getElementById("detalleSubDescripcion").textContent = selectedSubBodega.descripcion || "-";
+    document.getElementById("detalleSubEstado").textContent = selectedSubBodega.estado;
 
-      openModal(document.getElementById("modalEditarSubBodega"));
-      return;
-    }
+    openModal(document.getElementById("modalDetalleSubBodega"));
+    return;
+  }
 
-    // 🔁 ACTIVAR / DESACTIVAR
-    if (action === "toggle") {
-      const next =
-        selectedSubBodega.estado === "Activo" ? "Inactivo" : "Activo";
+  // ✏️ EDITAR
+  if (action === "editar") {
+    document.getElementById("editSubId").value = selectedSubBodega.id;
+    document.getElementById("editSubCodigo").value = selectedSubBodega.codigo;
+    document.getElementById("editSubNombre").value = selectedSubBodega.nombre;
+    document.getElementById("editSubClasificacion").value = selectedSubBodega.clasificacion;
+    document.getElementById("editSubDescripcion").value = selectedSubBodega.descripcion || "";
 
-      const res = await fetch(
-        `${API_SUBBODEGAS}?accion=estado&id=${selectedSubBodega.id}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ estado: next }),
-        }
-      );
+    openModal(document.getElementById("modalEditarSubBodega"));
+    return;
+  }
 
-      const parsed = await safeJson(res);
+  // 🔁 ACTIVAR / DESACTIVAR
+  if (action === "toggle") {
+    const next = selectedSubBodega.estado === "Activo" ? "Inactivo" : "Activo";
 
-      if (!parsed.ok || parsed.data?.error) {
-        toastError(parsed.data?.error || "No se pudo cambiar el estado");
-        return;
-      }
-
-      toastSuccess(`Sub-bodega ${next === "Activo" ? "activada" : "desactivada"}`);
-      setTimeout(() => location.reload(), 600);
-    }
-  });
-
-  document
-  .getElementById("guardarEditarSubBodega")
-  ?.addEventListener("click", async () => {
-    const id = document.getElementById("editSubId").value;
-
-    const payload = {
-      id_bodega: selectedSubBodega.id_bodega,
-      codigo_subbodega: document.getElementById("editSubCodigo").value.trim(),
-      nombre_subbodega: document.getElementById("editSubNombre").value.trim(),
-      clasificacion_subbodegas:
-        document.getElementById("editSubClasificacion").value,
-      descripcion: document.getElementById("editSubDescripcion").value,
-      estado: selectedSubBodega.estado,
-    };
-
-    const res = await fetch(
-      `${API_SUBBODEGAS}?accion=actualizar&id=${id}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    const res = await fetch(`${API_SUBBODEGAS}?accion=estado&id=${selectedSubBodega.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: next }),
+    });
 
     const parsed = await safeJson(res);
 
     if (!parsed.ok || parsed.data?.error) {
-      toastError(parsed.data?.error || "No se pudo actualizar");
+      toastError(parsed.data?.error || "No se pudo cambiar el estado");
       return;
     }
 
-    toastSuccess("Sub-bodega actualizada correctamente");
+    toastSuccess(`Sub-bodega ${next === "Activo" ? "activada" : "desactivada"}`);
     setTimeout(() => location.reload(), 600);
-  });
+  }
+});
+
+// Cerrar al hacer click afuera
+document.addEventListener("click", (e) => {
+  if (!subMenu) return;
+  if (e.target.closest(".subbodega-actions-btn")) return; // si es el botón, no cierres
+  if (!subMenu.contains(e.target)) closeSubMenu();
+});
+
+// Cerrar con ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeSubMenu();
+});
 
 
   // ============================
@@ -808,6 +803,50 @@ document
   };
 
   // ============================
+// MODAL DETALLE SUB-BODEGA
+// ============================
+const modalDetalleSub = $("modalDetalleSubBodega");
+const cerrarDetalleSub = $("cerrarDetalleSub");
+
+cerrarDetalleSub?.addEventListener("click", () => closeModal(modalDetalleSub));
+modalDetalleSub?.addEventListener("click", (e) => {
+  if (e.target === modalDetalleSub) closeModal(modalDetalleSub);
+});
+
+const fillDetalleSub = (data) => {
+  const setText = (id, value) => {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = value ?? "";
+  };
+
+  // OJO: estos IDs deben existir en tu HTML del modal sub-bodega
+  setText("detalleSubNombre", data.nombre_subbodega ?? data.nombre);
+  setText("detalleSubCodigo", data.codigo_subbodega ?? data.codigo);
+  setText("detalleSubClasificacion", data.clasificacion_subbodegas ?? data.clasificacion);
+  setText("detalleSubDescripcion", data.descripcion ?? "");
+
+  const estadoEl = $("detalleSubEstado");
+  if (estadoEl) {
+    const estado = data.estado || "";
+    estadoEl.textContent = estado;
+
+    // Mismo patrón que bodega
+    estadoEl.classList.remove("badge-estado-activo", "badge-estado-inactivo");
+    estadoEl.classList.add(estado === "Activo" ? "badge-estado-activo" : "badge-estado-inactivo");
+
+    // 🔒 Importante para que NO se estire como barra (Tailwind)
+    estadoEl.classList.add("inline-flex", "w-fit");
+  }
+
+    const totalEl = $("detalleSubTotalMateriales");
+  if (totalEl) {
+    totalEl.textContent = String(data.total_materiales ?? 0);
+  }
+};
+
+
+  // ============================
   // BACKEND HELPERS
   // ============================
   const tryPostActions = async (actions, payload) => {
@@ -853,7 +892,7 @@ document
       nuevo_estado: next,
     };
 
-    const actions = ["cambiarEstado", "toggleEstado", "actualizarEstado", "deshabilitar", "activar"];
+    const actions = ["cambiar_estado", "toggleEstado", "actualizarEstado", "deshabilitar", "activar"];
 
     const result = await tryPostActions(actions, payload);
 
@@ -1169,23 +1208,24 @@ document
   selectEstado?.addEventListener("change", applyFilters);
 
   applyFilters();
-});
-
-let selectedSubBodega = null;
+  // ============================
+// CIERRE ROBUSTO: MODAL EDITAR SUB-BODEGA
+// ============================
+const modalEditarSub = document.getElementById("modalEditarSubBodega");
 
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".subbodegas-btn-dots");
-  if (!btn) return;
+  if (!modalEditarSub) return;
 
-  e.preventDefault();
-  e.stopPropagation();
+  const clickEnX = e.target.closest("#cerrarEditarSub");
+  const clickEnCancelar = e.target.closest("#cancelarEditarSub");
+  const clickEnBackdrop = e.target.id === "backdropEditarSub";
+  const clickEnOverlay = e.target === modalEditarSub; // click en el overlay
 
-  selectedSubBodega = {
-    id: btn.dataset.id,
-    nombre: btn.dataset.nombre,
-    codigo: btn.dataset.codigo,
-    estado: btn.dataset.estado
-  };
-
-  openSubBodegaMenu(btn);
+  if (clickEnX || clickEnCancelar || clickEnBackdrop || clickEnOverlay) {
+    e.preventDefault();
+    closeModal(modalEditarSub);
+  }
 });
+
+});
+
